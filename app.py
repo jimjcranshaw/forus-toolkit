@@ -26,6 +26,35 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── Password gate ──────────────────────────────────────────────────────────────
+def _check_password():
+    """Returns True if the user has entered the correct password."""
+    if st.session_state.get("authenticated"):
+        return True
+    st.markdown(
+        """
+        <div style='max-width:380px;margin:80px auto 0;text-align:center'>
+            <h2 style='color:#00424D'>🛡 Forus Toolkit Manager</h2>
+            <p style='color:#555;margin-bottom:1.5rem'>Enter the access password to continue.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        pwd = st.text_input("Password", type="password", label_visibility="collapsed",
+                            placeholder="Password")
+        if st.button("Login", use_container_width=True, type="primary"):
+            correct = st.secrets.get("APP_PASSWORD", "")
+            if pwd == correct and correct != "":
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Incorrect password — please try again.")
+    st.stop()
+
+_check_password()
+
 # ── Brand colours ─────────────────────────────────────────────────────────────
 TEAL  = "#58C5C7"
 DARK  = "#00424D"
