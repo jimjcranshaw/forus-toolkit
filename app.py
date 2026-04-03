@@ -14,6 +14,8 @@ import tempfile
 import datetime
 from pathlib import Path
 
+import json
+
 import openpyxl
 import pandas as pd
 import requests
@@ -170,25 +172,82 @@ def _badge(conf):
     return f'<span class="badge {conf}">{conf}</span>'
 
 
-# ── Auto-load from Google Drive ───────────────────────────────────────────────
+# ── Google Drive helpers ──────────────────────────────────────────────────────
+def _gdrive_service():
+    """Build an authenticated Google Drive service using service-account credentials."""
+    creds_json = st.secrets.get("GDRIVE_CREDENTIALS", "")
+    if not creds_json:
+        return None
+    try:
+        from google.oauth2 import service_account
+        from googleapiclient.discovery import build
+        creds_dict = json.loads(creds_json)
+        creds = service_account.Credentials.from_service_account_info(
+            creds_dict,
+            scopes=["https://www.googleapis.com/auth/drive.file"],
+        )
+        return build("drive", "v3", credentials=creds)
+    except Exception as e:
+        st.warning(f"Could not build Drive service: {e}")
+        return None
+
+
 def _load_from_gdrive():
-    """Download spreadsheet from Google Drive on first load if GDRIVE_FILE_ID is set."""
+    """Download spreadsheet from Google Drive on first load."""
     if st.session_state.get("sp_path"):
-        return  # already loaded
+        return
     file_id = st.secrets.get("GDRIVE_FILE_ID", "")
     if not file_id:
         return
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+
+    svc = _gdrive_service()
     try:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
+        if svc:
+            # Authenticated download via service account
+            from googleapiclient.http import MediaIoBaseDownload
+            request = svc.files().get_media(fileId=file_id)
+            buf = io.BytesIO()
+            dl = MediaIoBaseDownload(buf, request)
+            done = False
+            while not done:
+                _, done = dl.next_chunk()
+            data = buf.getvalue()
+        else:
+            # Fallback: public download link
+            url = f"https://drive.google.com/uc?export=download&id={file_id}"
+            r = requests.get(url, timeout=30)
+            r.raise_for_status()
+            data = r.content
+
         tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
-        tmp.write(r.content)
+        tmp.write(data)
         tmp.close()
         st.session_state["sp_path"] = tmp.name
         st.session_state["sp_name"] = "Forus_Toolkit_Content_DB.xlsx (Google Drive)"
     except Exception as e:
         st.warning(f"Could not load spreadsheet from Google Drive: {e}")
+
+
+def save_to_gdrive():
+    """Upload the current spreadsheet back to Google Drive, replacing the original."""
+    file_id = st.secrets.get("GDRIVE_FILE_ID", "")
+    if not file_id or not sp():
+        return False, "No file ID or spreadsheet path configured."
+    svc = _gdrive_service()
+    if not svc:
+        return False, "No service-account credentials found (GDRIVE_CREDENTIALS secret not set)."
+    try:
+        from googleapiclient.http import MediaFileUpload
+        media = MediaFileUpload(
+            sp(),
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            resumable=False,
+        )
+        svc.files().update(fileId=file_id, media_body=media).execute()
+        return True, "Saved to Google Drive."
+    except Exception as e:
+        return False, str(e)
+
 
 _load_from_gdrive()
 
@@ -208,6 +267,13 @@ with st.sidebar:
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
             )
+        if st.secrets.get("GDRIVE_CREDENTIALS"):
+            if st.button("☁ Save to Google Drive", use_container_width=True):
+                ok, msg = save_to_gdrive()
+                if ok:
+                    st.success(msg)
+                else:
+                    st.error(msg)
     else:
         st.warning("No spreadsheet loaded")
         uploaded = st.file_uploader("Upload spreadsheet (.xlsx)", type=["xlsx"])
