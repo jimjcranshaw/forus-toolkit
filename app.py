@@ -16,6 +16,7 @@ from pathlib import Path
 
 import openpyxl
 import pandas as pd
+import requests
 import streamlit as st
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -168,6 +169,28 @@ def _badge(conf):
     conf = str(conf or "").upper()
     return f'<span class="badge {conf}">{conf}</span>'
 
+
+# ── Auto-load from Google Drive ───────────────────────────────────────────────
+def _load_from_gdrive():
+    """Download spreadsheet from Google Drive on first load if GDRIVE_FILE_ID is set."""
+    if st.session_state.get("sp_path"):
+        return  # already loaded
+    file_id = st.secrets.get("GDRIVE_FILE_ID", "")
+    if not file_id:
+        return
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    try:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+        tmp.write(r.content)
+        tmp.close()
+        st.session_state["sp_path"] = tmp.name
+        st.session_state["sp_name"] = "Forus_Toolkit_Content_DB.xlsx (Google Drive)"
+    except Exception as e:
+        st.warning(f"Could not load spreadsheet from Google Drive: {e}")
+
+_load_from_gdrive()
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
