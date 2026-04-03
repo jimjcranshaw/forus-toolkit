@@ -126,7 +126,7 @@ st.markdown(f"""
 def _init():
     if "sp_path" not in st.session_state:
         local = Path("Forus_Toolkit_Content_DB.xlsx")
-        if local.exists() and not st.secrets.get("GDRIVE_CREDENTIALS"):
+        if local.exists():
             tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
             shutil.copy(str(local), tmp.name)
             tmp.close()
@@ -201,9 +201,10 @@ def _load_from_gdrive():
         return
 
     svc = _gdrive_service()
-    try:
-        if svc:
-            # Authenticated download via service account
+    data = None
+
+    if svc:
+        try:
             from googleapiclient.http import MediaIoBaseDownload
             # Check MIME type: native Google Sheets must be exported, xlsx uses get_media
             meta = svc.files().get(fileId=file_id, fields="mimeType").execute()
@@ -221,20 +222,33 @@ def _load_from_gdrive():
             while not done:
                 _, done = dl.next_chunk()
             data = buf.getvalue()
-        else:
-            # Fallback: public download link
-            url = f"https://drive.google.com/uc?export=download&id={file_id}"
-            r = requests.get(url, timeout=30)
-            r.raise_for_status()
-            data = r.content
+        except Exception as sa_err:
+            st.warning(f"Service account access failed ({sa_err}). Trying link-share fallback...")
 
+    if data is None:
+        # Fallback: public/link-shared export (file must be shared "Anyone with link")
+        try:
+            # Works for Google Sheets files shared publicly
+            url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
+            r = requests.get(url, timeout=30, allow_redirects=True)
+            if r.status_code == 200 and len(r.content) > 1000:
+                data = r.content
+            else:
+                # Fallback for native xlsx stored in Drive
+                url = f"https://drive.google.com/uc?export=download&id={file_id}"
+                r = requests.get(url, timeout=30, allow_redirects=True)
+                r.raise_for_status()
+                data = r.content
+        except Exception as pub_err:
+            st.warning(f"Could not load spreadsheet from Google Drive: {pub_err}")
+            return
+
+    if data:
         tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
         tmp.write(data)
         tmp.close()
         st.session_state["sp_path"] = tmp.name
         st.session_state["sp_name"] = "Forus_Toolkit_Content_DB.xlsx (Google Drive)"
-    except Exception as e:
-        st.warning(f"Could not load spreadsheet from Google Drive: {e}")
 
 
 def save_to_gdrive():
