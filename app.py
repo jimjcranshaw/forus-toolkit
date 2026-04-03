@@ -126,7 +126,7 @@ st.markdown(f"""
 def _init():
     if "sp_path" not in st.session_state:
         local = Path("Forus_Toolkit_Content_DB.xlsx")
-        if local.exists():
+        if local.exists() and not st.secrets.get("GDRIVE_CREDENTIALS"):
             tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
             shutil.copy(str(local), tmp.name)
             tmp.close()
