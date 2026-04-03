@@ -205,7 +205,16 @@ def _load_from_gdrive():
         if svc:
             # Authenticated download via service account
             from googleapiclient.http import MediaIoBaseDownload
-            request = svc.files().get_media(fileId=file_id)
+            # Check MIME type: native Google Sheets must be exported, xlsx uses get_media
+            meta = svc.files().get(fileId=file_id, fields="mimeType").execute()
+            mime = meta.get("mimeType", "")
+            if mime == "application/vnd.google-apps.spreadsheet":
+                request = svc.files().export_media(
+                    fileId=file_id,
+                    mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            else:
+                request = svc.files().get_media(fileId=file_id)
             buf = io.BytesIO()
             dl = MediaIoBaseDownload(buf, request)
             done = False
