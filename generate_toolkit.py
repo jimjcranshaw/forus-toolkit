@@ -1708,12 +1708,13 @@ def filter_rows_for_request(rows, req):
                     country_or_region = text.split("|",1)[0].strip()
                 else:
                     country_or_region = text.strip()
-                # Match the region name against selected regions
+                # Match the region name against selected regions.
+                # Only include rows whose region tag is in the selected set.
+                # "Global" is treated as a region like any other — ticking it
+                # shows globally-applicable entries, not all regional entries.
                 region_key = _REGION_NAME_TO_KEY.get(country_or_region)
                 if region_key and region_key not in selected_regions:
-                    # Also pass through if Global is selected (show everything)
-                    if "global" not in selected_regions:
-                        continue
+                    continue
             out.append(item)
 
     return out
