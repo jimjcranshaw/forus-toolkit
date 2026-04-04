@@ -875,11 +875,16 @@ elif page == "📄 Generate PDF":
                     sel_annexes[ann_label] = st.checkbox(ann_label, value=True)
 
             st.markdown("**Regions** *(filters annex content)*")
+            all_regions = st.checkbox("All regions", value=False)
             rcols = st.columns(6)
             sel_regions = {}
             for i, (rlabel, rkey) in enumerate(_REGION_LABELS):
                 with rcols[i]:
-                    sel_regions[rkey] = st.checkbox(rlabel, value=(rkey == "global"))
+                    sel_regions[rkey] = st.checkbox(
+                        rlabel,
+                        value=(rkey == "global"),
+                        disabled=all_regions,
+                    )
 
             submitted = st.form_submit_button("📄 Build custom PDF", type="primary")
 
@@ -887,13 +892,17 @@ elif page == "📄 Generate PDF":
             if not cust_name.strip() or not cust_org.strip():
                 st.error("Please enter a contact name and organisation.")
             else:
+                effective_regions = (
+                    {rkey: True for _, rkey in _REGION_LABELS}
+                    if all_regions else sel_regions
+                )
                 req = {
                     "req_id":  "custom",
                     "name":    cust_name.strip(),
                     "org":     cust_org.strip(),
                     "email":   cust_email.strip(),
                     "parts":   sel_parts,
-                    "regions": sel_regions,
+                    "regions": effective_regions,
                     "annexes": sel_annexes,
                 }
                 access_level = 1 if cust_access == "Public" else 2
