@@ -824,54 +824,103 @@ elif page == "📄 Generate PDF":
     with tab2:
         st.subheader("Custom member PDF")
         st.markdown(
-            "Generate a personalised PDF for a specific member request "
-            "using a row from the **REQUEST_LOG** sheet."
+            "Fill in the form below to generate a personalised PDF for a specific member. "
+            "Select only the sections relevant to them."
         )
 
-        # Load REQUEST_LOG if it exists
-        wb2 = _load_wb()
-        req_ids = []
-        if "REQUEST_LOG" in wb2.sheetnames:
-            ws_rl = wb2["REQUEST_LOG"]
-            for row in ws_rl.iter_rows(min_row=5, values_only=True):
-                rid = str(row[0] or "").strip()
-                if rid and str(row[21] or "").strip().upper() in ("PENDING", ""):
-                    name = str(row[2] or "")
-                    org  = str(row[3] or "")
-                    req_ids.append(f"{rid} — {name}, {org}")
-        else:
-            st.info("No REQUEST_LOG sheet found. Add one to the spreadsheet to use this feature.")
+        _PART_LABELS = {
+            1: "Part 1 — Crisis Guides",
+            2: "Part 2 — Solidarity",
+            3: "Part 3 — Legal Support",
+            4: "Part 4 — Emergency Funding",
+            5: "Part 5 — Safe Comms",
+            6: "Part 6 — Diversification",
+            7: "Part 7 — Feedback",
+        }
+        _ANNEX_KEYS = {
+            "Annex A: Legal Pro Bono Support":             "annex_a",
+            "Annex B: Emergency Grants Mechanisms":        "annex_b",
+            "Annex C: Physical & Digital Security Support":"annex_c",
+        }
+        _REGION_LABELS = [
+            ("Africa",                    "africa"),
+            ("Asia-Pacific",              "asia"),
+            ("Europe",                    "europe"),
+            ("Latin America & Caribbean", "latam"),
+            ("Pacific",                   "pacific"),
+            ("Global",                    "global"),
+        ]
 
-        if req_ids:
-            selected = st.selectbox("Select request", req_ids)
-            req_id   = selected.split(" — ")[0].strip() if selected else ""
-            access   = st.radio("Access level", ["Public", "Network"])
+        with st.form("custom_pdf_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                cust_name   = st.text_input("Contact name *", placeholder="e.g. Maria Rodriguez")
+                cust_org    = st.text_input("Organisation *", placeholder="e.g. CCFD-Terre Solidaire")
+            with c2:
+                cust_email  = st.text_input("Email (optional)", placeholder="contact@example.org")
+                cust_access = st.radio("Access level", ["Public", "Network"], horizontal=True)
 
-            if st.button("📄 Build custom PDF", type="primary") and req_id:
+            st.markdown("**Parts to include**")
+            pcols = st.columns(4)
+            sel_parts = {}
+            for i, (pnum, plabel) in enumerate(_PART_LABELS.items()):
+                with pcols[i % 4]:
+                    sel_parts[pnum] = st.checkbox(plabel, value=True)
+
+            st.markdown("**Annexes**")
+            acols = st.columns(3)
+            sel_annexes = {}
+            for i, ann_label in enumerate(_ANNEX_KEYS.keys()):
+                with acols[i]:
+                    sel_annexes[ann_label] = st.checkbox(ann_label, value=True)
+
+            st.markdown("**Regions** *(filters annex content)*")
+            rcols = st.columns(6)
+            sel_regions = {}
+            for i, (rlabel, rkey) in enumerate(_REGION_LABELS):
+                with rcols[i]:
+                    sel_regions[rkey] = st.checkbox(rlabel, value=(rkey == "global"))
+
+            submitted = st.form_submit_button("📄 Build custom PDF", type="primary")
+
+        if submitted:
+            if not cust_name.strip() or not cust_org.strip():
+                st.error("Please enter a contact name and organisation.")
+            else:
+                req = {
+                    "req_id":  "custom",
+                    "name":    cust_name.strip(),
+                    "org":     cust_org.strip(),
+                    "email":   cust_email.strip(),
+                    "parts":   sel_parts,
+                    "regions": sel_regions,
+                    "annexes": sel_annexes,
+                }
+                access_level = 1 if cust_access == "Public" else 2
+                v = gt.VERSION
+                safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
+                fname = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}.pdf"
+
                 with tempfile.TemporaryDirectory() as tmp_dir:
-                    suffix = f"_{req_id}"
-                    v = gt.VERSION
-                    access_level = 1 if access == "Public" else 2
-                    out_path = os.path.join(
-                        tmp_dir,
-                        f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}{suffix}.pdf"
-                    )
+                    out_path = os.path.join(tmp_dir, fname)
                     gt.OUT_PUBLIC  = out_path if access_level == 1 else os.path.join(tmp_dir, "pub.pdf")
                     gt.OUT_NETWORK = out_path if access_level == 2 else os.path.join(tmp_dir, "net.pdf")
 
-                    with st.spinner(f"Building custom PDF for {req_id}…"):
-                        gt.build_request_pdf(req_id, access_level=access_level)
+                    with st.spinner(f"Building custom PDF for {cust_name}…"):
+                        success = gt.build_pdf_from_request_dict(
+                            req, access_level=access_level, out_path=out_path
+                        )
 
-                    if os.path.exists(out_path):
+                    if success and os.path.exists(out_path):
                         with open(out_path, "rb") as f:
                             st.download_button(
-                                f"⬇ Download {req_id} PDF",
+                                f"⬇ Download PDF for {cust_org}",
                                 f.read(),
-                                file_name=os.path.basename(out_path),
+                                file_name=fname,
                                 mime="application/pdf",
                             )
                         st.session_state["action_log"].append(
-                            f"{datetime.date.today()} — Custom PDF for {req_id}"
+                            f"{datetime.date.today()} — Custom PDF for {cust_name}, {cust_org}"
                         )
                     else:
-                        st.error("PDF generation failed — check that the request ID exists in REQUEST_LOG.")
+                        st.error("PDF generation failed. Check that at least one section is selected.")

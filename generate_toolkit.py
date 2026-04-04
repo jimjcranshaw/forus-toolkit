@@ -1768,6 +1768,62 @@ def build_request_pdf(req_id, access_level=1):
     _mark_request_sent(req_id)
 
 
+def build_pdf_from_request_dict(req, access_level=1, out_path=None):
+    """Generate a customised PDF directly from a request dict (no REQUEST_LOG lookup).
+
+    req must contain:
+        name, org, email (str)
+        parts   : {1: bool, 2: bool, … 7: bool}
+        regions : {africa: bool, asia: bool, europe: bool, latam: bool, pacific: bool, global: bool}
+        annexes : {"Annex A: Legal Pro Bono Support": bool, …}
+    Returns True on success, False on failure.
+    """
+    if not req:
+        return False
+
+    label = "Public" if access_level == 1 else "Network"
+    if out_path is None:
+        suffix = f"_{req.get('org','custom').replace(' ','_')}"
+        out_path = (OUT_PUBLIC.replace(".pdf", f"{suffix}.pdf") if access_level == 1
+                    else OUT_NETWORK.replace(".pdf", f"{suffix}.pdf"))
+
+    print(f"\nBuilding custom PDF for {req.get('name','')}, {req.get('org','')}")
+
+    all_rows, mechs = load_data(access_level)
+    rows = filter_rows_for_request(all_rows, req)
+
+    common_kw = dict(pagesize=A4, leftMargin=ML, rightMargin=MR,
+                     topMargin=MT, bottomMargin=MB)
+
+    # Pass 1
+    story1, warnings = make_story(rows, mechs, access_level, page_map=None)
+    tmp = out_path.replace(".pdf", "_pass1.pdf")
+    doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
+    doc1.build(story1)
+    page_map = {}
+    for (pn, part, section) in doc1._meta_log:
+        if pn not in page_map:
+            page_map[pn] = (part, section)
+    try:
+        os.remove(tmp)
+    except OSError:
+        pass
+
+    # Pass 2
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map)
+    doc2 = ToolkitDoc(out_path, access_level=access_level, page_map=page_map, **common_kw)
+    doc2.build(story2)
+
+    if os.path.exists(out_path):
+        size_kb = os.path.getsize(out_path) // 1024
+        print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out_path}")
+        for w in warnings:
+            print(w)
+        return True
+
+    return False
+
+
 def _mark_request_sent(req_id):
     """Update STATUS to IN PROGRESS in REQUEST_LOG after PDF is generated."""
     wb = openpyxl.load_workbook(SPREADSHEET)
