@@ -910,9 +910,13 @@ elif page == "📄 Generate PDF":
                 safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
                 fname = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}.pdf"
 
-                # ── DEBUG (remove after diagnosing) ──────────────────────
-                st.write("**DEBUG req:**", req)
-                st.write("**SPREADSHEET path:**", sp())
+                # ── DEBUG (remove after confirming annexes work) ─────────
+                with st.expander("🔍 DEBUG — click to expand", expanded=True):
+                    st.write("**Toolkit version:**", gt.VERSION)
+                    st.write("**SPREADSHEET path:**", sp())
+                    st.write("**req.annexes:**", req.get("annexes"))
+                    st.write("**req.regions:**", req.get("regions"))
+                    st.write("**req.parts:**", req.get("parts"))
                 # ─────────────────────────────────────────────────────────
 
                 with tempfile.TemporaryDirectory() as tmp_dir:
