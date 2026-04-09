@@ -910,6 +910,11 @@ elif page == "📄 Generate PDF":
                 safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
                 fname = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}.pdf"
 
+                # ── DEBUG (remove after diagnosing) ──────────────────────
+                st.write("**DEBUG req:**", req)
+                st.write("**SPREADSHEET path:**", sp())
+                # ─────────────────────────────────────────────────────────
+
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     out_path = os.path.join(tmp_dir, fname)
                     gt.SPREADSHEET = sp()          # ← point at downloaded Drive file
@@ -917,9 +922,15 @@ elif page == "📄 Generate PDF":
                     gt.OUT_NETWORK = out_path if access_level == 2 else os.path.join(tmp_dir, "net.pdf")
 
                     with st.spinner(f"Building custom PDF for {cust_name}…"):
-                        success = gt.build_pdf_from_request_dict(
-                            req, access_level=access_level, out_path=out_path
-                        )
+                        try:
+                            success = gt.build_pdf_from_request_dict(
+                                req, access_level=access_level, out_path=out_path
+                            )
+                        except Exception as _e:
+                            import traceback
+                            st.error(f"Exception: {_e}")
+                            st.code(traceback.format_exc())
+                            success = False
 
                     if success and os.path.exists(out_path):
                         with open(out_path, "rb") as f:
