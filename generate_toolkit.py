@@ -578,20 +578,29 @@ def render_db_ref(text, last_verified):
     ]))
     return [t, Spacer(1,2*mm)]
 
+def _xesc(text):
+    """Escape XML/HTML special characters so ReportLab Paragraph doesn't crash."""
+    return (str(text or "")
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;"))
+
+
 def render_mechanism_card(mech):
     if not mech:
         return [Paragraph("[Mechanism not found]", S["over"]), Spacer(1,2*mm)]
-    
-    status = str(mech.get("status","VERIFY"))
-    pe = str(mech.get("platform_eligible","PARTIAL"))
-    org = str(mech.get("organisation",""))
-    name = str(mech.get("mechanism_name",""))
-    lv = str(mech.get("last_verified",""))
-    url = str(mech.get("db_url",""))
-    elig = str(mech.get("eligibility_note",""))
-    access = str(mech.get("how_to_access",""))
-    timeframe = str(mech.get("timeframe",""))
-    constraints = str(mech.get("constraints",""))
+
+    status      = str(mech.get("status", "VERIFY"))
+    pe          = str(mech.get("platform_eligible", "PARTIAL"))
+    org         = _xesc(mech.get("organisation", ""))
+    name        = _xesc(mech.get("mechanism_name", ""))
+    lv          = _xesc(mech.get("last_verified", ""))
+    url         = str(mech.get("db_url", "") or "")   # used raw in href; display copy escaped
+    url_display = _xesc(url)
+    elig        = _xesc(mech.get("eligibility_note", ""))
+    access      = _xesc(mech.get("how_to_access", ""))
+    timeframe   = _xesc(mech.get("timeframe", ""))
+    constraints = _xesc(mech.get("constraints", ""))
 
     status_colors = {
         "ACTIVE":     (C["mid_green"],  C["light_green"]),
@@ -658,7 +667,7 @@ def render_mechanism_card(mech):
 
     # Footer
     footer_t = Table([[Paragraph(
-        f"{org}  ·  Last verified: {lv}  ·  <a href='{url}' color='blue'>{url}</a>",
+        f"{org}  ·  Last verified: {lv}  ·  <a href='{url}' color='blue'>{url_display}</a>",
         ps("_mf",size=7,leading=9,color=C["mid_grey"]))]], colWidths=[FRAME_W])
     footer_t.setStyle(TableStyle([
         ("BACKGROUND",(0,0),(-1,-1),C["white"]),
