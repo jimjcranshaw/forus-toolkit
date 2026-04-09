@@ -1177,13 +1177,32 @@ def render_block(item, mechs, story, warnings):
         story.append(Paragraph(f"[{btype}] {text}", S["normal"]))
         story.append(Spacer(1,2*mm))
 
-def make_story(rows, mechs, access_level, page_map=None):
+def _mech_matches_regions(mech, selected_regions):
+    """Return True if this mechanism's geographic_coverage includes any selected region."""
+    geo = str(mech.get("geographic_coverage", "") or "").lower()
+    # Always include mechanisms that cover all regions
+    if any(k.lower() in geo for k in _GEO_ALL_REGIONS):
+        return True
+    # Check each selected region's keywords
+    for rkey, v in selected_regions.items():
+        if not v:
+            continue
+        for kw in _REGION_GEO_KEYWORDS.get(rkey, []):
+            if kw.lower() in geo:
+                return True
+    return False
+
+
+def make_story(rows, mechs, access_level, page_map=None, req=None):
     """Build the complete story list. Called twice — once per pass.
-    page_map is None in pass 1; supplied from pass 1 results in pass 2."""
+    page_map is None in pass 1; supplied from pass 1 results in pass 2.
+    req: optional request dict; when supplied, annex sections are generated
+         from MECHANISMS data after all CONTENT rows."""
     story    = []
     warnings = []
 
-    # Collect ordered unique (part, section) pairs for the ToC
+    # Collect ordered unique (part, section) pairs for the ToC,
+    # including any selected annex sections.
     sections_in_order = []
     seen_sections = set()
     for item in rows:
@@ -1192,6 +1211,11 @@ def make_story(rows, mechs, access_level, page_map=None):
         if sec and sec not in seen_sections:
             seen_sections.add(sec)
             sections_in_order.append((part, sec))
+    if req:
+        selected_annexes = {k: v for k, v in req.get("annexes", {}).items() if v}
+        for ann_sec in selected_annexes:
+            if ann_sec not in seen_sections:
+                sections_in_order.append((8, ann_sec))
 
     build_cover(story, access_level,
                 sections_in_order=sections_in_order,
@@ -1284,6 +1308,36 @@ def make_story(rows, mechs, access_level, page_map=None):
             render_block(item, mechs, story, warnings)
             if btype not in ("DECISION-Q", "DECISION-A"):
                 prev_time = None
+
+    # ── Annex sections from MECHANISMS sheet ────────────────────────────────
+    if req:
+        selected_annexes = req.get("annexes", {})
+        selected_regions = req.get("regions", {})
+        for ann_sec, ann_cat in _ANNEX_CATEGORY.items():
+            if not selected_annexes.get(ann_sec):
+                continue
+            # Section banner (part=8 gets its own nav colour)
+            story.append(Spacer(1, 8*mm))
+            for f in render_section_banner(ann_sec, 8):
+                story.append(f)
+            story.append(SectionAnchor(anchor_id(ann_sec)))
+            story.append(SetMeta(8, ann_sec))
+
+            # Filter mechanisms by category and region
+            matching = [
+                m for m in mechs.values()
+                if str(m.get("category", "")).strip() == ann_cat
+                and _mech_matches_regions(m, selected_regions)
+            ]
+
+            if matching:
+                for mech in matching:
+                    story += render_mechanism_card(mech)
+            else:
+                story.append(Paragraph(
+                    "No mechanisms matched your selected regions for this annex.",
+                    ps("_no_match", size=9, leading=13, color="mid_grey", italic=True)))
+                story.append(Spacer(1, 4*mm))
 
     return story, warnings
 
@@ -1710,6 +1764,24 @@ _ANNEX_TO_KEY = {
     "Annex C: Physical & Digital Security Support":"annex_c",
 }
 
+# Annex section name → MECHANISMS sheet category value
+_ANNEX_CATEGORY = {
+    "Annex A: Legal Pro Bono Support":             "legal",
+    "Annex B: Emergency Grants Mechanisms":        "emergency-funding",
+    "Annex C: Physical & Digital Security Support":"digital-security",
+}
+
+# Region key → keywords to look for in geographic_coverage field
+_REGION_GEO_KEYWORDS = {
+    "africa":  ["Africa", "Sub-Saharan"],
+    "asia":    ["Asia"],
+    "europe":  ["Europe"],
+    "latam":   ["Americas", "Latin America", "Caribbean"],
+    "pacific": ["Pacific"],
+    "global":  ["Global"],
+}
+_GEO_ALL_REGIONS = ["all region", "All region", "all regions", "All regions"]
+
 
 def read_request(req_id):
     """Read a single request row from REQUEST_LOG. Returns dict or None."""
@@ -1814,7 +1886,7 @@ def build_request_pdf(req_id, access_level=1):
                      topMargin=MT, bottomMargin=MB)
 
     # Pass 1
-    story1, warnings = make_story(rows, mechs, access_level, page_map=None)
+    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=req)
     tmp = out.replace(".pdf","_pass1.pdf")
     doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
     doc1.build(story1)
@@ -1826,7 +1898,7 @@ def build_request_pdf(req_id, access_level=1):
     except OSError: pass
 
     # Pass 2
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req)
     doc2 = ToolkitDoc(out, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
 
@@ -1867,7 +1939,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None):
                      topMargin=MT, bottomMargin=MB)
 
     # Pass 1
-    story1, warnings = make_story(rows, mechs, access_level, page_map=None)
+    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=req)
     tmp = out_path.replace(".pdf", "_pass1.pdf")
     doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
     doc1.build(story1)
@@ -1881,7 +1953,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None):
         pass
 
     # Pass 2
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req)
     doc2 = ToolkitDoc(out_path, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
 
