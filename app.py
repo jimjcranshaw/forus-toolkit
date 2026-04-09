@@ -912,6 +912,7 @@ elif page == "📄 Generate PDF":
 
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     out_path = os.path.join(tmp_dir, fname)
+                    gt.SPREADSHEET = sp()          # ← point at downloaded Drive file
                     gt.OUT_PUBLIC  = out_path if access_level == 1 else os.path.join(tmp_dir, "pub.pdf")
                     gt.OUT_NETWORK = out_path if access_level == 2 else os.path.join(tmp_dir, "net.pdf")
 
