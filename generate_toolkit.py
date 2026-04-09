@@ -112,9 +112,10 @@ WORD_LIMITS = {
     "DECISION-Q":20,"DECISION-A":8,"CHECKLIST":20,
     "TEMPLATE":120,"CASE":60,"HEADER":10,"DB-REF":40,"MECHANISM-REF":15,
     "SUBSECTION":12,"FEEDBACK":120,
-    "REGION-NAV":80,      # pipe-separated region names → clickable buttons to annex
-    "COUNTRY-ENTRY":80,   # "Country Name | details" → bold header + details in annex
-    "PEER-CONNECT":20,    # URL for peer connection contact form
+    "REGION-NAV":80,          # pipe-separated region names → clickable buttons to annex
+    "COUNTRY-ENTRY":80,       # "Country Name | details" → bold header + details in annex
+    "PEER-CONNECT":20,        # legacy key (kept for back-compat)
+    "PEER-CONNECTION":110,    # org description (v2.2+)
 }
 
 # Two-state sort: preemptive first, everything else second
@@ -436,6 +437,35 @@ def render_intro(text):
     ]))
     return [label, Paragraph(text, S["intro"]), Spacer(1, 4*mm)]
 
+
+def render_header(text):
+    """Phase/structural header banner (BEFORE CRISIS, DURING CRISIS, etc.)."""
+    tl = text.upper()
+    if "BEFORE" in tl:
+        bg, border = C["dark_green"], C["mid_green"]
+        icon = "🛡  "
+    elif "DURING" in tl:
+        bg, border = C["deep_red"], C["orange"]
+        icon = "⚡  "
+    else:
+        bg, border = C["forus_dark"], C["forus_teal"]
+        icon = ""
+    t = Table(
+        [[Paragraph(icon + text.upper(),
+                    ps("_hdr_txt", size=9.5, leading=12,
+                       color=C["white"], bold=True, align=TA_CENTER))]],
+        colWidths=[FRAME_W])
+    t.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), bg),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 8),
+        ("TOPPADDING",    (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ("LINEBELOW",     (0, 0), (-1, -1), 2, border),
+    ]))
+    return [Spacer(1, 5*mm), t, Spacer(1, 3*mm)]
+
+
 def render_decision_q(text):
     data = [[Paragraph(f"⬥  DECISION", ps("_dq_lbl",size=7,leading=9,
                        color=C["amber"],bold=True,align=TA_CENTER)),
@@ -733,41 +763,50 @@ def render_country_entry(text, part):
     return [outer, Spacer(1,2*mm)]
 
 
-def render_peer_connect(url, ref=None):
-    """Small teal CTA inviting the reader to be connected with a peer.
-    content_text should be the contact URL (or placeholder).
-    ref: block_id string appended as ?ref=... so click source is traceable.
+def render_peer_connect(text, ref=None):
+    """Peer insight card.  content_text is an organisation description (v2.2+).
+    Personal names are stripped so only the organisation/context is shown.
+    Legacy URLs are also accepted and displayed as a link instead.
     """
-    url = url.strip() or "https://forus-international.org/peer-connect"
-    if ref:
-        sep = "&" if "?" in url else "?"
-        url = f"{url}{sep}ref={ref}"
+    import re as _re
+    text = (text or "").strip()
+    # Detect legacy URL content
+    is_url = text.startswith("http") or text.startswith("www.")
+    if is_url:
+        url = text or "https://forus-international.org/peer-connect"
+        if ref:
+            sep = "&" if "?" in url else "?"
+            url = f"{url}{sep}ref={ref}"
+        body_para = Paragraph(
+            f'<a href="{url}" color="#D4F0F1"><u>{url}</u></a>',
+            ps("_pcurl", size=8, leading=11, color=C["forus_teal_lt"]))
+    else:
+        # Strip leading personal name: one or more Title-case words followed by ", "
+        # e.g. "Moses Isooba, " → "" or "Shannon Kindornay, " → ""
+        clean = _re.sub(r'^(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*', '', text)
+        body_para = Paragraph(clean, ps("_pcbody", size=8.5, leading=12,
+                                         color=C["forus_teal_lt"]))
+
     data = [[
         Paragraph("🤝", ps("_pci", size=12, leading=14, color=C["white"],
                              align=TA_CENTER)),
         Table([
-            [Paragraph("CONNECT WITH A PEER",
+            [Paragraph("PEER INSIGHT",
                         ps("_pclbl", size=7.5, leading=10, color=C["white"], bold=True))],
-            [Paragraph(
-                "Know a platform that has faced this situation? "
-                "Contact the Forus team to be put directly in touch.",
-                ps("_pcbody", size=8.5, leading=12, color=C["forus_teal_lt"]))],
-            [Paragraph(
-                f'<a href="{url}" color="#D4F0F1"><u>{url}</u></a>',
-                ps("_pcurl", size=8, leading=11, color=C["forus_teal_lt"]))],
+            [body_para],
         ], colWidths=[FRAME_W - 16*mm]),
     ]]
     t = Table(data, colWidths=[16*mm, FRAME_W - 16*mm])
     t.setStyle(TableStyle([
-        ("BACKGROUND",(0,0),(-1,-1), C["forus_dark"]),
-        ("VALIGN",(0,0),(-1,-1),"TOP"),
-        ("LEFTPADDING",(0,0),(0,0),4),("RIGHTPADDING",(0,0),(0,0),4),
-        ("LEFTPADDING",(1,0),(1,0),0),("RIGHTPADDING",(1,0),(1,0),8),
-        ("TOPPADDING",(0,0),(-1,-1),8),("BOTTOMPADDING",(0,0),(-1,-1),8),
-        ("LINEAFTER",(0,0),(0,0),1, C["forus_teal"]),
-        ("ROUNDEDCORNERS",[3,3,3,3]),
+        ("BACKGROUND", (0, 0), (-1, -1), C["forus_dark"]),
+        ("VALIGN",     (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING",  (0, 0), (0, 0), 4), ("RIGHTPADDING", (0, 0), (0, 0), 4),
+        ("LEFTPADDING",  (1, 0), (1, 0), 0), ("RIGHTPADDING", (1, 0), (1, 0), 8),
+        ("TOPPADDING",   (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 8),
+        ("LINEAFTER",    (0, 0), (0, 0),  1, C["forus_teal"]),
     ]))
-    return [Spacer(1,3*mm), t, Spacer(1,3*mm)]
+    return [Spacer(1, 3*mm), t, Spacer(1, 3*mm)]
 
 
 # ── Page chrome ───────────────────────────────────────────────────────────────
@@ -1078,7 +1117,10 @@ def render_block(item, mechs, story, warnings):
     if truncated:
         warnings.append(f"  ⚠ OVER LIMIT: {bid} [{btype}, limit={get_limit(item)}]")
 
-    if btype == "INTRO":
+    if btype == "HEADER":
+        story += render_header(text)
+
+    elif btype == "INTRO":
         story += render_intro(text)
 
     elif btype == "STEP":
@@ -1107,7 +1149,7 @@ def render_block(item, mechs, story, warnings):
     elif btype == "CASE":
         story += render_case(text)
 
-    elif btype == "PEER-CONNECT":
+    elif btype in ("PEER-CONNECTION", "PEER-CONNECT"):
         story += render_peer_connect(text_raw.strip(), ref=bid)
 
     elif btype == "REGION-NAV":
@@ -1155,8 +1197,12 @@ def make_story(rows, mechs, access_level, page_map=None):
                 sections_in_order=sections_in_order,
                 page_map=page_map)
 
-    prev_section = None
+    prev_section  = None
     step_counters = {}
+    # Track the active phase from HEADER blocks.
+    # "BEFORE CRISIS" headers → preemptive; "DURING CRISIS" → responsive.
+    # This drives the timeline bar when all rows have time_horizon="general".
+    current_phase = "responsive"   # sensible default until first HEADER seen
 
     for item in rows:
         part    = int(item.get("part", 1) or 1)
@@ -1175,6 +1221,9 @@ def make_story(rows, mechs, access_level, page_map=None):
             prev_section  = section
             prev_time     = None
             step_counters[section] = {}
+            # Reset phase context when entering a new section
+            current_phase = "responsive"
+            make_story._prev_display_h = None
         else:
             if "prev_time" not in dir():
                 prev_time = None
@@ -1183,8 +1232,15 @@ def make_story(rows, mechs, access_level, page_map=None):
             key = time_h
             step_counters[section][key] = step_counters[section].get(key, 0) + 1
             item = dict(item)
-            # Normalise legacy horizon values to preemptive vs responsive for display
-            display_h = "preemptive" if time_h == "preemptive" else "responsive"
+            # If the row has an explicit preemptive/responsive horizon, honour it.
+            # Otherwise use the phase set by the most recent HEADER block in this section.
+            if time_h == "preemptive":
+                display_h = "preemptive"
+            elif time_h in ("responsive", "first-hour", "first-24hrs", "first-72hrs"):
+                display_h = "responsive"
+            else:
+                # time_h is "general" (v2.2 default) — derive phase from HEADER context
+                display_h = current_phase
             if display_h != getattr(make_story, "_prev_display_h", None) or time_h != prev_time:
                 story.append(Spacer(1, 5*mm))
                 for f in render_timeline_bar(display_h): story.append(f)
@@ -1209,6 +1265,20 @@ def make_story(rows, mechs, access_level, page_map=None):
                 story.append(SectionAnchor(reg_slug))
             step_counters[section][time_h] = 0
             prev_time = time_h
+
+        elif btype == "HEADER":
+            # Render the phase banner AND update current_phase for subsequent STEPs
+            text_raw = str(item.get("content_text", "") or "")
+            text, _ = trim(text_raw, get_limit(item))
+            tl = text.upper()
+            if "BEFORE" in tl:
+                current_phase = "preemptive"
+            elif "DURING" in tl:
+                current_phase = "responsive"
+            # Force timeline bar to redraw after the phase switch
+            make_story._prev_display_h = None
+            story += render_header(text)
+            prev_time = None
 
         else:
             render_block(item, mechs, story, warnings)
