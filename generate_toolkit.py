@@ -388,7 +388,7 @@ def render_step(text, number, part, truncated):
         ("LEFTPADDING",(0,0),(-1,-1), 1),("RIGHTPADDING",(0,0),(-1,-1), 1),
         ("ALIGN",(0,0),(-1,-1),"CENTER"),
     ]))
-    data = [[num_cell, Paragraph(text + suffix, S["step"])]]
+    data = [[num_cell, Paragraph(_linkify_refs(text) + suffix, S["step"])]]
     t = Table(data, colWidths=[10*mm, FRAME_W - 10*mm])
     t.setStyle(TableStyle([
         ("BACKGROUND",(1,0),(1,0), C["light_grey"]),
@@ -411,7 +411,7 @@ def render_callout(text, box_type, truncated):
     data = [[
         Paragraph(icon, ps("_icon", size=7, leading=9,
                            color=accent, bold=True, align=TA_CENTER)),
-        Paragraph(text + suffix, style),
+        Paragraph(_linkify_refs(text) + suffix, style),
     ]]
     t = Table(data, colWidths=[14*mm, FRAME_W - 14*mm])
     t.setStyle(TableStyle([
@@ -435,7 +435,7 @@ def render_intro(text):
         ("LEFTPADDING",(0,0),(-1,-1),0),("RIGHTPADDING",(0,0),(-1,-1),0),
         ("TOPPADDING",(0,0),(-1,-1),0),("BOTTOMPADDING",(0,0),(-1,-1),2),
     ]))
-    return [label, Paragraph(text, S["intro"]), Spacer(1, 4*mm)]
+    return [label, Paragraph(_linkify_refs(text), S["intro"]), Spacer(1, 4*mm)]
 
 
 def render_header(text):
@@ -557,6 +557,43 @@ def render_case(text):
     ]))
     return [t, Spacer(1,1*mm)]
 
+def _linkify_refs(text):
+    """Convert cross-references to internal Annex/Part/Template destinations into
+    clickable PDF links.  Must be applied AFTER XML-escaping (the function
+    applies _xesc internally, then adds <link> markup on top)."""
+    t = _xesc(text)
+    # Ordered so longer matches win (Annex A before bare 'A', etc.)
+    _LINK = [
+        # Annexes ── anchor IDs mirror anchor_id(section_text) below
+        (r"Annex A\b",
+         '<link dest="s_Annex_A__Legal_Pro_Bono_Support"'
+         ' color="#00424D"><u>Annex A</u></link>'),
+        (r"Annex B\b",
+         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms"'
+         ' color="#00424D"><u>Annex B</u></link>'),
+        (r"Annex C\b",
+         '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
+         ' color="#00424D"><u>Annex C</u></link>'),
+        # Named sections
+        (r"Part 3 \(Legal Support\)",
+         '<link dest="s_3__Legal_Support" color="#00424D">'
+         '<u>Part 3 (Legal Support)</u></link>'),
+        (r"Part 4 \(Emergency Funding\)",
+         '<link dest="s_4__Emergency_Funding" color="#00424D">'
+         '<u>Part 4 (Emergency Funding)</u></link>'),
+        (r"Part 5 \(Safe Comms\)",
+         '<link dest="s_5__Safe_Comms" color="#00424D">'
+         '<u>Part 5 (Safe Comms)</u></link>'),
+        # Solidarity request template
+        (r"solidarity request template",
+         '<link dest="tmpl_P2_TEMPLATE_001" color="#00424D">'
+         '<u>solidarity request template</u></link>'),
+    ]
+    for pattern, repl in _LINK:
+        t = re.sub(pattern, repl, t, flags=re.IGNORECASE)
+    return t
+
+
 def render_db_ref(text, last_verified):
     lv_str = f"Last verified: {last_verified}" if last_verified else ""
     data = [[
@@ -564,7 +601,7 @@ def render_db_ref(text, last_verified):
                    color=C["blue"],bold=True)),
         Paragraph(lv_str, ps("_drv",size=7,leading=9,color=C["mid_grey"],align=TA_RIGHT)),
     ],[
-        Paragraph(text, S["dbref"]), "",
+        Paragraph(_linkify_refs(text), S["dbref"]), "",
     ]]
     t = Table(data, colWidths=[FRAME_W*0.65, FRAME_W*0.35])
     t.setStyle(TableStyle([
@@ -1437,6 +1474,9 @@ def render_block(item, mechs, story, warnings):
         story += render_checklist(text, part)
 
     elif btype == "TEMPLATE":
+        # Place a named anchor so other sections can link back to this template
+        tmpl_anchor = "tmpl_" + re.sub(r'[^a-zA-Z0-9]', '_', bid)
+        story.append(SectionAnchor(tmpl_anchor))
         story += render_template(text)
 
     elif btype == "CASE":
@@ -1463,7 +1503,8 @@ def render_block(item, mechs, story, warnings):
             for mid in mids:
                 story += render_mechanism_card(mechs.get(mid))
         else:
-            story.append(Paragraph(text, S["mechref"]))
+            # No database code — render as styled arrow line with Annex hyperlinks
+            story.append(Paragraph(_linkify_refs(text), S["mechref"]))
             story.append(Spacer(1,2*mm))
 
     else:
