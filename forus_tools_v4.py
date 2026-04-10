@@ -302,6 +302,13 @@ def draw_t2(c, data=None):
          'What kind of legal support do you need?')
     ty = H - 48*mm - 10*mm
 
+    # ── Compute box geometry first so yline_x can align with box 1 centre ──────
+    bw = (CW - 6*mm) / 3; bh = 65*mm
+    bxs = [M, M + bw + 3*mm, M + 2*(bw + 3*mm)]
+    # yline_x = centre of left outcome box; q2hw capped so diamond stays within margin
+    yline_x = bxs[0] + bw / 2                        # ≈ 47 mm
+    q2hw    = min(26*mm, yline_x - M - 2*mm)         # ≈ 25 mm — fits within left margin
+
     q1cx = CX - 15*mm; q1w = 78*mm; q1h = 13*mm
     sw = 85*mm; sh = 12*mm
     _rrb(c, CX-sw/2, ty-sh, sw, sh, 5*mm, TEAL, ['You need legal support'], fs=9.5)
@@ -310,7 +317,7 @@ def draw_t2(c, data=None):
     q1y = ty - sh - 13*mm - q1h
     _rrb(c, q1cx-q1w/2, q1y, q1w, q1h, 2*mm, DKGREY, ['Immediate threat or legal deadline?'], fs=8.5)
 
-    yline_x = q1cx - q1w/2 - 12*mm
+    # YES: short horizontal run from Q1 left edge → yline_x, then down to Q2 diamond
     c.setStrokeColor(PINK); c.setLineWidth(1.2)
     c.line(q1cx-q1w/2, q1y+q1h/2, yline_x, q1y+q1h/2)
     _lbl(c, q1cx-q1w/2-2*mm, q1y+q1h/2+2*mm, 'YES', col=PINK, fs=7, align='r')
@@ -325,16 +332,15 @@ def draw_t2(c, data=None):
     _tb(c, d["T2_PROACTIVE_LEGAL_HEALTH"], pro_x+3*mm, pro_y+pro_h-14*mm,
         pro_w-6*mm, 'Helvetica', 7.8, col=WHITE, ld=10.5)
 
-    q2y = q1y - 2*mm; q2cy = q2y - 16*mm; q2hw = 48*mm; q2hh = 13*mm
+    q2hh = 13*mm
+    q2y = q1y - 2*mm; q2cy = q2y - 16*mm
     _av(c, yline_x, q1y+q1h/2, q2cy+q2hh, col=PINK)
     _dmnd(c, yline_x, q2cy, q2hw, q2hh, fc=PINK)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 7.5)
     c.drawCentredString(yline_x, q2cy+1.5*mm, 'What kind of threat?')
 
-    bw = (CW - 6*mm) / 3; bh = 65*mm
     branch_y = q2cy - q2hh - 12*mm
-    box_top   = branch_y - 6*mm
-    bxs = [M, M+bw+3*mm, M+2*(bw+3*mm)]
+    box_top  = branch_y - 6*mm
     c.setStrokeColor(PINK); c.setLineWidth(1)
     c.line(bxs[0]+bw/2, branch_y, bxs[2]+bw/2, branch_y)
     c.line(yline_x, q2cy-q2hh, yline_x, branch_y)

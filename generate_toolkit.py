@@ -1073,48 +1073,53 @@ def ensure_tools_sheet(wb):
 
 # ── PDF merging (tool pages appended after main toolkit) ─────────────────────
 
-def _build_tool_bufs(tools_selection):
-    """Build BytesIO buffers for selected tool/appendix pages.
+# Which part each tool belongs to — tool pages are inserted after that part's last page
+_TOOL_PART = {
+    "T1": 1,   # Compliance Self-Check    → Part 1  (B1 Crisis Scenarios)
+    "A1": 2,   # Platform Role Clarifier  → Part 2  (B2 Solidarity)
+    "T2": 3,   # Legal Decision Tree      → Part 3  (B3 Legal Support)
+    "A3": 4,   # Emergency Funding Nav.   → Part 4  (B4 Emergency Funding)
+    "T3": 5,   # Go public / stay quiet   → Part 5  (B5 Safe Comms)
+    "T4": 5,   # Do-No-Harm Checklist     → Part 5  (B5 Safe Comms)
+    "A2": 6,   # Diversification Gate     → Part 6  (B6 Diversification)
+}
 
-    Args:
-        tools_selection: dict like {"T1": True, "T2": False, "A1": True, ...}
-    Returns:
-        List of BytesIO buffers (may be empty).
-    """
-    if not tools_selection:
-        return []
 
-    selected_t = [k for k in ["T1", "T2", "T3", "T4"] if tools_selection.get(k)]
-    selected_a = [k for k in ["A1", "A2", "A3"] if tools_selection.get(k)]
-    if not selected_t and not selected_a:
-        return []
-
-    # Load text data from TOOLS sheet
-    tools_data = load_tools_data()
-
+def _build_tool_buf_for_ids(ids, tools_data):
+    """Return a BytesIO with pages for the given tool/appendix IDs, in canonical order."""
+    t_ids = [t for t in ["T1", "T2", "T3", "T4"] if t in ids]
+    a_ids = [t for t in ["A1", "A2", "A3"]         if t in ids]
     bufs = []
-    if selected_t:
+    if t_ids:
         try:
             from forus_tools_v4 import build_tools_pdf
-            buf = build_tools_pdf(selected_t, data=tools_data)
-            if buf: bufs.append(buf)
+            b = build_tools_pdf(t_ids, data=tools_data)
+            if b: bufs.append(b)
         except Exception as e:
-            print(f"  ⚠ Could not build tool pages: {e}")
-    if selected_a:
+            print(f"  ⚠ Could not build tool pages {t_ids}: {e}")
+    if a_ids:
         try:
             from forus_appendix_tools import build_appendix_pdf
-            buf = build_appendix_pdf(selected_a, data=tools_data)
-            if buf: bufs.append(buf)
+            b = build_appendix_pdf(a_ids, data=tools_data)
+            if b: bufs.append(b)
         except Exception as e:
-            print(f"  ⚠ Could not build appendix pages: {e}")
+            print(f"  ⚠ Could not build appendix pages {a_ids}: {e}")
     return bufs
 
 
-def _merge_pdfs(main_path, tool_bufs, out_path):
-    """Append pages from tool_bufs (list of BytesIO) to main_path → out_path.
-    Falls back to just renaming main_path→out_path if pypdf is unavailable.
+def _merge_tools_inline(main_path, tools_selection, page_map, out_path):
+    """Insert tool pages inline — each tool appears right after its section's last page.
+
+    page_map: {page_number (1-indexed): (part_int, section_str)}  from pass-1 build.
+    If pypdf is unavailable the main PDF is simply renamed/copied to out_path.
     """
-    if not tool_bufs:
+    if not tools_selection:
+        if main_path != out_path:
+            import shutil; shutil.move(main_path, out_path)
+        return
+
+    selected = [tid for tid in _TOOL_PART if tools_selection.get(tid)]
+    if not selected:
         if main_path != out_path:
             import shutil; shutil.move(main_path, out_path)
         return
@@ -1130,20 +1135,60 @@ def _merge_pdfs(main_path, tool_bufs, out_path):
                 import shutil; shutil.move(main_path, out_path)
             return
 
+    # Reverse page_map → part → last page number
+    part_last_page = {}
+    for pgnum, (part, _) in page_map.items():
+        part_last_page[part] = max(part_last_page.get(part, 0), pgnum)
+
+    # Group selected tools by part, preserving canonical draw order within each part
+    tools_data = load_tools_data()
+    part_tool_ids = {}
+    for tid in selected:
+        p = _TOOL_PART[tid]
+        part_tool_ids.setdefault(p, []).append(tid)
+
+    # Pre-build one BytesIO per part group
+    part_bufs = {}
+    for p, ids in part_tool_ids.items():
+        raw_bufs = _build_tool_buf_for_ids(ids, tools_data)
+        if raw_bufs:
+            # Combine multiple source buffers into one merged buf for this part
+            w = PdfWriter()
+            for rb in raw_bufs:
+                rb.seek(0)
+                for pg in PdfReader(rb).pages:
+                    w.add_page(pg)
+            combined = io.BytesIO()
+            w.write(combined)
+            combined.seek(0)
+            part_bufs[p] = combined
+
+    if not part_bufs:
+        if main_path != out_path:
+            import shutil; shutil.move(main_path, out_path)
+        return
+
+    # Walk through main PDF; after each page check if tool pages should follow
     writer = PdfWriter()
     with open(main_path, "rb") as f:
-        for page in PdfReader(f).pages:
+        reader = PdfReader(f)
+        for i, page in enumerate(reader.pages):
+            pg_num = i + 1  # 1-indexed
             writer.add_page(page)
-    for buf in tool_bufs:
-        buf.seek(0)
-        for page in PdfReader(buf).pages:
-            writer.add_page(page)
+            # Insert tool pages for any part whose last page is this page
+            # Sort by part to keep tools in section order
+            for part in sorted(part_bufs.keys()):
+                if part_last_page.get(part, 0) == pg_num:
+                    buf = part_bufs[part]
+                    buf.seek(0)
+                    for tpg in PdfReader(buf).pages:
+                        writer.add_page(tpg)
+
     with open(out_path, "wb") as f:
         writer.write(f)
     if main_path != out_path:
         try: os.remove(main_path)
         except OSError: pass
-
 
 # ── Cover & ToC ───────────────────────────────────────────────────────────────
 
@@ -1917,9 +1962,8 @@ def build_pdf(access_level):
     doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
 
-    # ── Append tool pages ────────────────────────────────────────────────────
-    tool_bufs = _build_tool_bufs(full_req.get("tools", {}))
-    _merge_pdfs(main_tmp, tool_bufs, out)
+    # ── Insert tool pages inline after their section's last page ────────────
+    _merge_tools_inline(main_tmp, full_req.get("tools", {}), page_map, out)
 
     size_kb = os.path.getsize(out) // 1024
     print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out}")
@@ -2160,9 +2204,8 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None):
     doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
 
-    # ── Append tool pages ────────────────────────────────────────────────────
-    tool_bufs = _build_tool_bufs(req.get("tools", {}))
-    _merge_pdfs(main_tmp, tool_bufs, out_path)
+    # ── Insert tool pages inline after their section's last page ────────────
+    _merge_tools_inline(main_tmp, req.get("tools", {}), page_map, out_path)
 
     if os.path.exists(out_path):
         size_kb = os.path.getsize(out_path) // 1024
