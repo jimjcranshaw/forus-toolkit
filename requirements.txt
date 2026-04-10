@@ -6,3 +6,4 @@ requests>=2.31.0
 google-auth>=2.20.0
 google-auth-httplib2>=0.2.0
 google-api-python-client>=2.90.0
+pypdf>=4.0.0

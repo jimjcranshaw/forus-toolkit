@@ -316,7 +316,7 @@ with st.sidebar:
     page = st.radio(
         "Navigation",
         ["📊 Dashboard", "🔍 Check Mechanisms", "📋 Review Queue",
-         "✅ Apply Approved", "📄 Generate PDF"],
+         "✅ Apply Approved", "📄 Generate PDF", "🔧 Manage Tools"],
         label_visibility="collapsed",
     )
 
@@ -855,6 +855,17 @@ elif page == "📄 Generate PDF":
             ("Pacific",                   "pacific"),
             ("Global",                    "global"),
         ]
+        _TOOL_LABELS = [
+            ("T1", "Tool 1 — Compliance Self-Check (B1)"),
+            ("T2", "Tool 2 — Legal Support Decision Tree (B3)"),
+            ("T3", "Tool 3 — Go public or stay quiet? (B5)"),
+            ("T4", "Tool 4 — Do-No-Harm Checklist (B5)"),
+        ]
+        _APPENDIX_TOOL_LABELS = [
+            ("A1", "Appendix A1 — Platform Role Clarifier (B2)"),
+            ("A2", "Appendix A2 — Diversification Readiness Gate (B6)"),
+            ("A3", "Appendix A3 — Emergency Funding Navigator (B4)"),
+        ]
 
         with st.form("custom_pdf_form"):
             c1, c2 = st.columns(2)
@@ -891,6 +902,19 @@ elif page == "📄 Generate PDF":
                         disabled=all_regions,
                     )
 
+            st.markdown("**Tools** *(single-page visual tools appended after main content)*")
+            tcols = st.columns(2)
+            sel_tools = {}
+            for i, (tid, tlabel) in enumerate(_TOOL_LABELS):
+                with tcols[i % 2]:
+                    sel_tools[tid] = st.checkbox(tlabel, value=True, key=f"tool_{tid}")
+
+            st.markdown("**Appendix Tools**")
+            atcols = st.columns(3)
+            for i, (tid, tlabel) in enumerate(_APPENDIX_TOOL_LABELS):
+                with atcols[i]:
+                    sel_tools[tid] = st.checkbox(tlabel, value=True, key=f"tool_{tid}")
+
             submitted = st.form_submit_button("📄 Build custom PDF", type="primary")
 
         if submitted:
@@ -909,6 +933,7 @@ elif page == "📄 Generate PDF":
                     "parts":   sel_parts,
                     "regions": effective_regions,
                     "annexes": sel_annexes,
+                    "tools":   sel_tools,
                 }
                 access_level = 1 if cust_access == "Public" else 2
                 v = gt.VERSION
@@ -946,3 +971,126 @@ elif page == "📄 Generate PDF":
                         )
                     else:
                         st.error("PDF generation failed. Check that at least one section is selected.")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PAGE: Manage Tools
+# ═══════════════════════════════════════════════════════════════════════════════
+elif page == "🔧 Manage Tools":
+    st.title("Manage Tools")
+    st.markdown(
+        "View and edit the text content for the seven visual tools (T1–T4, A1–A3). "
+        "Content is loaded from the **TOOLS** sheet of your spreadsheet. "
+        "Changes saved here will appear in the next PDF you generate."
+    )
+    require_spreadsheet()
+
+    sys.path.insert(0, str(Path(__file__).parent))
+    try:
+        import generate_toolkit as gt
+    except ImportError as e:
+        st.error(f"Could not import generate_toolkit: {e}")
+        st.stop()
+
+    gt.SPREADSHEET = sp()
+
+    # Ensure TOOLS sheet exists
+    wb = _load_wb(data_only=False)
+    if "TOOLS" not in wb.sheetnames:
+        st.info("TOOLS sheet not found. Creating it with default content…")
+        try:
+            gt.ensure_tools_sheet(wb)
+            wb.save(sp())
+            st.success("✓ TOOLS sheet created with default content.")
+            wb = _load_wb(data_only=False)
+        except Exception as e:
+            st.error(f"Could not create TOOLS sheet: {e}")
+            st.stop()
+
+    # Load tools data into a DataFrame
+    ws_t = wb["TOOLS"]
+    t_hdrs = [c.value for c in ws_t[2]]
+    try:
+        ki = t_hdrs.index("field_key")
+        ti = t_hdrs.index("tool_id")
+        ni = t_hdrs.index("tool_name")
+        li = t_hdrs.index("field_label")
+        vi = t_hdrs.index("content_text")
+        fi = t_hdrs.index("change_flag")
+    except ValueError as e:
+        st.error(f"TOOLS sheet is missing expected columns: {e}")
+        st.stop()
+
+    tools_rows = []
+    tools_row_idx = []
+    for r_idx, row in enumerate(ws_t.iter_rows(min_row=3, values_only=False), start=3):
+        fkey = row[ki].value
+        if not fkey: continue
+        tools_rows.append({
+            "tool_id":     str(row[ti].value or ""),
+            "tool_name":   str(row[ni].value or ""),
+            "field_key":   str(fkey),
+            "field_label": str(row[li].value or ""),
+            "content_text": str(row[vi].value or ""),
+            "change_flag": str(row[fi].value or "OK"),
+        })
+        tools_row_idx.append(r_idx)
+
+    if not tools_rows:
+        st.warning("No rows found in TOOLS sheet.")
+        st.stop()
+
+    # Filter controls
+    tool_ids = sorted(set(r["tool_id"] for r in tools_rows))
+    sel_tool = st.selectbox("Filter by tool", ["All"] + tool_ids)
+    show_flagged = st.checkbox("Show only flagged entries (VERIFY / UPDATED)", value=False)
+
+    filtered = [r for r in tools_rows
+                if (sel_tool == "All" or r["tool_id"] == sel_tool)
+                and (not show_flagged or r["change_flag"] in ("VERIFY", "UPDATED"))]
+
+    st.markdown(f"**{len(filtered)} field(s)** shown")
+    st.markdown("")
+
+    save_needed = False
+
+    for row_data, r_idx in [(r, tools_row_idx[tools_rows.index(r)]) for r in filtered]:
+        flag = row_data["change_flag"]
+        flag_colour = {"VERIFY": "🟡", "UPDATED": "🟢", "OK": "⚪"}.get(flag, "⚪")
+        with st.expander(
+            f"{flag_colour} **{row_data['tool_id']}** · {row_data['field_label']}",
+            expanded=(flag in ("VERIFY", "UPDATED")),
+        ):
+            new_text = st.text_area(
+                "Content",
+                value=row_data["content_text"],
+                height=100,
+                key=f"tools_text_{r_idx}",
+            )
+            col_f1, col_f2 = st.columns([2, 1])
+            with col_f1:
+                new_flag = st.selectbox(
+                    "Status",
+                    ["OK", "VERIFY", "UPDATED"],
+                    index=["OK", "VERIFY", "UPDATED"].index(flag) if flag in ["OK","VERIFY","UPDATED"] else 0,
+                    key=f"tools_flag_{r_idx}",
+                )
+            with col_f2:
+                if st.button("💾 Save this field", key=f"tools_save_{r_idx}"):
+                    ws_t.cell(r_idx, vi+1).value  = new_text
+                    ws_t.cell(r_idx, fi+1).value  = new_flag
+                    ws_t.cell(r_idx, t_hdrs.index("last_updated")+1).value = str(datetime.date.today())
+                    wb.save(sp())
+                    st.success(f"✓ Saved {row_data['field_key']}")
+                    save_needed = True
+                    st.rerun()
+
+    st.markdown("---")
+    st.markdown(
+        "**How to use the AI auto-update agent with tools:**\n\n"
+        "1. Set any field's status to **VERIFY** if you think the content may be out of date.\n"
+        "2. The Check Mechanisms agent reviews MECHANISMS entries automatically.\n"
+        "   For tool text, flag fields manually and edit them directly here, "
+        "   or ask the AI agent in a conversation to review specific fields.\n"
+        "3. After editing, use **Save to Google Drive** in the sidebar to persist changes."
+    )

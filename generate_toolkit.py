@@ -5,7 +5,7 @@ Run: python generate_toolkit.py
 Produces: Forus_Toolkit_v{VERSION}_Public.pdf and Forus_Toolkit_v{VERSION}_Network.pdf
 """
 
-import openpyxl, os, sys, re, datetime
+import openpyxl, os, sys, re, datetime, io
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
@@ -971,6 +971,180 @@ def load_data(access_level):
     rows.sort(key=sort_key)
     return rows, mechs
 
+
+# ── Tools data (TOOLS sheet) ──────────────────────────────────────────────────
+
+def load_tools_data():
+    """Load all TOOLS sheet entries into a flat dict {field_key: content_text}.
+    Returns an empty dict if the sheet does not exist yet.
+    """
+    try:
+        wb = openpyxl.load_workbook(SPREADSHEET, data_only=True)
+    except Exception:
+        return {}
+    if "TOOLS" not in wb.sheetnames:
+        return {}
+    ws = wb["TOOLS"]
+    hdrs = [c.value for c in ws[2]]
+    try:
+        ki = hdrs.index("field_key")
+        vi = hdrs.index("content_text")
+    except ValueError:
+        return {}
+    data = {}
+    for row in ws.iter_rows(min_row=3, values_only=True):
+        if not row[ki]: continue
+        data[str(row[ki]).strip()] = str(row[vi] or "").strip() if row[vi] is not None else ""
+    return data
+
+
+def ensure_tools_sheet(wb):
+    """Add a TOOLS sheet to the workbook with all default content if it doesn't exist.
+    No-ops if the sheet already exists. Returns the worksheet."""
+    from forus_tools_v4 import T1_DEFAULTS, T2_DEFAULTS, T3_DEFAULTS, T4_DEFAULTS, TOOL_LABELS
+    from forus_appendix_tools import A1_DEFAULTS, A2_DEFAULTS, A3_DEFAULTS, APPENDIX_LABELS
+
+    if "TOOLS" in wb.sheetnames:
+        return wb["TOOLS"]
+
+    ws = wb.create_sheet("TOOLS")
+    # Header rows
+    ws.cell(1, 1, "FORUS TOOLKIT — TOOLS CONTENT")
+    ws.cell(2, 1, "tool_id");    ws.cell(2, 2, "tool_name")
+    ws.cell(2, 3, "field_key");  ws.cell(2, 4, "field_label")
+    ws.cell(2, 5, "content_text"); ws.cell(2, 6, "word_limit")
+    ws.cell(2, 7, "notes"); ws.cell(2, 8, "last_updated")
+    ws.cell(2, 9, "change_flag")
+
+    # Word limits per field type (rough guide)
+    _WL = {
+        "WHY_THIS_MATTERS": 50, "HOW_TO_USE": 40, "IF_YOU_FIND_GAPS": 40,
+        "IF_ANY_NO": 40, "BUYING_TIME": 30, "PROACTIVE_LEGAL_HEALTH": 50,
+        "CHECKLIST": 20, "SCORE": 20, "OUTCOME": 40, "BOX_BODY": 55,
+        "TIER_DESC": 50, "TIER_IND": 20, "GATE_ITEM": 20,
+        "POINT_DESC": 25, "NOTE": 40, "SUB": 20, "STAY_QUIET": 35,
+        "PAUSE": 35, "GO_PUBLIC": 35, "USE_INSTRUCTION": 30,
+        "ITEM": 25, "ITEM_NOTE": 25,
+    }
+
+    def _wl(key):
+        for k, v in _WL.items():
+            if k in key.upper(): return v
+        return 30
+
+    today = datetime.date.today().isoformat()
+    tool_groups = [
+        ("T1", TOOL_LABELS["T1"], T1_DEFAULTS),
+        ("T2", TOOL_LABELS["T2"], T2_DEFAULTS),
+        ("T3", TOOL_LABELS["T3"], T3_DEFAULTS),
+        ("T4", TOOL_LABELS["T4"], T4_DEFAULTS),
+        ("A1", APPENDIX_LABELS["A1"], A1_DEFAULTS),
+        ("A2", APPENDIX_LABELS["A2"], A2_DEFAULTS),
+        ("A3", APPENDIX_LABELS["A3"], A3_DEFAULTS),
+    ]
+    r = 3
+    for tid, tname, defaults in tool_groups:
+        for fkey, fval in defaults.items():
+            ws.cell(r, 1, tid); ws.cell(r, 2, tname)
+            ws.cell(r, 3, fkey)
+            # Make a readable label from the key
+            label = fkey.replace(f"{tid}_", "").replace("_", " ").title()
+            ws.cell(r, 4, label)
+            ws.cell(r, 5, fval)
+            ws.cell(r, 6, _wl(fkey))
+            ws.cell(r, 7, "AI-updatable field — keep concise, check context carefully")
+            ws.cell(r, 8, today)
+            ws.cell(r, 9, "OK")
+            r += 1
+
+    # Column widths
+    ws.column_dimensions["A"].width = 8
+    ws.column_dimensions["B"].width = 40
+    ws.column_dimensions["C"].width = 35
+    ws.column_dimensions["D"].width = 30
+    ws.column_dimensions["E"].width = 80
+    ws.column_dimensions["F"].width = 10
+    ws.column_dimensions["G"].width = 45
+    ws.column_dimensions["H"].width = 14
+    ws.column_dimensions["I"].width = 14
+
+    return ws
+
+
+# ── PDF merging (tool pages appended after main toolkit) ─────────────────────
+
+def _build_tool_bufs(tools_selection):
+    """Build BytesIO buffers for selected tool/appendix pages.
+
+    Args:
+        tools_selection: dict like {"T1": True, "T2": False, "A1": True, ...}
+    Returns:
+        List of BytesIO buffers (may be empty).
+    """
+    if not tools_selection:
+        return []
+
+    selected_t = [k for k in ["T1", "T2", "T3", "T4"] if tools_selection.get(k)]
+    selected_a = [k for k in ["A1", "A2", "A3"] if tools_selection.get(k)]
+    if not selected_t and not selected_a:
+        return []
+
+    # Load text data from TOOLS sheet
+    tools_data = load_tools_data()
+
+    bufs = []
+    if selected_t:
+        try:
+            from forus_tools_v4 import build_tools_pdf
+            buf = build_tools_pdf(selected_t, data=tools_data)
+            if buf: bufs.append(buf)
+        except Exception as e:
+            print(f"  ⚠ Could not build tool pages: {e}")
+    if selected_a:
+        try:
+            from forus_appendix_tools import build_appendix_pdf
+            buf = build_appendix_pdf(selected_a, data=tools_data)
+            if buf: bufs.append(buf)
+        except Exception as e:
+            print(f"  ⚠ Could not build appendix pages: {e}")
+    return bufs
+
+
+def _merge_pdfs(main_path, tool_bufs, out_path):
+    """Append pages from tool_bufs (list of BytesIO) to main_path → out_path.
+    Falls back to just renaming main_path→out_path if pypdf is unavailable.
+    """
+    if not tool_bufs:
+        if main_path != out_path:
+            import shutil; shutil.move(main_path, out_path)
+        return
+
+    try:
+        from pypdf import PdfWriter, PdfReader
+    except ImportError:
+        try:
+            from PyPDF2 import PdfWriter, PdfReader
+        except ImportError:
+            print("  ⚠ pypdf not installed — tool pages skipped. Add pypdf to requirements.txt")
+            if main_path != out_path:
+                import shutil; shutil.move(main_path, out_path)
+            return
+
+    writer = PdfWriter()
+    with open(main_path, "rb") as f:
+        for page in PdfReader(f).pages:
+            writer.add_page(page)
+    for buf in tool_bufs:
+        buf.seek(0)
+        for page in PdfReader(buf).pages:
+            writer.add_page(page)
+    with open(out_path, "wb") as f:
+        writer.write(f)
+    if main_path != out_path:
+        try: os.remove(main_path)
+        except OSError: pass
+
+
 # ── Cover & ToC ───────────────────────────────────────────────────────────────
 
 # Part intro lines shown in the ToC (one per part)
@@ -1361,6 +1535,10 @@ def update_spreadsheet(all_rows_by_id):
     from openpyxl.styles.differential import DifferentialStyle
 
     wb = openpyxl.load_workbook(SPREADSHEET)
+
+    # Ensure TOOLS sheet exists (creates it with defaults on first run)
+    ensure_tools_sheet(wb)
+
     ws = wb["CONTENT"]
 
     hdrs = [c.value for c in ws[2]]
@@ -1704,11 +1882,13 @@ def build_pdf(access_level):
 
     rows, mechs = load_data(access_level)
 
-    # Full-build req: all parts, all annexes, all regions included
+    # Full-build req: all parts, all annexes, all regions, all tools included
     full_req = {
         "parts":   {i: True for i in range(1, 8)},
         "annexes": {k: True for k in _ANNEX_CATEGORY},
         "regions": {k: True for k in _REGION_GEO_KEYWORDS},
+        "tools":   {"T1": True, "T2": True, "T3": True, "T4": True,
+                    "A1": True, "A2": True, "A3": True},
     }
 
     common_kw = dict(pagesize=A4, leftMargin=ML, rightMargin=MR,
@@ -1732,8 +1912,14 @@ def build_pdf(access_level):
 
     # ── Pass 2: build real PDF using page map (ToC gets real page numbers + links) ──
     story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=full_req)
-    doc2 = ToolkitDoc(out, access_level=access_level, page_map=page_map, **common_kw)
+    # Write to a temp path first so we can append tool pages
+    main_tmp = out.replace(".pdf", "_main.pdf")
+    doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
+
+    # ── Append tool pages ────────────────────────────────────────────────────
+    tool_bufs = _build_tool_bufs(full_req.get("tools", {}))
+    _merge_pdfs(main_tmp, tool_bufs, out)
 
     size_kb = os.path.getsize(out) // 1024
     print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out}")
@@ -1970,8 +2156,13 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None):
 
     # Pass 2
     story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req)
-    doc2 = ToolkitDoc(out_path, access_level=access_level, page_map=page_map, **common_kw)
+    main_tmp = out_path.replace(".pdf", "_main.pdf")
+    doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
+
+    # ── Append tool pages ────────────────────────────────────────────────────
+    tool_bufs = _build_tool_bufs(req.get("tools", {}))
+    _merge_pdfs(main_tmp, tool_bufs, out_path)
 
     if os.path.exists(out_path):
         size_kb = os.path.getsize(out_path) // 1024
