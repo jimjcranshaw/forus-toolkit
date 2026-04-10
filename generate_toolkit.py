@@ -18,7 +18,7 @@ from reportlab.platypus import (
 from reportlab.platypus.flowables import Flowable
 
 # ── Version — increment this each build ──────────────────────────────────────
-VERSION     = "1.8"
+VERSION     = "1.9"
 DATE_STAMP  = datetime.date.today().strftime("%Y-%m-%d")
 SPREADSHEET = "Forus_Toolkit_Content_DB.xlsx"
 OUT_PUBLIC  = f"/mnt/user-data/outputs/Forus_Toolkit_v{VERSION}_Public.pdf"
@@ -1330,6 +1330,71 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None):
 
     story.append(PageBreak())
 
+    # ── Acronyms / Abbreviations page ────────────────────────────────────────
+    story += render_acronyms_page()
+
+
+# ── Acronyms page ─────────────────────────────────────────────────────────────
+def render_acronyms_page():
+    """One-page glossary of abbreviations used in the toolkit."""
+    ACRONYMS = [
+        ("ANC Peru",  "Asociación Nacional de Centros de Investigación, Promoción Social y Desarrollo"),
+        ("BRT",       "Building Responses Together (CIVICUS partner network)"),
+        ("CIVICUS",   "World Alliance for Citizen Participation"),
+        ("CNONGD",    "Conseil National des ONG de Développement (DRC)"),
+        ("CONCORD",   "European NGO Confederation for Relief and Development"),
+        ("CSO",       "Civil Society Organisation"),
+        ("DDP",       "Democratic Dialogue Programme (European funding)"),
+        ("EU SEE",    "EU Civil Society Support Programme for South-East Europe"),
+        ("FALE",      "Facility Aiding Locally Led Engagement (PIANGO model)"),
+        ("FATF",      "Financial Action Task Force (global anti-money-laundering body)"),
+        ("FLD",       "Front Line Defenders"),
+        ("ICNL",      "International Center for Not-for-Profit Law"),
+        ("LAPAS",     "Latvijas Pilsoniskā alianse — Latvian Civic Alliance"),
+        ("MFF",       "EU Multi-Annual Financial Framework"),
+        ("NGO",       "Non-Governmental Organisation"),
+        ("NNNGO",     "Network of Networks for NGOs, Nigeria"),
+        ("ODA",       "Official Development Assistance"),
+        ("PDA",       "Pakistan Development Alliance"),
+        ("PIANGO",    "Pacific Islands Association of Non-Governmental Organisations"),
+        ("PILnet",    "Public Interest Law Network"),
+        ("SLAPP",     "Strategic Lawsuit Against Public Participation"),
+        ("UPR",       "Universal Periodic Review (UN Human Rights Council mechanism)"),
+        ("USAID",     "United States Agency for International Development"),
+    ]
+
+    story = []
+    story.append(Paragraph("ABBREVIATIONS &amp; ACRONYMS", ps(
+        "_acr_title", size=12, leading=16, color=C["dark_green"], bold=True)))
+    story.append(Spacer(1, 3*mm))
+    story.append(Paragraph(
+        "Abbreviations used throughout this toolkit are listed below.",
+        ps("_acr_intro", size=8.5, leading=12, color=C["grey"], italic=True)))
+    story.append(Spacer(1, 4*mm))
+
+    rows = []
+    for abbr, definition in ACRONYMS:
+        rows.append([
+            Paragraph(f"<b>{abbr}</b>",
+                      ps("_acr_a", size=8.5, leading=12, color=C["dark_green"])),
+            Paragraph(definition,
+                      ps("_acr_d", size=8.5, leading=12, color=C["grey"])),
+        ])
+
+    t = Table(rows, colWidths=[28*mm, FRAME_W - 28*mm])
+    t.setStyle(TableStyle([
+        ("VALIGN",       (0,0), (-1,-1), "TOP"),
+        ("LEFTPADDING",  (0,0), (-1,-1), 4),
+        ("RIGHTPADDING", (0,0), (-1,-1), 4),
+        ("TOPPADDING",   (0,0), (-1,-1), 3),
+        ("BOTTOMPADDING",(0,0), (-1,-1), 3),
+        ("LINEBELOW",    (0,0), (-1,-2), 0.25, C["light_grey"]),
+    ]))
+    story.append(t)
+    story.append(PageBreak())
+    return story
+
+
 # ── Main render ───────────────────────────────────────────────────────────────
 def render_block(item, mechs, story, warnings):
     btype    = str(item.get("block_type","")).strip()
@@ -1461,6 +1526,25 @@ def make_story(rows, mechs, access_level, page_map=None, req=None):
         section = str(item.get("section", ""))
         btype   = str(item.get("block_type", "")).strip()
         time_h  = str(item.get("time_horizon", "general") or "general")
+
+        # Section 7 (Update Guide) — network/public builds show only the
+        # FEEDBACK block (a simple "tell us what's out of date" prompt).
+        # Full maintenance checklists/tips are only for Secretariat internal use.
+        if part == 7 and btype not in ("FEEDBACK", "PEER-CONNECT", "PEER-CONNECTION"):
+            # Still render the section banner when section changes
+            if section != prev_section:
+                if prev_section is not None:
+                    story.append(Spacer(1, 8*mm))
+                for f in render_section_banner(section, part):
+                    story.append(f)
+                story.append(SectionAnchor(anchor_id(section)))
+                story.append(SetMeta(part, section))
+                prev_section = section
+                prev_time    = None
+                step_counters[section] = {}
+                current_phase = "responsive"
+                make_story._prev_display_h = None
+            continue   # skip everything except FEEDBACK in Part 7
 
         # New section → banner, anchor for ToC links, then SetMeta for chrome
         if section != prev_section:
