@@ -791,6 +791,7 @@ elif page == "📄 Generate PDF":
                 v = gt.VERSION
                 pub_path = os.path.join(tmp_dir, f"Forus_Toolkit_v{v}_Public.pdf")
                 net_path = os.path.join(tmp_dir, f"Forus_Toolkit_v{v}_Network.pdf")
+                gt.SPREADSHEET = sp()
                 gt.OUT_PUBLIC  = pub_path
                 gt.OUT_NETWORK = net_path
 
@@ -910,14 +911,6 @@ elif page == "📄 Generate PDF":
                 safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
                 fname = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}.pdf"
 
-                # ── DEBUG (remove after confirming annexes work) ─────────
-                with st.expander("🔍 DEBUG — click to expand", expanded=True):
-                    st.write("**Toolkit version:**", gt.VERSION)
-                    st.write("**SPREADSHEET path:**", sp())
-                    st.write("**req.annexes:**", req.get("annexes"))
-                    st.write("**req.regions:**", req.get("regions"))
-                    st.write("**req.parts:**", req.get("parts"))
-                # ─────────────────────────────────────────────────────────
 
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     out_path = os.path.join(tmp_dir, fname)

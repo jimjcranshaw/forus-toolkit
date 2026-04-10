@@ -1704,11 +1704,18 @@ def build_pdf(access_level):
 
     rows, mechs = load_data(access_level)
 
+    # Full-build req: all parts, all annexes, all regions included
+    full_req = {
+        "parts":   {i: True for i in range(1, 8)},
+        "annexes": {k: True for k in _ANNEX_CATEGORY},
+        "regions": {k: True for k in _REGION_GEO_KEYWORDS},
+    }
+
     common_kw = dict(pagesize=A4, leftMargin=ML, rightMargin=MR,
                      topMargin=MT, bottomMargin=MB)
 
     # ── Pass 1: layout to temp file, collect page→section map ────────────────
-    story1, warnings = make_story(rows, mechs, access_level, page_map=None)
+    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=full_req)
     tmp = out.replace(".pdf", "_pass1.pdf")
     doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
     doc1.build(story1)
@@ -1724,7 +1731,7 @@ def build_pdf(access_level):
         pass
 
     # ── Pass 2: build real PDF using page map (ToC gets real page numbers + links) ──
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=full_req)
     doc2 = ToolkitDoc(out, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
 
