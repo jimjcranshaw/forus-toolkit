@@ -266,7 +266,11 @@ def save_to_gdrive():
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             resumable=False,
         )
-        svc.files().update(fileId=file_id, media_body=media).execute()
+        svc.files().update(
+            fileId=file_id,
+            media_body=media,
+            supportsAllDrives=True,
+        ).execute()
         return True, "Saved to Google Drive."
     except Exception as e:
         return False, str(e)
