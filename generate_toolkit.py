@@ -2380,6 +2380,8 @@ _RESEARCH_PROMPTS = {
 
 "legal": """You are verifying a legal pro bono support entry in the Forus Resilience & Support Toolkit.
 
+The readers of this entry are national civil society platforms and coalitions (Forus network members) who need to quickly decide whether this mechanism is accessible and relevant to them. They do not need organisational background, history, network size statistics, or any detail that does not directly help them decide whether to apply and how to do so.
+
 Check specifically:
 - Is the organisation still operating and providing pro bono legal support to civil society?
 - Has the referral or intake process changed (e.g. new online form, different contact route)?
@@ -2390,13 +2392,17 @@ Check specifically:
 
 Typical sources: organisation's own website, annual reports, ICNL civic freedom resources, PILnet directory.
 
-IMPORTANT — proposed_value length rule: each proposed_value must be no longer than the current_value it replaces. Revise the existing text in place — correct or update the specific facts that have changed. Do not add new sentences, statistics, or background detail that was not already in the current value. If something is now outdated, replace it; do not append the new information alongside the old.
+IMPORTANT — proposed_value writing rules:
+1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place — update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
+2. Relevance: include only information a national platform needs to decide whether to apply and how. Omit organisational history, network size figures, internal statistics, and any background that does not affect access or eligibility.
 
 If the entry is fully accurate, return status NO_CHANGE.
 If you find changes, list each changed field with proposed new text and the source URL.
 If you cannot verify, return status UNABLE_TO_VERIFY with a note explaining what was searched.""",
 
 "emergency-funding": """You are verifying an emergency grant mechanism entry in the Forus Resilience & Support Toolkit.
+
+The readers of this entry are national civil society platforms and coalitions (Forus network members) who need to quickly decide whether this fund is open and relevant to them. They do not need fund history, donor relationships, total disbursement figures, or any detail that does not directly help them decide whether to apply and how.
 
 Check specifically:
 - Is the fund still accepting applications?
@@ -2409,13 +2415,17 @@ Check specifically:
 
 Typical sources: fund's own website, Fundsforngos.org, CIVICUS Monitor, civic space news sources.
 
-IMPORTANT — proposed_value length rule: each proposed_value must be no longer than the current_value it replaces. Revise the existing text in place — correct or update the specific facts that have changed. Do not add new sentences, statistics, or background detail that was not already in the current value. If something is now outdated, replace it; do not append the new information alongside the old.
+IMPORTANT — proposed_value writing rules:
+1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place — update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
+2. Relevance: include only information a national platform needs to decide whether to apply and how. Omit fund history, donor lists, total disbursement figures, and any background that does not affect access or eligibility.
 
 If the entry is fully accurate, return status NO_CHANGE.
 If you find changes, list each changed field with proposed new text and the source URL.
 If you cannot verify, return status UNABLE_TO_VERIFY with a note.""",
 
 "digital-security": """You are verifying a digital and physical security support entry in the Forus Resilience & Support Toolkit.
+
+The readers of this entry are national civil society platforms and coalitions (Forus network members) who need to quickly decide whether this support service is accessible and relevant to them. They do not need provider history, case statistics, or any detail that does not directly help them decide whether to reach out and how.
 
 Check specifically:
 - Is the helpline or service still operational?
@@ -2427,7 +2437,9 @@ Check specifically:
 
 Typical sources: provider's own website, Access Now reports, Digital Defenders Partnership, CiviCERT.
 
-IMPORTANT — proposed_value length rule: each proposed_value must be no longer than the current_value it replaces. Revise the existing text in place — correct or update the specific facts that have changed. Do not add new sentences, statistics, or background detail that was not already in the current value. If something is now outdated, replace it; do not append the new information alongside the old.
+IMPORTANT — proposed_value writing rules:
+1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place — update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
+2. Relevance: include only information a national platform needs to decide whether to reach out and how. Omit provider history, case volume statistics, and any background that does not affect access or eligibility.
 
 If the entry is fully accurate, return status NO_CHANGE.
 If you find changes, list each changed field with proposed new text and the source URL.
@@ -2492,7 +2504,9 @@ def call_ai_agent(mech_dict, api_key):
         f"Current entry data:\n{mech_context}\n\n"
         f"{prompt.strip()}\n\n"
         "Return ONLY a valid JSON object — no prose before or after it.\n"
-        "Reminder: every proposed_value must be the same length or shorter than the current_value it replaces. "
+        "Reminder: every proposed_value must be no longer than the current_value it replaces, and must contain "
+        "only information a national civil society platform needs to decide whether to apply and how. "
+        "Omit organisational history, statistics, and any background that does not affect access or eligibility. "
         "Update facts in place; do not expand or enrich the text.\n"
         "{\n"
         f"  \"mech_id\": \"{mech_id}\",\n"
