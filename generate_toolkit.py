@@ -349,12 +349,13 @@ def render_subsection_divider(text, part, time_horizon):
     ]))
     return [Spacer(1, 6*mm), t, Spacer(1, 4*mm)]
 
-def render_timeline_bar(active_horizon):
+def render_timeline_bar(active_horizon, _s=None):
     """Two-state bar: Preemptive Actions | Responsive Actions."""
+    if _s is None: _s = _PDF_STRINGS["EN"]
     is_preemptive = (active_horizon == "preemptive")
     states = [
-        ("preemptive", "🛡  PREEMPTIVE ACTIONS"),
-        ("responsive", "⚡  RESPONSIVE ACTIONS"),
+        ("preemptive", _s["preemptive"]),
+        ("responsive", _s["responsive"]),
     ]
     cells = []
     for key, label in states:
@@ -374,13 +375,14 @@ def render_timeline_bar(active_horizon):
     t.setStyle(TableStyle(cmds))
     return [t, Spacer(1,1.5*mm)]
 
-def render_step(text, number, part, truncated):
+def render_step(text, number, part, truncated, _s=None):
+    if _s is None: _s = _PDF_STRINGS["EN"]
     pc = PART_COLORS.get(part, C["dark_green"])
     suffix = ""  # [OVER LIMIT] is console-only; not shown in PDF
     # Number cell: stacked — big number on top, small "ACTION STEP" label below
     num_cell = Table([
         [Paragraph(str(number), S["stepnum"])],
-        [Paragraph("ACTION<br/>STEP", ps("_stype", size=5.5, leading=7,
+        [Paragraph(_s["action_step"], ps("_stype", size=5.5, leading=7,
                     color=C["white"], bold=True, align=TA_CENTER))],
     ], colWidths=[10*mm])
     num_cell.setStyle(TableStyle([
@@ -427,9 +429,10 @@ def render_callout(text, box_type, truncated):
     ]))
     return [t, Spacer(1, 2.5*mm)]
 
-def render_intro(text):
+def render_intro(text, _s=None):
+    if _s is None: _s = _PDF_STRINGS["EN"]
     label = Table(
-        [[Paragraph("CONTEXT", ps("_il", size=6.5, leading=9,
+        [[Paragraph(_s["context_lbl"], ps("_il", size=6.5, leading=9,
                                    color=C["mid_grey"], bold=True))]],
         colWidths=[FRAME_W])
     label.setStyle(TableStyle([
@@ -541,12 +544,13 @@ def render_template(text):
     ]))
     return [t, Spacer(1,2*mm)]
 
-def render_case(text):
+def render_case(text, _s=None):
     """Case study teaser — short text only. Full case study accessed via PEER-CONNECT block below."""
+    if _s is None: _s = _PDF_STRINGS["EN"]
     data = [
-        [Paragraph("📖  CASE STUDY", ps("_cl",size=7.5,leading=9,color=C["white"],bold=True))],
+        [Paragraph(_s["case_study_lbl"], ps("_cl",size=7.5,leading=9,color=C["white"],bold=True))],
         [Paragraph(text, S["case"])],
-        [Paragraph("Want to learn more or speak to the platform involved? See the peer connection link below.",
+        [Paragraph(_s["peer_connect_foot"],
                    ps("_cfoot", size=7.5, leading=10, color=C["mid_grey"], italic=True))],
     ]
     t = Table(data, colWidths=[FRAME_W])
@@ -1323,6 +1327,12 @@ _PDF_STRINGS = {
             7: "Keeping this toolkit accurate and up to date",
             8: "Regional and country-level resource directories — legal, funding &amp; digital support",
         },
+        "preemptive":       "🛡  PREEMPTIVE ACTIONS",
+        "responsive":       "⚡  RESPONSIVE ACTIONS",
+        "action_step":      "ACTION<br/>STEP",
+        "context_lbl":      "CONTEXT",
+        "case_study_lbl":   "📖  CASE STUDY",
+        "peer_connect_foot":"Want to learn more or speak to the platform involved? See the peer connection link below.",
     },
     "FR": {
         "section_names": {
@@ -1364,6 +1374,12 @@ _PDF_STRINGS = {
             7: "Maintenir cette boîte à outils précise et à jour",
             8: "Répertoires de ressources régionales et nationales — soutien juridique, financier et numérique",
         },
+        "preemptive":       "🛡  ACTIONS PRÉVENTIVES",
+        "responsive":       "⚡  ACTIONS RÉACTIVES",
+        "action_step":      "ÉTAPE<br/>D'ACTION",
+        "context_lbl":      "CONTEXTE",
+        "case_study_lbl":   "📖  ÉTUDE DE CAS",
+        "peer_connect_foot":"Pour en savoir plus ou contacter la plateforme concernée, consultez le lien ci-dessous.",
     },
     "ES": {
         "section_names": {
@@ -1405,6 +1421,12 @@ _PDF_STRINGS = {
             7: "Mantener esta caja de herramientas precisa y actualizada",
             8: "Directorios de recursos regionales y nacionales — apoyo jurídico, financiero y digital",
         },
+        "preemptive":       "🛡  ACCIONES PREVENTIVAS",
+        "responsive":       "⚡  ACCIONES REACTIVAS",
+        "action_step":      "PASO<br/>DE ACCIÓN",
+        "context_lbl":      "CONTEXTO",
+        "case_study_lbl":   "📖  ESTUDIO DE CASO",
+        "peer_connect_foot":"Para saber más o contactar con la plataforma, consulte el enlace a continuación.",
     },
 }
 
@@ -1604,7 +1626,8 @@ def render_acronyms_page(language="EN"):
 
 
 # ── Main render ───────────────────────────────────────────────────────────────
-def render_block(item, mechs, story, warnings):
+def render_block(item, mechs, story, warnings, _s=None):
+    if _s is None: _s = _PDF_STRINGS["EN"]
     btype    = str(item.get("block_type","")).strip()
     text_raw = str(item.get("content_text","") or "")
     part     = int(item.get("part",1) or 1)
@@ -1622,14 +1645,14 @@ def render_block(item, mechs, story, warnings):
         story += render_header(text)
 
     elif btype == "INTRO":
-        story += render_intro(text)
+        story += render_intro(text, _s=_s)
 
     elif btype == "STEP":
         if time_h in TIME_LABELS and not getattr(story[-1],"_timeline_drawn",False):
             # Only draw timeline bar at first step of each horizon group
-            tl = render_timeline_bar(time_h)
+            tl = render_timeline_bar(time_h, _s=_s)
             for f in tl: story.append(f)
-        story += render_step(text, "·", part, truncated)
+        story += render_step(text, "·", part, truncated, _s=_s)
 
     elif btype in ("TIP","WARNING"):
         story += render_callout(text, btype, truncated)
@@ -1651,7 +1674,7 @@ def render_block(item, mechs, story, warnings):
         story += render_template(text)
 
     elif btype == "CASE":
-        story += render_case(text)
+        story += render_case(text, _s=_s)
 
     elif btype in ("PEER-CONNECTION", "PEER-CONNECT"):
         story += render_peer_connect(text_raw.strip(), ref=bid)
@@ -1705,6 +1728,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
          from ANNEXES data after all CONTENT rows."""
     story    = []
     warnings = []
+    _s = _PDF_STRINGS.get(language.upper() if language else "EN", _PDF_STRINGS["EN"])
 
     # Collect ordered unique (part, section) pairs for the ToC,
     # including any selected annex sections.
@@ -1792,14 +1816,14 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
                 display_h = current_phase
             if display_h != getattr(make_story, "_prev_display_h", None) or time_h != prev_time:
                 story.append(Spacer(1, 5*mm))
-                for f in render_timeline_bar(display_h): story.append(f)
+                for f in render_timeline_bar(display_h, _s=_s): story.append(f)
                 make_story._prev_display_h = display_h
                 prev_time = time_h
             text_raw = str(item.get("content_text", "") or "")
             text, truncated = trim(text_raw, get_limit(item))
             if truncated:
                 warnings.append(f"  ⚠ OVER LIMIT: {item.get('block_id')} [STEP, limit={get_limit(item)}]")
-            story += render_step(text, step_counters[section][key], part, truncated)
+            story += render_step(text, step_counters[section][key], part, truncated, _s=_s)
 
         elif btype == "SUBSECTION":
             text_raw = str(item.get("content_text", "") or "")
@@ -1830,7 +1854,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
             prev_time = None
 
         else:
-            render_block(item, mechs, story, warnings)
+            render_block(item, mechs, story, warnings, _s=_s)
             if btype not in ("DECISION-Q", "DECISION-A"):
                 prev_time = None
 
