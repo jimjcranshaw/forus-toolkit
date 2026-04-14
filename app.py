@@ -1541,15 +1541,20 @@ elif page == "give_feedback":
                 "description":  fb_desc.strip(),
                 "status":       "New",
             }
-            # 1. Save to spreadsheet (backup)
+            # 1. Save to spreadsheet (always — primary store when email not configured)
             _save_feedback_to_spreadsheet(data)
-            # 2. Email to Secretariat
-            ok, err_msg = _send_feedback_email(data)
-            if ok:
-                st.success(t("feedback_success"))
-            else:
-                # Email failed — but spreadsheet save was attempted; still show partial success
-                st.warning(t("feedback_send_error").format(err=err_msg))
+            # 2. Email to Secretariat (only if SMTP secrets are configured)
+            email_configured = bool(
+                st.secrets.get("FEEDBACK_EMAIL") and
+                st.secrets.get("SMTP_USER") and
+                st.secrets.get("SMTP_PASSWORD")
+            )
+            if email_configured:
+                ok, err_msg = _send_feedback_email(data)
+                if not ok:
+                    # Email failed but spreadsheet save succeeded — log quietly for admin
+                    st.session_state["action_log"].append(f"⚠ Email send failed: {err_msg}")
+            st.success(t("feedback_success"))
 
     if is_admin():
         tab_submit, tab_view = st.tabs([
