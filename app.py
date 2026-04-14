@@ -777,6 +777,11 @@ def _gdrive_service():
         return None
 
 
+def _is_valid_xlsx(data: bytes) -> bool:
+    """Check that bytes start with the PK zip magic header (xlsx = zip)."""
+    return len(data) > 4 and data[:2] == b"PK"
+
+
 def _load_from_gdrive():
     if st.session_state.get("sp_path"):
         return
@@ -788,7 +793,7 @@ def _load_from_gdrive():
     if svc:
         try:
             from googleapiclient.http import MediaIoBaseDownload
-            meta = svc.files().get(fileId=file_id, fields="mimeType").execute()
+            meta = svc.files().get(fileId=file_id, fields="mimeType,name").execute()
             mime = meta.get("mimeType", "")
             if mime == "application/vnd.google-apps.spreadsheet":
                 request = svc.files().export_media(
@@ -802,20 +807,33 @@ def _load_from_gdrive():
             done = False
             while not done:
                 _, done = dl.next_chunk()
-            data = buf.getvalue()
+            candidate = buf.getvalue()
+            if _is_valid_xlsx(candidate):
+                data = candidate
+            else:
+                st.warning(f"Service account download returned non-xlsx content ({len(candidate)} bytes). Trying fallback...")
         except Exception as sa_err:
-            st.warning(f"Service account access failed ({sa_err}). Trying link-share fallback...")
+            st.warning(f"Service account access failed: {sa_err}. Trying link-share fallback...")
     if data is None:
         try:
             url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
             r   = requests.get(url, timeout=30, allow_redirects=True)
-            if r.status_code == 200 and len(r.content) > 1000:
+            if r.status_code == 200 and _is_valid_xlsx(r.content):
                 data = r.content
             else:
+                st.warning(f"Public export returned {r.status_code} or non-xlsx ({len(r.content)} bytes). Trying direct download...")
                 url = f"https://drive.google.com/uc?export=download&id={file_id}"
                 r   = requests.get(url, timeout=30, allow_redirects=True)
                 r.raise_for_status()
-                data = r.content
+                if _is_valid_xlsx(r.content):
+                    data = r.content
+                else:
+                    st.error(
+                        f"Could not download a valid spreadsheet from Google Drive. "
+                        f"Make sure the file (ID: {file_id}) is shared with the service account "
+                        f"or set to 'Anyone with the link can view'."
+                    )
+                    return
         except Exception as pub_err:
             st.warning(f"Could not load spreadsheet from Google Drive: {pub_err}")
             return
