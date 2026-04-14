@@ -2736,7 +2736,10 @@ def check_mechanisms(api_key):
         cat     = mech_dict.get("category", "")
         print(f"  Checking {mech_id} ({name})…", end="", flush=True)
 
-        result  = call_ai_agent(mech_dict, api_key)
+        # Strip translated columns before sending to AI — it should only review EN fields
+        en_only_dict = {k: v for k, v in mech_dict.items()
+                        if not (k.endswith("_fr") or k.endswith("_es"))}
+        result  = call_ai_agent(en_only_dict, api_key)
         status  = result.get("status", "UNABLE_TO_VERIFY")
         conf    = result.get("confidence", "LOW")
         checked += 1
@@ -2747,7 +2750,10 @@ def check_mechanisms(api_key):
             _update_mech_verified(ws_m, row_idx, mcm, today, cat)
 
         elif status == "CHANGE_DETECTED":
-            changes = result.get("changes", [])
+            # Filter out any _fr / _es fields the AI may have proposed anyway
+            changes = [ch for ch in result.get("changes", [])
+                       if not (str(ch.get("field","")).endswith("_fr")
+                               or str(ch.get("field","")).endswith("_es"))]
             proposed += len(changes)
             print(f" ⚠  {len(changes)} change(s) detected  [{conf}]")
             for ch in changes:
