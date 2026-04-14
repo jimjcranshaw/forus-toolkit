@@ -119,24 +119,167 @@ T4_DEFAULTS = {
 }
 
 
+# ── Localised UI strings (structural labels, headings, button text) ───────────
+
+_UI = {
+    "EN": {
+        "tool_tag":        "TOOL {num}  ·  {sec}",
+        "toolkit_name":    "FORUS RESILIENCE TOOLKIT",
+        "footer_url":      "forus-international.org",
+        "why_matters":     "WHY THIS MATTERS",
+        "how_to_use_t1":   "HOW TO USE:  Tick each item your organisation can confirm today. Score one point per tick. Flag any gaps for immediate action.",
+        "scoring_guide":   "SCORING GUIDE",
+        "if_gaps":         "IF YOU FIND GAPS",
+        "legal_status":    "LEGAL STATUS",
+        "governance":      "GOVERNANCE",
+        "financial":       "FINANCIAL",
+        "digital_ops":     "DIGITAL & OPERATIONAL",
+        "dual_reg":        "DUAL REGISTRATION (WHERE RELEVANT)",
+        "t1_footer":       "Tool 1 of 4  ·  Complete annually — or whenever your legal environment changes significantly",
+        "need_legal":      "You need legal support",
+        "imm_threat":      "Immediate threat or legal deadline?",
+        "kind_threat":     "What kind of threat?",
+        "reg_attack":      "REGULATORY ATTACK",
+        "crim_det":        "CRIMINAL / DETENTION",
+        "strat_lit":       "STRATEGIC LITIGATION",
+        "comp_def":        "COMPLIANCE DEFENCE",
+        "crim_def":        "CRIMINAL DEFENCE",
+        "proactive_legal": "PROACTIVE LEGAL HEALTH",
+        "buying_time_lbl": "BUYING TIME when legal support is not immediately available",
+        "t2_footer":       "Tool 2 of 4  ·  See Part 3 mechanism directory for full eligibility details and contact information",
+        "going_public":    "You are considering going public",
+        "pub_domain":      "Is the threat already in the public domain?",
+        "silence_complic": "Would silence look like\ncomplicity or harm credibility?",
+        "visibility_prot": "Would visibility bring\nmeaningful pressure or protection?",
+        "endanger":        "Could speaking out directly endanger\nstaff, members, or partners?",
+        "yes":             "YES",
+        "no_lbl":          "NO",
+        "stay_quiet":      "STAY QUIET (FOR NOW)",
+        "pause":           "PAUSE —",
+        "safety_first":    "SAFETY FIRST",
+        "go_public":       "GO PUBLIC",
+        "t3_footer":       "Tool 3 of 4  ·  Revisit this tree if your context changes — situations evolve quickly",
+        "use_after_t3":    "USE AFTER TOOL 3 — IF YOU HAVE DECIDED TO GO PUBLIC",
+        "people_sources":  "PEOPLE & SOURCES",
+        "org_safety":      "ORGANISATIONAL SAFETY",
+        "partners_net":    "PARTNERS & NETWORK",
+        "timing_framing":  "TIMING & FRAMING",
+        "if_any_no":       "IF ANY ANSWER IS NO",
+        "t4_footer":       "Tool 4 of 4  ·  Keep a completed copy of this checklist on file alongside each statement published",
+    },
+    "FR": {
+        "tool_tag":        "OUTIL {num}  ·  {sec}",
+        "toolkit_name":    "BOITE A OUTILS RESILIENCE FORUS",
+        "footer_url":      "forus-international.org",
+        "why_matters":     "POURQUOI C'EST IMPORTANT",
+        "how_to_use_t1":   "MODE D'EMPLOI :  Cochez chaque element que votre organisation peut confirmer. Un point par coche. Signalez les lacunes pour action immediate.",
+        "scoring_guide":   "GUIDE DE NOTATION",
+        "if_gaps":         "SI DES LACUNES SONT IDENTIFIEES",
+        "legal_status":    "STATUT JURIDIQUE",
+        "governance":      "GOUVERNANCE",
+        "financial":       "FINANCES",
+        "digital_ops":     "NUMERIQUE & OPERATIONNEL",
+        "dual_reg":        "DOUBLE ENREGISTREMENT (LE CAS ECHEANT)",
+        "t1_footer":       "Outil 1 sur 4  ·  A completer annuellement ou lorsque votre environnement juridique evolue",
+        "need_legal":      "Vous avez besoin d'un soutien juridique",
+        "imm_threat":      "Menace immediate ou delai juridique ?",
+        "kind_threat":     "Quel type de menace ?",
+        "reg_attack":      "ATTAQUE REGLEMENTAIRE",
+        "crim_det":        "PENAL / DETENTION",
+        "strat_lit":       "CONTENTIEUX STRATEGIQUE",
+        "comp_def":        "DEFENSE DE CONFORMITE",
+        "crim_def":        "DEFENSE PENALE",
+        "proactive_legal": "SANTE JURIDIQUE PREVENTIVE",
+        "buying_time_lbl": "GAGNER DU TEMPS en attendant un soutien juridique",
+        "t2_footer":       "Outil 2 sur 4  ·  Voir le repertoire des mecanismes (Partie 3) pour les criteres d'eligibilite",
+        "going_public":    "Vous envisagez de rendre public",
+        "pub_domain":      "La menace est-elle deja dans le domaine public ?",
+        "silence_complic": "Le silence semblerait-il\nune complicite ou nuirait a la credibilite ?",
+        "visibility_prot": "La visibilite apporterait-elle\nune pression ou protection significative ?",
+        "endanger":        "Prendre la parole mettrait-il\nen danger le personnel ou membres ?",
+        "yes":             "OUI",
+        "no_lbl":          "NON",
+        "stay_quiet":      "RESTER SILENCIEUX (POUR L'INSTANT)",
+        "pause":           "PAUSE -",
+        "safety_first":    "LA SECURITE AVANT TOUT",
+        "go_public":       "RENDRE PUBLIC",
+        "t3_footer":       "Outil 3 sur 4  ·  Revenez a cet arbre si le contexte evolue",
+        "use_after_t3":    "A UTILISER APRES L'OUTIL 3 - SI VOUS AVEZ DECIDE DE RENDRE PUBLIC",
+        "people_sources":  "PERSONNES ET SOURCES",
+        "org_safety":      "SECURITE ORGANISATIONNELLE",
+        "partners_net":    "PARTENAIRES ET RESEAU",
+        "timing_framing":  "CALENDRIER ET CADRAGE",
+        "if_any_no":       "SI UNE REPONSE EST NON",
+        "t4_footer":       "Outil 4 sur 4  ·  Conservez une copie complete avec chaque declaration publiee",
+    },
+    "ES": {
+        "tool_tag":        "HERRAMIENTA {num}  ·  {sec}",
+        "toolkit_name":    "KIT DE HERRAMIENTAS FORUS",
+        "footer_url":      "forus-international.org",
+        "why_matters":     "POR QUE ES IMPORTANTE",
+        "how_to_use_t1":   "COMO USAR:  Marque cada elemento que su organizacion pueda confirmar hoy. Un punto por marca. Senale las brechas para accion inmediata.",
+        "scoring_guide":   "GUIA DE PUNTUACION",
+        "if_gaps":         "SI ENCUENTRA BRECHAS",
+        "legal_status":    "ESTADO JURIDICO",
+        "governance":      "GOBERNANZA",
+        "financial":       "FINANZAS",
+        "digital_ops":     "DIGITAL Y OPERACIONAL",
+        "dual_reg":        "DOBLE REGISTRO (CUANDO SEA PERTINENTE)",
+        "t1_footer":       "Herramienta 1 de 4  ·  Completar anualmente o cuando su entorno juridico cambie",
+        "need_legal":      "Necesita apoyo juridico",
+        "imm_threat":      "Amenaza inmediata o plazo juridico?",
+        "kind_threat":     "Que tipo de amenaza?",
+        "reg_attack":      "ATAQUE REGULATORIO",
+        "crim_det":        "PENAL / DETENCION",
+        "strat_lit":       "LITIGIO ESTRATEGICO",
+        "comp_def":        "DEFENSA DE CUMPLIMIENTO",
+        "crim_def":        "DEFENSA PENAL",
+        "proactive_legal": "SALUD JURIDICA PROACTIVA",
+        "buying_time_lbl": "GANAR TIEMPO cuando el apoyo juridico no esta disponible aun",
+        "t2_footer":       "Herramienta 2 de 4  ·  Ver directorio de mecanismos (Parte 3) para elegibilidad y contactos",
+        "going_public":    "Esta considerando hacerlo publico",
+        "pub_domain":      "La amenaza ya es de dominio publico?",
+        "silence_complic": "El silencio pareceria complicidad\no danaria la credibilidad?",
+        "visibility_prot": "La visibilidad aportaria\npresion o proteccion significativa?",
+        "endanger":        "Hablar publicamente pondria en peligro\nal personal, miembros o socios?",
+        "yes":             "SI",
+        "no_lbl":          "NO",
+        "stay_quiet":      "GUARDAR SILENCIO (POR AHORA)",
+        "pause":           "PAUSA -",
+        "safety_first":    "LA SEGURIDAD PRIMERO",
+        "go_public":       "HACER PUBLICO",
+        "t3_footer":       "Herramienta 3 de 4  ·  Revise este arbol si el contexto cambia",
+        "use_after_t3":    "USAR DESPUES DE LA HERRAMIENTA 3 - SI HA DECIDIDO HACER PUBLICO",
+        "people_sources":  "PERSONAS Y FUENTES",
+        "org_safety":      "SEGURIDAD ORGANIZACIONAL",
+        "partners_net":    "SOCIOS Y RED",
+        "timing_framing":  "MOMENTO Y ENFOQUE",
+        "if_any_no":       "SI ALGUNA RESPUESTA ES NO",
+        "t4_footer":       "Herramienta 4 de 4  ·  Archive una copia completa con cada declaracion publicada",
+    },
+}
+
+
 # ── Drawing utilities ─────────────────────────────────────────────────────────
 
-def _hdr(c, num, sec, title, sub=None):
+def _hdr(c, num, sec, title, sub=None, _u=None):
+    if _u is None: _u = _UI["EN"]
     bh = 48*mm; c.setFillColor(TEAL); c.rect(0, H-bh, W, bh, fill=1, stroke=0)
-    tag = f'TOOL {num}  ·  {sec}'
+    tag = _u["tool_tag"].format(num=num, sec=sec)
     tw = c.stringWidth(tag, 'Helvetica-Bold', 7) + 6*mm
     c.setFillColor(LBLUE); c.roundRect(M, H-11*mm, tw, 7*mm, 1*mm, fill=1, stroke=0)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 7); c.drawString(M+3*mm, H-7.5*mm, tag)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 21); c.drawString(M, H-27*mm, title)
     if sub: c.setFillColor(LBLUE); c.setFont('Helvetica', 9); c.drawString(M, H-35*mm, sub)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
-    c.drawRightString(W-M, H-7.5*mm, 'FORUS RESILIENCE TOOLKIT')
+    c.drawRightString(W-M, H-7.5*mm, _u["toolkit_name"])
 
 
-def _ftr(c, note):
+def _ftr(c, note, _u=None):
+    if _u is None: _u = _UI["EN"]
     c.setFillColor(TEAL); c.rect(0, 0, W, 9*mm, fill=1, stroke=0)
     c.setFillColor(WHITE); c.setFont('Helvetica', 7)
-    c.drawString(M, 3*mm, note); c.drawRightString(W-M, 3*mm, 'forus-international.org')
+    c.drawString(M, 3*mm, note); c.drawRightString(W-M, 3*mm, _u["footer_url"])
 
 
 def _dp(c, pts, fc=None, sc=None, lw=1):
@@ -207,21 +350,22 @@ def _dmnd(c, cx, cy, hw, hh, fc=TEAL):
 
 # ── Tool 1 ───────────────────────────────────────────────────────────────────
 
-def draw_t1(c, data=None):
+def draw_t1(c, data=None, language="EN"):
     d = dict(T1_DEFAULTS)
     if data: d.update(data)
+    _u = _UI.get(language.upper(), _UI["EN"])
 
     _hdr(c, '1 of 4', 'B1 · CRISIS SCENARIOS', 'Compliance Readiness Self-Check',
-         'Complete before a crisis — not during one')
+         'Complete before a crisis — not during one', _u=_u)
     ty = H - 48*mm - 6*mm
 
     ib_h = 22*mm
     c.setFillColor(OFFWHITE); c.roundRect(M, ty-ib_h, CW, ib_h, 2*mm, fill=1, stroke=0)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 8.5)
-    c.drawString(M+4*mm, ty-6*mm, 'WHY THIS MATTERS')
+    c.drawString(M+4*mm, ty-6*mm, _u["why_matters"])
     _tb(c, d["T1_WHY_THIS_MATTERS"], M+4*mm, ty-13*mm, CW-8*mm, 'Helvetica', 8, col=MIDGREY, ld=10.5)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 7.5)
-    c.drawString(M, ty-ib_h-5*mm, 'HOW TO USE:  Tick each item your organisation can confirm today. Score one point per tick. Flag any gaps for immediate action.')
+    c.drawString(M, ty-ib_h-5*mm, _u["how_to_use_t1"])
 
     cw = (CW - 6*mm) / 2; GAP = 7
 
@@ -240,25 +384,25 @@ def draw_t1(c, data=None):
         return y
 
     g1 = [
-        ('LEGAL STATUS', [
+        (_u["legal_status"], [
             d["T1_CHECKLIST_LEGAL_STATUS_1"], d["T1_CHECKLIST_LEGAL_STATUS_2"],
             d["T1_CHECKLIST_LEGAL_STATUS_3"], d["T1_CHECKLIST_LEGAL_STATUS_4"],
         ]),
-        ('GOVERNANCE', [
+        (_u["governance"], [
             d["T1_CHECKLIST_GOVERNANCE_1"], d["T1_CHECKLIST_GOVERNANCE_2"],
             d["T1_CHECKLIST_GOVERNANCE_3"],
         ]),
     ]
     g2 = [
-        ('FINANCIAL', [
+        (_u["financial"], [
             d["T1_CHECKLIST_FINANCIAL_1"], d["T1_CHECKLIST_FINANCIAL_2"],
             d["T1_CHECKLIST_FINANCIAL_3"],
         ]),
-        ('DIGITAL & OPERATIONAL', [
+        (_u["digital_ops"], [
             d["T1_CHECKLIST_DIGITAL_1"], d["T1_CHECKLIST_DIGITAL_2"],
             d["T1_CHECKLIST_DIGITAL_3"],
         ]),
-        ('DUAL REGISTRATION (WHERE RELEVANT)', [d["T1_CHECKLIST_DUAL_REG_1"]]),
+        (_u["dual_reg"], [d["T1_CHECKLIST_DUAL_REG_1"]]),
     ]
 
     cs = ty - ib_h - 10*mm
@@ -270,7 +414,7 @@ def draw_t1(c, data=None):
     sg_h = 22*mm; sg_y = content_bot - 8*mm - sg_h
     c.setFillColor(LTGREY); c.roundRect(M, sg_y, CW, sg_h, 2*mm, fill=1, stroke=0)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 7.5)
-    c.drawString(M+4*mm, sg_y+sg_h-5*mm, 'SCORING GUIDE')
+    c.drawString(M+4*mm, sg_y+sg_h-5*mm, _u["scoring_guide"])
 
     def _parse_score(raw):
         parts = raw.split('|', 1)
@@ -287,19 +431,20 @@ def draw_t1(c, data=None):
     ah2 = 22*mm; ay = sg_y - 6*mm - ah2
     c.setFillColor(PINK); c.roundRect(M, ay, CW, ah2, 2*mm, fill=1, stroke=0)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8.5)
-    c.drawString(M+4*mm, ay+16*mm, 'IF YOU FIND GAPS')
+    c.drawString(M+4*mm, ay+16*mm, _u["if_gaps"])
     _tb(c, d["T1_IF_YOU_FIND_GAPS"], M+4*mm, ay+10*mm, CW-8*mm, 'Helvetica', 8, col=WHITE, ld=10)
-    _ftr(c, 'Tool 1 of 4  ·  Complete annually — or whenever your legal environment changes significantly')
+    _ftr(c, _u["t1_footer"], _u=_u)
 
 
 # ── Tool 2 ───────────────────────────────────────────────────────────────────
 
-def draw_t2(c, data=None):
+def draw_t2(c, data=None, language="EN"):
     d = dict(T2_DEFAULTS)
     if data: d.update(data)
+    _u = _UI.get(language.upper(), _UI["EN"])
 
     _hdr(c, '2 of 4', 'B3 · LEGAL SUPPORT', 'Legal Support Decision Tree',
-         'What kind of legal support do you need?')
+         'What kind of legal support do you need?', _u=_u)
     ty = H - 48*mm - 10*mm
 
     # ── Compute box geometry first so yline_x can align with box 1 centre ──────
@@ -311,24 +456,24 @@ def draw_t2(c, data=None):
 
     q1cx = CX - 15*mm; q1w = 78*mm; q1h = 13*mm
     sw = 85*mm; sh = 12*mm
-    _rrb(c, CX-sw/2, ty-sh, sw, sh, 5*mm, TEAL, ['You need legal support'], fs=9.5)
+    _rrb(c, CX-sw/2, ty-sh, sw, sh, 5*mm, TEAL, [_u["need_legal"]], fs=9.5)
     _av(c, CX, ty-sh, ty-sh-13*mm)
 
     q1y = ty - sh - 13*mm - q1h
-    _rrb(c, q1cx-q1w/2, q1y, q1w, q1h, 2*mm, DKGREY, ['Immediate threat or legal deadline?'], fs=8.5)
+    _rrb(c, q1cx-q1w/2, q1y, q1w, q1h, 2*mm, DKGREY, [_u["imm_threat"]], fs=8.5)
 
     # YES: short horizontal run from Q1 left edge → yline_x, then down to Q2 diamond
     c.setStrokeColor(PINK); c.setLineWidth(1.2)
     c.line(q1cx-q1w/2, q1y+q1h/2, yline_x, q1y+q1h/2)
-    _lbl(c, q1cx-q1w/2-2*mm, q1y+q1h/2+2*mm, 'YES', col=PINK, fs=7, align='r')
+    _lbl(c, q1cx-q1w/2-2*mm, q1y+q1h/2+2*mm, _u["yes"], col=PINK, fs=7, align='r')
 
     pro_x = q1cx + q1w/2 + 8*mm; pro_w = W - M - pro_x; pro_h = 55*mm
     pro_y = q1y + q1h - pro_h
     _ah(c, q1cx+q1w/2, pro_x, q1y+q1h*0.6, col=MINT)
-    _lbl(c, q1cx+q1w/2+2*mm, q1y+q1h*0.6+2*mm, 'NO', col=MINT, fs=7)
+    _lbl(c, q1cx+q1w/2+2*mm, q1y+q1h*0.6+2*mm, _u["no_lbl"], col=MINT, fs=7)
     c.setFillColor(MINT); c.roundRect(pro_x, pro_y, pro_w, pro_h, 2*mm, fill=1, stroke=0)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8)
-    c.drawString(pro_x+3*mm, pro_y+pro_h-6*mm, 'PROACTIVE LEGAL HEALTH')
+    c.drawString(pro_x+3*mm, pro_y+pro_h-6*mm, _u["proactive_legal"])
     _tb(c, d["T2_PROACTIVE_LEGAL_HEALTH"], pro_x+3*mm, pro_y+pro_h-14*mm,
         pro_w-6*mm, 'Helvetica', 7.8, col=WHITE, ld=10.5)
 
@@ -337,7 +482,7 @@ def draw_t2(c, data=None):
     _av(c, yline_x, q1y+q1h/2, q2cy+q2hh, col=PINK)
     _dmnd(c, yline_x, q2cy, q2hw, q2hh, fc=PINK)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 7.5)
-    c.drawCentredString(yline_x, q2cy+1.5*mm, 'What kind of threat?')
+    c.drawCentredString(yline_x, q2cy+1.5*mm, _u["kind_threat"])
 
     branch_y = q2cy - q2hh - 12*mm
     box_top  = branch_y - 6*mm
@@ -346,9 +491,9 @@ def draw_t2(c, data=None):
     c.line(yline_x, q2cy-q2hh, yline_x, branch_y)
 
     boxes = [
-        (bxs[0], 'REGULATORY ATTACK',     TEAL, 'COMPLIANCE DEFENCE',  d["T2_BOX_REGULATORY_BODY"]),
-        (bxs[1], 'CRIMINAL / DETENTION',  PINK, 'CRIMINAL DEFENCE',    d["T2_BOX_CRIMINAL_BODY"]),
-        (bxs[2], 'STRATEGIC LITIGATION',  MINT, 'STRATEGIC LITIGATION', d["T2_BOX_LITIGATION_BODY"]),
+        (bxs[0], _u["reg_attack"], TEAL, _u["comp_def"], d["T2_BOX_REGULATORY_BODY"]),
+        (bxs[1], _u["crim_det"],   PINK, _u["crim_def"], d["T2_BOX_CRIMINAL_BODY"]),
+        (bxs[2], _u["strat_lit"],  MINT, _u["strat_lit"], d["T2_BOX_LITIGATION_BODY"]),
     ]
     for bxl, btitle, bcol, bhead, btext in boxes:
         bcx = bxl + bw/2
@@ -363,19 +508,20 @@ def draw_t2(c, data=None):
     outcome_bottom = box_top - bh; bth = 16*mm; by = outcome_bottom - 12*mm - bth
     c.setFillColor(OFFWHITE); c.roundRect(M, by, CW, bth, 2*mm, fill=1, stroke=0)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 8)
-    c.drawString(M+4*mm, by+10*mm, 'BUYING TIME when legal support is not immediately available')
+    c.drawString(M+4*mm, by+10*mm, _u["buying_time_lbl"])
     _tb(c, d["T2_BUYING_TIME"], M+4*mm, by+3.5*mm, CW-8*mm, 'Helvetica', 7.8, col=MIDGREY, ld=10)
-    _ftr(c, 'Tool 2 of 4  ·  See Part 3 mechanism directory for full eligibility details and contact information')
+    _ftr(c, _u["t2_footer"], _u=_u)
 
 
 # ── Tool 3 ───────────────────────────────────────────────────────────────────
 
-def draw_t3(c, data=None):
+def draw_t3(c, data=None, language="EN"):
     d = dict(T3_DEFAULTS)
     if data: d.update(data)
+    _u = _UI.get(language.upper(), _UI["EN"])
 
     _hdr(c, '3 of 4', 'B5 · SAFE ADVOCACY & COMMUNICATIONS', '"Go public, or stay quiet?"',
-         'Use this decision tree before making a public statement in a sensitive context')
+         'Use this decision tree before making a public statement in a sensitive context', _u=_u)
     ty = H - 48*mm - 8*mm
 
     NW = 90*mm; NH = 12*mm; BW = 62*mm; BH = 14*mm
@@ -388,24 +534,24 @@ def draw_t3(c, data=None):
     q4_top = sq_bot - 16*mm; q4_bot = q4_top - Q4H; q4_cy = q4_bot + Q4H/2
     out_top = q4_bot - 10*mm; out_bot = out_top - OH
 
-    _rrb(c, CX-NW/2, y0-NH, NW, NH, 5*mm, TEAL, ['You are considering going public'], fs=9)
+    _rrb(c, CX-NW/2, y0-NH, NW, NH, 5*mm, TEAL, [_u["going_public"]], fs=9)
     _av(c, CX, y0-NH, y1)
-    _rrb(c, CX-NW/2, y1-NH, NW, NH, 2*mm, DKGREY, ['Is the threat already in the public domain?'], fs=8.5)
+    _rrb(c, CX-NW/2, y1-NH, NW, NH, 2*mm, DKGREY, [_u["pub_domain"]], fs=8.5)
 
     c.setStrokeColor(LBLUE); c.setLineWidth(1.2)
     c.line(CX, y1-NH, CX, br); c.line(q3x, br, q2x, br)
     _av(c, q3x, br, y2t, col=LBLUE); _av(c, q2x, br, y2t, col=LBLUE)
-    _lbl(c, q3x, br+2*mm, 'NO', align='c'); _lbl(c, q2x, br+2*mm, 'YES', align='c')
+    _lbl(c, q3x, br+2*mm, _u["no_lbl"], align='c'); _lbl(c, q2x, br+2*mm, _u["yes"], align='c')
 
-    _rrb(c, q3x-BW/2, y2, BW, BH, 2*mm, DKGREY, ['Would silence look like', 'complicity or harm credibility?'], fs=7.5)
-    _rrb(c, q2x-BW/2, y2, BW, BH, 2*mm, DKGREY, ['Would visibility bring', 'meaningful pressure or protection?'], fs=7.5)
+    _rrb(c, q3x-BW/2, y2, BW, BH, 2*mm, DKGREY, _u["silence_complic"].split('\n'), fs=7.5)
+    _rrb(c, q2x-BW/2, y2, BW, BH, 2*mm, DKGREY, _u["visibility_prot"].split('\n'), fs=7.5)
 
     c.setStrokeColor(MINT); c.setLineWidth(1.2)
     c.line(q3x+BW/2, y2cy, CX, y2cy); c.line(q2x-BW/2, y2cy, CX, y2cy)
-    _lbl(c, CX, y2cy+3*mm, 'YES', col=MINT, align='c')
+    _lbl(c, CX, y2cy+3*mm, _u["yes"], col=MINT, align='c')
     _av(c, CX, y2cy, q4_top, col=MINT)
-    _av(c, q3x, y2, sq_top, col=PINK); _lbl(c, q3x-12*mm, y2-5*mm, 'NO', col=PINK)
-    _av(c, q2x, y2, sq_top, col=PINK); _lbl(c, q2x+2*mm, y2-5*mm, 'NO', col=PINK)
+    _av(c, q3x, y2, sq_top, col=PINK); _lbl(c, q3x-12*mm, y2-5*mm, _u["no_lbl"], col=PINK)
+    _av(c, q2x, y2, sq_top, col=PINK); _lbl(c, q2x+2*mm, y2-5*mm, _u["no_lbl"], col=PINK)
 
     for sqx, sqtxt in [
         (q3x-SQW/2, d["T3_STAY_QUIET_LEFT"]),
@@ -413,65 +559,65 @@ def draw_t3(c, data=None):
     ]:
         c.setFillColor(MINT); c.roundRect(sqx, sq_bot, SQW, SQH, 2*mm, fill=1, stroke=0)
         c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8.5)
-        c.drawCentredString(sqx+SQW/2, sq_bot+SQH-6*mm, 'STAY QUIET (FOR NOW)')
+        c.drawCentredString(sqx+SQW/2, sq_bot+SQH-6*mm, _u["stay_quiet"])
         _tb(c, sqtxt, sqx+3*mm, sq_bot+SQH-13*mm, SQW-6*mm, 'Helvetica', 7.5, col=WHITE, ld=9.5)
 
-    _rrb(c, CX-Q4W/2, q4_bot, Q4W, Q4H, 2*mm, DKGREY,
-         ['Could speaking out directly endanger', 'staff, members, or partners?'], fs=8)
+    _rrb(c, CX-Q4W/2, q4_bot, Q4W, Q4H, 2*mm, DKGREY, _u["endanger"].split('\n'), fs=8)
 
     _av(c, CX-Q4W/3, q4_bot, out_top, col=PINK)
-    _lbl(c, CX-Q4W/3-12*mm, q4_bot-5*mm, 'YES', col=PINK)
+    _lbl(c, CX-Q4W/3-12*mm, q4_bot-5*mm, _u["yes"], col=PINK)
     _av(c, CX+Q4W/3, q4_bot, out_top, col=TEAL)
-    _lbl(c, CX+Q4W/3+2*mm, q4_bot-5*mm, 'NO', col=TEAL)
+    _lbl(c, CX+Q4W/3+2*mm, q4_bot-5*mm, _u["no_lbl"], col=TEAL)
 
     px = M
     c.setFillColor(PINK); c.roundRect(px, out_bot, OW, OH, 2*mm, fill=1, stroke=0)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
-    c.drawCentredString(px+OW/2, out_bot+OH-6*mm, 'PAUSE —')
-    c.drawCentredString(px+OW/2, out_bot+OH-14*mm, 'SAFETY FIRST')
+    c.drawCentredString(px+OW/2, out_bot+OH-6*mm, _u["pause"])
+    c.drawCentredString(px+OW/2, out_bot+OH-14*mm, _u["safety_first"])
     _tb(c, d["T3_PAUSE_SAFETY_FIRST"], px+3*mm, out_bot+OH-21*mm, OW-6*mm, 'Helvetica', 7.5, col=WHITE, ld=9.5)
 
     gx = W - M - OW
     c.setFillColor(TEAL); c.roundRect(gx, out_bot, OW, OH, 2*mm, fill=1, stroke=0)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
-    c.drawCentredString(gx+OW/2, out_bot+OH-6*mm, 'GO PUBLIC')
+    c.drawCentredString(gx+OW/2, out_bot+OH-6*mm, _u["go_public"])
     _tb(c, d["T3_GO_PUBLIC"], gx+3*mm, out_bot+OH-14*mm, OW-6*mm, 'Helvetica', 7.5, col=WHITE, ld=9.5)
-    _ftr(c, 'Tool 3 of 4  ·  Revisit this tree if your context changes — situations evolve quickly')
+    _ftr(c, _u["t3_footer"], _u=_u)
 
 
 # ── Tool 4 ───────────────────────────────────────────────────────────────────
 
-def draw_t4(c, data=None):
+def draw_t4(c, data=None, language="EN"):
     d = dict(T4_DEFAULTS)
     if data: d.update(data)
+    _u = _UI.get(language.upper(), _UI["EN"])
 
     _hdr(c, '4 of 4', 'B5 · SAFE ADVOCACY & COMMUNICATIONS', 'Do-No-Harm Communications Checklist',
-         'Complete this before publishing any statement in a sensitive or hostile environment')
+         'Complete this before publishing any statement in a sensitive or hostile environment', _u=_u)
     ty = H - 48*mm - 6*mm
 
     ib_h = 18*mm
     c.setFillColor(OFFWHITE); c.roundRect(M, ty-ib_h, CW, ib_h, 2*mm, fill=1, stroke=0)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 8.5)
-    c.drawString(M+4*mm, ty-6*mm, 'USE AFTER TOOL 3 — IF YOU HAVE DECIDED TO GO PUBLIC')
+    c.drawString(M+4*mm, ty-6*mm, _u["use_after_t3"])
     c.setFillColor(MIDGREY); c.setFont('Helvetica', 8.5)
     c.drawString(M+4*mm, ty-13*mm, d["T4_USE_INSTRUCTION"])
 
     grps = [
-        ('PEOPLE & SOURCES', PINK, [
+        (_u["people_sources"], PINK, [
             (d["T4_PEOPLE_ITEM_1"], d["T4_PEOPLE_NOTE_1"]),
             (d["T4_PEOPLE_ITEM_2"], d["T4_PEOPLE_NOTE_2"]),
             (d["T4_PEOPLE_ITEM_3"], d["T4_PEOPLE_NOTE_3"]),
         ]),
-        ('ORGANISATIONAL SAFETY', TEAL, [
+        (_u["org_safety"], TEAL, [
             (d["T4_ORG_ITEM_1"], d["T4_ORG_NOTE_1"]),
             (d["T4_ORG_ITEM_2"], d["T4_ORG_NOTE_2"]),
             (d["T4_ORG_ITEM_3"], d["T4_ORG_NOTE_3"]),
         ]),
-        ('PARTNERS & NETWORK', LBLUE, [
+        (_u["partners_net"], LBLUE, [
             (d["T4_PARTNERS_ITEM_1"], d["T4_PARTNERS_NOTE_1"]),
             (d["T4_PARTNERS_ITEM_2"], ''),
         ]),
-        ('TIMING & FRAMING', MINT, [
+        (_u["timing_framing"], MINT, [
             (d["T4_TIMING_ITEM_1"], d["T4_TIMING_NOTE_1"]),
             (d["T4_TIMING_ITEM_2"], d["T4_TIMING_NOTE_2"]),
             (d["T4_TIMING_ITEM_3"], d["T4_TIMING_NOTE_3"]),
@@ -505,9 +651,9 @@ def draw_t4(c, data=None):
     ah3 = 22*mm; ay = content_bot - 8*mm - ah3
     c.setFillColor(TEAL); c.roundRect(M, ay, CW, ah3, 2*mm, fill=1, stroke=0)
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8.5)
-    c.drawString(M+4*mm, ay+16*mm, 'IF ANY ANSWER IS NO')
+    c.drawString(M+4*mm, ay+16*mm, _u["if_any_no"])
     _tb(c, d["T4_IF_ANY_NO"], M+4*mm, ay+10*mm, CW-8*mm, 'Helvetica', 8, col=WHITE, ld=10)
-    _ftr(c, 'Tool 4 of 4  ·  Keep a completed copy of this checklist on file alongside each statement published')
+    _ftr(c, _u["t4_footer"], _u=_u)
 
 
 # ── Public entry point ────────────────────────────────────────────────────────
@@ -523,13 +669,14 @@ TOOL_LABELS = {
 }
 
 
-def build_tools_pdf(selected_ids, data=None, buf=None):
+def build_tools_pdf(selected_ids, data=None, buf=None, language="EN"):
     """Generate selected tool pages into a BytesIO buffer.
 
     Args:
         selected_ids: list/set of tool IDs, e.g. ['T1', 'T3']
         data: dict of {field_key: value} loaded from TOOLS sheet (may include all tools' keys)
         buf: optional existing BytesIO; if None a new one is created.
+        language: 'EN', 'FR', or 'ES' — controls structural label translation.
     Returns:
         BytesIO with the tool pages PDF, or None if no tools selected.
     """
@@ -540,7 +687,7 @@ def build_tools_pdf(selected_ids, data=None, buf=None):
         buf = io.BytesIO()
     c = rl_canvas.Canvas(buf, pagesize=A4)
     for tid in ids:
-        _TOOL_DRAW[tid](c, data)
+        _TOOL_DRAW[tid](c, data, language=language)
         c.showPage()
     c.save()
     buf.seek(0)

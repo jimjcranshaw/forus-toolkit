@@ -1176,7 +1176,7 @@ _TOOL_PART = {
 }
 
 
-def _build_tool_buf_for_ids(ids, tools_data):
+def _build_tool_buf_for_ids(ids, tools_data, language="EN"):
     """Return a BytesIO with pages for the given tool/appendix IDs, in canonical order."""
     t_ids = [t for t in ["T1", "T2", "T3", "T4"] if t in ids]
     a_ids = [t for t in ["A1", "A2", "A3"]         if t in ids]
@@ -1184,21 +1184,21 @@ def _build_tool_buf_for_ids(ids, tools_data):
     if t_ids:
         try:
             from forus_tools_v4 import build_tools_pdf
-            b = build_tools_pdf(t_ids, data=tools_data)
+            b = build_tools_pdf(t_ids, data=tools_data, language=language)
             if b: bufs.append(b)
         except Exception as e:
             print(f"  ⚠ Could not build tool pages {t_ids}: {e}")
     if a_ids:
         try:
             from forus_appendix_tools import build_appendix_pdf
-            b = build_appendix_pdf(a_ids, data=tools_data)
+            b = build_appendix_pdf(a_ids, data=tools_data, language=language)
             if b: bufs.append(b)
         except Exception as e:
             print(f"  ⚠ Could not build appendix pages {a_ids}: {e}")
     return bufs
 
 
-def _merge_tools_inline(main_path, tools_selection, page_map, out_path):
+def _merge_tools_inline(main_path, tools_selection, page_map, out_path, language="EN"):
     """Insert tool pages inline — each tool appears right after its section's last page.
 
     page_map: {page_number (1-indexed): (part_int, section_str)}  from pass-1 build.
@@ -1241,7 +1241,7 @@ def _merge_tools_inline(main_path, tools_selection, page_map, out_path):
     # Pre-build one BytesIO per part group
     part_bufs = {}
     for p, ids in part_tool_ids.items():
-        raw_bufs = _build_tool_buf_for_ids(ids, tools_data)
+        raw_bufs = _build_tool_buf_for_ids(ids, tools_data, language=language)
         if raw_bufs:
             # Combine multiple source buffers into one merged buf for this part
             w = PdfWriter()
@@ -2264,11 +2264,7 @@ def build_pdf(access_level, language="EN"):
     doc2.build(story2)
 
     # ── Insert tool pages inline after their section's last page ────────────
-    # Tools are only available in English — skip for FR/ES builds
-    if lang == "EN":
-        _merge_tools_inline(main_tmp, full_req.get("tools", {}), page_map, out)
-    else:
-        import shutil; shutil.move(main_tmp, out)
+    _merge_tools_inline(main_tmp, full_req.get("tools", {}), page_map, out, language=lang)
 
     size_kb = os.path.getsize(out) // 1024
     print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out}")
@@ -2511,11 +2507,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
     doc2.build(story2)
 
     # ── Insert tool pages inline after their section's last page ────────────
-    # Tools are only available in English — skip merging for FR/ES builds
-    if lang == "EN":
-        _merge_tools_inline(main_tmp, req.get("tools", {}), page_map, out_path)
-    else:
-        import shutil as _shutil; _shutil.move(main_tmp, out_path)
+    _merge_tools_inline(main_tmp, req.get("tools", {}), page_map, out_path, language=lang)
 
     if os.path.exists(out_path):
         size_kb = os.path.getsize(out_path) // 1024
