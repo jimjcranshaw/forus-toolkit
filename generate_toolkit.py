@@ -2370,9 +2370,9 @@ _RQ_HDRS = [
 
 # Default verification interval in months by category
 _VERIFY_MONTHS = {
-    "legal":             12,
-    "emergency-funding":  6,
-    "digital-security":  12,
+    "legal":             1,
+    "emergency-funding": 1,
+    "digital-security":  1,
 }
 
 # ── Category-specific research prompts ───────────────────────────────────────
