@@ -376,7 +376,7 @@ def render_timeline_bar(active_horizon):
 
 def render_step(text, number, part, truncated):
     pc = PART_COLORS.get(part, C["dark_green"])
-    suffix = " <font color='red'>[OVER LIMIT]</font>" if truncated else ""
+    suffix = ""  # [OVER LIMIT] is console-only; not shown in PDF
     # Number cell: stacked — big number on top, small "ACTION STEP" label below
     num_cell = Table([
         [Paragraph(str(number), S["stepnum"])],
@@ -409,7 +409,7 @@ def render_callout(text, box_type, truncated):
     else:
         bg, accent, icon = C["light_red"], C["deep_red"], "!  WARNING"
         style = S["warn"]
-    suffix = " <font color='red'>[OVER LIMIT]</font>" if truncated else ""
+    suffix = ""  # [OVER LIMIT] is console-only; not shown in PDF
     data = [[
         Paragraph(icon, ps("_icon", size=7, leading=9,
                            color=accent, bold=True, align=TA_CENTER)),
@@ -484,7 +484,7 @@ def render_decision_q(text):
     return [t, Spacer(1,1*mm)]
 
 def render_decision_a(text, truncated):
-    suffix = " [OVER LIMIT]" if truncated else ""
+    suffix = ""  # [OVER LIMIT] is console-only; not shown in PDF
     data = [[
         Paragraph("→  OPTION", ps("_da_lbl", size=6.5, leading=9,
                                    color=C["amber"], bold=True, align=TA_CENTER)),
@@ -567,6 +567,7 @@ def _linkify_refs(text):
     # Ordered so longer matches win (Annex A before bare 'A', etc.)
     _LINK = [
         # Annexes ── anchor IDs mirror anchor_id(section_text) below
+        # English variants
         (r"Annex A\b",
          '<link dest="s_Annex_A__Legal_Pro_Bono_Support"'
          ' color="#00424D"><u>Annex A</u></link>'),
@@ -576,6 +577,26 @@ def _linkify_refs(text):
         (r"Annex C\b",
          '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
          ' color="#00424D"><u>Annex C</u></link>'),
+        # French variants (Annexe A/B/C)
+        (r"Annexe A\b",
+         '<link dest="s_Annex_A__Legal_Pro_Bono_Support"'
+         ' color="#00424D"><u>Annexe A</u></link>'),
+        (r"Annexe B\b",
+         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms"'
+         ' color="#00424D"><u>Annexe B</u></link>'),
+        (r"Annexe C\b",
+         '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
+         ' color="#00424D"><u>Annexe C</u></link>'),
+        # Spanish variants (Anexo A/B/C)
+        (r"Anexo A\b",
+         '<link dest="s_Annex_A__Legal_Pro_Bono_Support"'
+         ' color="#00424D"><u>Anexo A</u></link>'),
+        (r"Anexo B\b",
+         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms"'
+         ' color="#00424D"><u>Anexo B</u></link>'),
+        (r"Anexo C\b",
+         '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
+         ' color="#00424D"><u>Anexo C</u></link>'),
         # Named sections
         (r"Part 3 \(Legal Support\)",
          '<link dest="s_3__Legal_Support" color="#00424D">'
@@ -815,6 +836,7 @@ def render_peer_connect(text, ref=None):
     """Peer insight card.  content_text is an organisation description (v2.2+).
     Personal names are stripped so only the organisation/context is shown.
     Legacy URLs are also accepted and displayed as a link instead.
+    A reference URL is always shown at the bottom so members can signal interest.
     """
     import re as _re
     text = (text or "").strip()
@@ -828,21 +850,32 @@ def render_peer_connect(text, ref=None):
         body_para = Paragraph(
             f'<a href="{url}" color="#D4F0F1"><u>{url}</u></a>',
             ps("_pcurl", size=8, leading=11, color=C["forus_teal_lt"]))
+        ref_row = []
     else:
         # Strip leading personal name: one or more Title-case words followed by ", "
         # e.g. "Moses Isooba, " → "" or "Shannon Kindornay, " → ""
         clean = _re.sub(r'^(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*', '', text)
         body_para = Paragraph(clean, ps("_pcbody", size=8.5, leading=12,
                                          color=C["forus_teal_lt"]))
+        # Always show a reference link so members can signal interest via Forus
+        base = "https://forus-international.org/peer-connect"
+        ref_url = f"{base}?ref={ref}" if ref else base
+        ref_row = [Paragraph(
+            f'<a href="{ref_url}" color="#58C5C7"><u>{ref_url}</u></a>',
+            ps("_pcref", size=7.5, leading=11, color=C["forus_teal"]))]
+
+    inner_rows = [
+        [Paragraph("PEER INSIGHT",
+                    ps("_pclbl", size=7.5, leading=10, color=C["white"], bold=True))],
+        [body_para],
+    ]
+    if ref_row:
+        inner_rows.append(ref_row)
 
     data = [[
         Paragraph("🤝", ps("_pci", size=12, leading=14, color=C["white"],
                              align=TA_CENTER)),
-        Table([
-            [Paragraph("PEER INSIGHT",
-                        ps("_pclbl", size=7.5, leading=10, color=C["white"], bold=True))],
-            [body_para],
-        ], colWidths=[FRAME_W - 16*mm]),
+        Table(inner_rows, colWidths=[FRAME_W - 16*mm]),
     ]]
     t = Table(data, colWidths=[16*mm, FRAME_W - 16*mm])
     t.setStyle(TableStyle([
@@ -1265,6 +1298,7 @@ PART_INTROS = {
 # ── Localised strings for cover / ToC / acronyms pages ───────────────────────
 _PDF_STRINGS = {
     "EN": {
+        "section_names": {},   # no translation needed; keys fall through to original
         "cover_subtitle":  "Navigating Legal, Solidarity Support &amp; Sustainable Resource Models",
         "cover_public":    "PUBLIC VERSION",
         "cover_network":   "FORUS NETWORK — CONFIDENTIAL",
@@ -1291,6 +1325,21 @@ _PDF_STRINGS = {
         },
     },
     "FR": {
+        "section_names": {
+            "1.1 Legislative Crisis":               "1.1 Crise législative",
+            "1.2 Funding Shock":                    "1.2 Choc de financement",
+            "1.3 Digital Repression":               "1.3 Répression numérique",
+            "1.4 Stigmatisation & Intimidation":    "1.4 Stigmatisation et intimidation",
+            "2. Solidarity Activation":             "2. Activation de la solidarité",
+            "3. Legal Support":                     "3. Soutien juridique",
+            "4. Emergency Funding":                 "4. Financement d'urgence",
+            "5. Safe Comms":                        "5. Communications sécurisées",
+            "6. Diversification":                   "6. Diversification",
+            "7. Update Guide":                      "7. Guide de mise à jour",
+            "Annex A: Legal Pro Bono Support":                      "Annexe A : Soutien juridique pro bono",
+            "Annex B: Emergency Grants Mechanisms":                 "Annexe B : Mécanismes de subventions d'urgence",
+            "Annex C: Physical & Digital Security Support":         "Annexe C : Sécurité physique et numérique",
+        },
         "cover_subtitle":  "Naviguer dans les soutiens juridiques, la solidarité et les modèles de ressources durables",
         "cover_public":    "VERSION PUBLIQUE",
         "cover_network":   "RÉSEAU FORUS — CONFIDENTIEL",
@@ -1317,6 +1366,21 @@ _PDF_STRINGS = {
         },
     },
     "ES": {
+        "section_names": {
+            "1.1 Legislative Crisis":               "1.1 Crisis legislativa",
+            "1.2 Funding Shock":                    "1.2 Choque de financiación",
+            "1.3 Digital Repression":               "1.3 Represión digital",
+            "1.4 Stigmatisation & Intimidation":    "1.4 Estigmatización e intimidación",
+            "2. Solidarity Activation":             "2. Activación de la solidaridad",
+            "3. Legal Support":                     "3. Apoyo jurídico",
+            "4. Emergency Funding":                 "4. Financiación de emergencia",
+            "5. Safe Comms":                        "5. Comunicaciones seguras",
+            "6. Diversification":                   "6. Diversificación",
+            "7. Update Guide":                      "7. Guía de actualización",
+            "Annex A: Legal Pro Bono Support":                      "Anexo A: Apoyo jurídico pro bono",
+            "Annex B: Emergency Grants Mechanisms":                 "Anexo B: Mecanismos de subvenciones de emergencia",
+            "Annex C: Physical & Digital Security Support":         "Anexo C: Seguridad física y digital",
+        },
         "cover_subtitle":  "Navegando el apoyo jurídico, la solidaridad y los modelos de recursos sostenibles",
         "cover_public":    "VERSIÓN PÚBLICA",
         "cover_network":   "RED FORUS — CONFIDENCIAL",
@@ -1418,13 +1482,15 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None, lang
             # Section row — with clickable link in pass 2
             aid = anchor_id(section)
             pg_num = section_to_page.get(section)
+            # Use translated section display name if available
+            sec_display = _s.get("section_names", {}).get(section, section)
 
             if pg_num:
                 # Pass 2: real page number + clickable link
                 link_style = ps("_toc_link", size=9, leading=13,
                                 color=C["forus_dark"])
                 sec_para = Paragraph(
-                    f'<link dest="{aid}" color="#00424D">{section}</link>',
+                    f'<link dest="{aid}" color="#00424D">{sec_display}</link>',
                     link_style)
                 pg_para  = Paragraph(
                     f'<link dest="{aid}" color="#00424D">{pg_num}</link>',
@@ -1432,7 +1498,7 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None, lang
                        color=C["forus_dark"], bold=True, align=TA_RIGHT))
             else:
                 # Pass 1: no page numbers yet — render plain text
-                sec_para = Paragraph(section,
+                sec_para = Paragraph(sec_display,
                                      ps("_toc_s", size=9, leading=13, color=C["grey"]))
                 pg_para  = Paragraph("—",
                                      ps("_toc_p", size=9, leading=13,
@@ -2198,7 +2264,11 @@ def build_pdf(access_level, language="EN"):
     doc2.build(story2)
 
     # ── Insert tool pages inline after their section's last page ────────────
-    _merge_tools_inline(main_tmp, full_req.get("tools", {}), page_map, out)
+    # Tools are only available in English — skip for FR/ES builds
+    if lang == "EN":
+        _merge_tools_inline(main_tmp, full_req.get("tools", {}), page_map, out)
+    else:
+        import shutil; shutil.move(main_tmp, out)
 
     size_kb = os.path.getsize(out) // 1024
     print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out}")
@@ -2441,7 +2511,11 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
     doc2.build(story2)
 
     # ── Insert tool pages inline after their section's last page ────────────
-    _merge_tools_inline(main_tmp, req.get("tools", {}), page_map, out_path)
+    # Tools are only available in English — skip merging for FR/ES builds
+    if lang == "EN":
+        _merge_tools_inline(main_tmp, req.get("tools", {}), page_map, out_path)
+    else:
+        import shutil as _shutil; _shutil.move(main_tmp, out_path)
 
     if os.path.exists(out_path):
         size_kb = os.path.getsize(out_path) // 1024
