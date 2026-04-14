@@ -1381,25 +1381,35 @@ elif page == "generate_pdf":
             col_a, col_b = st.columns(2)
             with col_a: build_public  = st.checkbox("Public PDF",  value=True)
             with col_b: build_network = st.checkbox("Network PDF (confidential)", value=True)
+            # Language selector for PDF content (independent of UI language)
+            _pdf_lang_opts = {"English (EN)": "EN", "Français (FR)": "FR", "Español (ES)": "ES"}
+            _pdf_lang_label = st.selectbox(
+                "PDF content language",
+                list(_pdf_lang_opts.keys()),
+                index=list(_pdf_lang_opts.values()).index(st.session_state.get("lang", "EN"))
+                    if st.session_state.get("lang", "EN") in _pdf_lang_opts.values() else 0,
+            )
+            _pdf_lang = _pdf_lang_opts[_pdf_lang_label]
+            _lang_suffix = f"_{_pdf_lang}" if _pdf_lang != "EN" else ""
             if st.button(t("pdf_build_btn"), type="primary"):
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     v        = gt.VERSION
-                    pub_path = os.path.join(tmp_dir, f"Forus_Toolkit_v{v}_Public.pdf")
-                    net_path = os.path.join(tmp_dir, f"Forus_Toolkit_v{v}_Network.pdf")
+                    pub_path = os.path.join(tmp_dir, f"Forus_Toolkit_v{v}_Public{_lang_suffix}.pdf")
+                    net_path = os.path.join(tmp_dir, f"Forus_Toolkit_v{v}_Network{_lang_suffix}.pdf")
                     gt.SPREADSHEET = sp(); gt.OUT_PUBLIC = pub_path; gt.OUT_NETWORK = net_path
                     with st.spinner("Building PDF(s)…"):
-                        if build_public:  gt.build_pdf(1)
-                        if build_network: gt.build_pdf(2)
+                        if build_public:  gt.build_pdf(1, language=_pdf_lang)
+                        if build_network: gt.build_pdf(2, language=_pdf_lang)
                     dl_c1, dl_c2 = st.columns(2)
                     if build_public and os.path.exists(pub_path):
                         with open(pub_path, "rb") as f:
                             dl_c1.download_button(t("pdf_download_public"), f.read(),
-                                file_name=f"Forus_Toolkit_v{v}_Public.pdf", mime="application/pdf")
+                                file_name=f"Forus_Toolkit_v{v}_Public{_lang_suffix}.pdf", mime="application/pdf")
                     if build_network and os.path.exists(net_path):
                         with open(net_path, "rb") as f:
                             dl_c2.download_button(t("pdf_download_network"), f.read(),
-                                file_name=f"Forus_Toolkit_v{v}_Network.pdf", mime="application/pdf")
-                    st.session_state["action_log"].append(f"{datetime.date.today()} — Generated PDF v{v}")
+                                file_name=f"Forus_Toolkit_v{v}_Network{_lang_suffix}.pdf", mime="application/pdf")
+                    st.session_state["action_log"].append(f"{datetime.date.today()} — Generated PDF v{v} [{_pdf_lang}]")
 
     with tab2:
         st.subheader(t("pdf_tab_custom"))
@@ -1477,6 +1487,17 @@ elif page == "generate_pdf":
 
             submitted = st.form_submit_button(t("pdf_build_custom_btn"), type="primary")
 
+        # Language selector for custom PDF (outside the form so it updates the label)
+        _cust_lang_opts = {"English (EN)": "EN", "Français (FR)": "FR", "Español (ES)": "ES"}
+        _cust_lang_label = st.selectbox(
+            "PDF content language",
+            list(_cust_lang_opts.keys()),
+            index=list(_cust_lang_opts.values()).index(st.session_state.get("lang", "EN"))
+                if st.session_state.get("lang", "EN") in _cust_lang_opts.values() else 0,
+            key="custom_pdf_lang",
+        )
+        _cust_lang = _cust_lang_opts[_cust_lang_label]
+
         if submitted:
             if not cust_name.strip() or not cust_org.strip():
                 st.error(t("pdf_no_name_org_error"))
@@ -1488,7 +1509,8 @@ elif page == "generate_pdf":
                 access_level = 1 if _access_opts.index(cust_access) == 0 else 2
                 v        = gt.VERSION
                 safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
-                fname    = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}.pdf"
+                lang_sfx = f"_{_cust_lang}" if _cust_lang != "EN" else ""
+                fname    = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}{lang_sfx}.pdf"
 
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     out_path = os.path.join(tmp_dir, fname)
@@ -1497,7 +1519,7 @@ elif page == "generate_pdf":
                     gt.OUT_NETWORK = out_path if access_level == 2 else os.path.join(tmp_dir, "net.pdf")
                     with st.spinner(f"Building custom PDF for {cust_name}…"):
                         try:
-                            success = gt.build_pdf_from_request_dict(req, access_level=access_level, out_path=out_path)
+                            success = gt.build_pdf_from_request_dict(req, access_level=access_level, out_path=out_path, language=_cust_lang)
                         except Exception as _e:
                             import traceback
                             st.error(f"Exception: {_e}"); st.code(traceback.format_exc()); success = False

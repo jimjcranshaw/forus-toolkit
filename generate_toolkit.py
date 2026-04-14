@@ -959,7 +959,13 @@ class ToolkitDoc(BaseDocTemplate):
 
 
 # ── Load spreadsheet ──────────────────────────────────────────────────────────
-def load_data(access_level):
+def load_data(access_level, language="EN"):
+    """Load CONTENT rows filtered by language and access level, plus ANNEXES.
+
+    language: "EN" (default), "FR", or "ES".
+    For FR/ES, ANNEX translatable fields are swapped for their _fr / _es column values.
+    """
+    lang = language.upper() if language else "EN"
     wb = openpyxl.load_workbook(SPREADSHEET, data_only=True)
 
     ws_c = wb["CONTENT"]
@@ -970,6 +976,10 @@ def load_data(access_level):
         if not row[0]: continue
         item = {h: row[i] for h,i in cm.items() if i<len(row)}
         if not item.get("block_id"): continue
+        # Filter by language
+        row_lang = str(item.get("language", "EN") or "EN").upper()
+        if row_lang != lang:
+            continue
         if int(item.get("sensitivity",1) or 1) <= access_level:
             rows.append(item)
 
@@ -977,10 +987,19 @@ def load_data(access_level):
     mhdrs = [c.value for c in ws_m[2]]
     mcm   = {h:i for i,h in enumerate(mhdrs) if h}
     mechs = {}
+    # Fields that have translated variants in the spreadsheet
+    _translatable = ("eligibility_note", "how_to_access", "timeframe", "constraints", "notes")
+    lang_suffix = f"_{lang.lower()}" if lang != "EN" else None
     for row in ws_m.iter_rows(min_row=3, values_only=True):
         if not row[0]: continue
         m = {h: row[i] for h,i in mcm.items() if i<len(row)}
         if m.get("mech_id"):
+            # Swap in translated field values when language != EN
+            if lang_suffix:
+                for field in _translatable:
+                    translated = m.get(f"{field}{lang_suffix}")
+                    if translated:
+                        m[field] = translated
             mechs[m["mech_id"]] = m
 
     def sort_key(x):
@@ -2045,12 +2064,20 @@ def build_word_count_map(rows):
     return result
 
 
-def build_pdf(access_level):
+def build_pdf(access_level, language="EN"):
+    lang  = language.upper() if language else "EN"
     label = "Public" if access_level == 1 else "Network"
-    out   = OUT_PUBLIC if access_level == 1 else OUT_NETWORK
-    print(f"\nBuilding {label} PDF v{VERSION} → {out}")
+    # Suffix output filename for non-EN languages
+    if lang != "EN":
+        base_public  = OUT_PUBLIC.replace(".pdf",  f"_{lang}.pdf")
+        base_network = OUT_NETWORK.replace(".pdf", f"_{lang}.pdf")
+    else:
+        base_public  = OUT_PUBLIC
+        base_network = OUT_NETWORK
+    out = base_public if access_level == 1 else base_network
+    print(f"\nBuilding {label} PDF [{lang}] v{VERSION} → {out}")
 
-    rows, mechs = load_data(access_level)
+    rows, mechs = load_data(access_level, language=lang)
 
     # Full-build req: all parts, all annexes, all regions, all tools included
     full_req = {
@@ -2282,7 +2309,7 @@ def build_request_pdf(req_id, access_level=1):
     _mark_request_sent(req_id)
 
 
-def build_pdf_from_request_dict(req, access_level=1, out_path=None):
+def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN"):
     """Generate a customised PDF directly from a request dict (no REQUEST_LOG lookup).
 
     req must contain:
@@ -2295,15 +2322,16 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None):
     if not req:
         return False
 
+    lang  = language.upper() if language else "EN"
     label = "Public" if access_level == 1 else "Network"
     if out_path is None:
         suffix = f"_{req.get('org','custom').replace(' ','_')}"
         out_path = (OUT_PUBLIC.replace(".pdf", f"{suffix}.pdf") if access_level == 1
                     else OUT_NETWORK.replace(".pdf", f"{suffix}.pdf"))
 
-    print(f"\nBuilding custom PDF for {req.get('name','')}, {req.get('org','')}")
+    print(f"\nBuilding custom PDF for {req.get('name','')}, {req.get('org','')} [{lang}]")
 
-    all_rows, mechs = load_data(access_level)
+    all_rows, mechs = load_data(access_level, language=lang)
     rows = filter_rows_for_request(all_rows, req)
 
     common_kw = dict(pagesize=A4, leftMargin=ML, rightMargin=MR,
@@ -2927,12 +2955,23 @@ if __name__ == "__main__":
         print("=" * 60)
         sys.exit(0)
 
+    # ── Language selection ────────────────────────────────────────────────────
+    language = "EN"
+    if "--language" in sys.argv:
+        idx = sys.argv.index("--language")
+        if idx + 1 < len(sys.argv):
+            language = sys.argv[idx + 1].upper()
+    if language not in ("EN", "FR", "ES"):
+        print(f"ERROR: --language must be EN, FR, or ES (got '{language}')")
+        sys.exit(1)
+
     # ── Standard full build ───────────────────────────────────────────────────
-    build_pdf(1)
-    build_pdf(2)
+    build_pdf(1, language=language)
+    build_pdf(2, language=language)
 
     # Write actual word counts back to spreadsheet and rebuild DASHBOARD tab
-    all_rows, _ = load_data(2)
+    # (word counts are always computed from EN rows)
+    all_rows, _ = load_data(2, language="EN")
     count_map = build_word_count_map(all_rows)
     print("\nUpdating spreadsheet (word counts + dashboard)...")
     update_spreadsheet(count_map)
@@ -2940,6 +2979,8 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("Done.")
     print("  → Standard build:       python generate_toolkit.py")
+    print("  → French build:         python generate_toolkit.py --language FR")
+    print("  → Spanish build:        python generate_toolkit.py --language ES")
     print("  → Custom member PDF:    python generate_toolkit.py --request REQ-001")
     print("  → Check mechanisms:     python generate_toolkit.py --check-mechanisms [--api-key KEY]")
     print("  → Review queue:         python generate_toolkit.py --review")
