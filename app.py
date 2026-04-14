@@ -1267,6 +1267,7 @@ elif page == "review_queue":
         src    = str(row[rqcm.get("source_url",      11)].value or "")
         conf   = str(row[rqcm.get("confidence",      12)].value or "")
         date_f = str(row[rqcm.get("date_flagged",     2)].value or "")
+        is_unable = (ctyp == "UNABLE_TO_VERIFY" or status == "UNABLE_TO_VERIFY")
         card_cls = {"PENDING":"forus-card change","APPROVED":"forus-card approved",
                     "REJECTED":"forus-card rejected"}.get(status, "forus-card")
         st.markdown(
@@ -1275,47 +1276,61 @@ elif page == "review_queue":
             f'<strong>{mech}</strong> — <em>{fld}</em></div>',
             unsafe_allow_html=True,
         )
-        ic1, ic2 = st.columns(2)
-        with ic1:
-            st.markdown(f"**{t('rq_current_value')}**")
-            st.markdown(f"<div style='background:#FFF8F8;padding:8px;border-radius:4px;font-size:13px'>{cur or '—'}</div>", unsafe_allow_html=True)
-        with ic2:
-            st.markdown(f"**{t('rq_proposed_value')}**")
+
+        if is_unable and status == "PENDING":
+            # Verification failed — show as an informational warning, no approve/reject
+            st.warning(
+                f"⚠️ **Verification failed** — the AI could not check this entry. "
+                f"It will be retried on the next run.\n\n"
+                f"**Error:** {reason}"
+            )
+            if st.button("Dismiss (mark rejected)", key=f"dismiss_{rid}"):
+                row[rqcm.get("status",13)].value        = "REJECTED"
+                row[rqcm.get("reviewed_by",15)].value   = "Auto-dismissed"
+                row[rqcm.get("reviewed_date",16)].value = str(datetime.date.today())
+                wb.save(sp()); action_taken = True
+                st.rerun()
+        else:
+            ic1, ic2 = st.columns(2)
+            with ic1:
+                st.markdown(f"**{t('rq_current_value')}**")
+                st.markdown(f"<div style='background:#FFF8F8;padding:8px;border-radius:4px;font-size:13px'>{cur or '—'}</div>", unsafe_allow_html=True)
+            with ic2:
+                st.markdown(f"**{t('rq_proposed_value')}**")
+                if status == "PENDING":
+                    # Editable — staffer can tweak before approving
+                    st.text_area(
+                        label="proposed_value_edit",
+                        value=st.session_state.get(f"prop_edit_{rid}", prop),
+                        key=f"prop_edit_{rid}",
+                        height=120,
+                        label_visibility="collapsed",
+                        help="Edit the proposed text before approving if needed.",
+                    )
+                else:
+                    st.markdown(f"<div style='background:#F8FFF8;padding:8px;border-radius:4px;font-size:13px'>{prop or '—'}</div>", unsafe_allow_html=True)
+            if reason: st.markdown(f"<small>**Reason:** {reason}</small>", unsafe_allow_html=True)
+            if src:    st.markdown(f"<small>**Source:** <a href='{src}' target='_blank'>{src}</a></small>", unsafe_allow_html=True)
             if status == "PENDING":
-                # Editable — staffer can tweak before approving
-                edited_prop = st.text_area(
-                    label="proposed_value_edit",
-                    value=st.session_state.get(f"prop_edit_{rid}", prop),
-                    key=f"prop_edit_{rid}",
-                    height=120,
-                    label_visibility="collapsed",
-                    help="Edit the proposed text before approving if needed.",
-                )
-            else:
-                st.markdown(f"<div style='background:#F8FFF8;padding:8px;border-radius:4px;font-size:13px'>{prop or '—'}</div>", unsafe_allow_html=True)
-        if reason: st.markdown(f"<small>**Reason:** {reason}</small>", unsafe_allow_html=True)
-        if src:    st.markdown(f"<small>**Source:** <a href='{src}' target='_blank'>{src}</a></small>", unsafe_allow_html=True)
-        if status == "PENDING":
-            bc1, bc2, _ = st.columns([1, 1, 4])
-            with bc1:
-                if st.button(t("rq_approve"), key=f"approve_{rid}"):
-                    # Write the (possibly edited) proposed value back to the spreadsheet
-                    final_prop = st.session_state.get(f"prop_edit_{rid}", prop)
-                    row[rqcm.get("proposed_value", 9)].value = final_prop
-                    row[rqcm.get("status",13)].value         = "APPROVED"
-                    row[rqcm.get("reviewed_by",15)].value    = "Forus staff"
-                    row[rqcm.get("reviewed_date",16)].value  = str(datetime.date.today())
-                    wb.save(sp()); action_taken = True
-                    st.session_state["action_log"].append(f"{datetime.date.today()} — Approved {rid}")
-                    st.rerun()
-            with bc2:
-                if st.button(t("rq_reject"), key=f"reject_{rid}"):
-                    row[rqcm.get("status",13)].value       = "REJECTED"
-                    row[rqcm.get("reviewed_by",15)].value  = "Forus staff"
-                    row[rqcm.get("reviewed_date",16)].value= str(datetime.date.today())
-                    wb.save(sp()); action_taken = True
-                    st.session_state["action_log"].append(f"{datetime.date.today()} — Rejected {rid}")
-                    st.rerun()
+                bc1, bc2, _ = st.columns([1, 1, 4])
+                with bc1:
+                    if st.button(t("rq_approve"), key=f"approve_{rid}"):
+                        final_prop = st.session_state.get(f"prop_edit_{rid}", prop)
+                        row[rqcm.get("proposed_value", 9)].value = final_prop
+                        row[rqcm.get("status",13)].value         = "APPROVED"
+                        row[rqcm.get("reviewed_by",15)].value    = "Forus staff"
+                        row[rqcm.get("reviewed_date",16)].value  = str(datetime.date.today())
+                        wb.save(sp()); action_taken = True
+                        st.session_state["action_log"].append(f"{datetime.date.today()} — Approved {rid}")
+                        st.rerun()
+                with bc2:
+                    if st.button(t("rq_reject"), key=f"reject_{rid}"):
+                        row[rqcm.get("status",13)].value       = "REJECTED"
+                        row[rqcm.get("reviewed_by",15)].value  = "Forus staff"
+                        row[rqcm.get("reviewed_date",16)].value= str(datetime.date.today())
+                        wb.save(sp()); action_taken = True
+                        st.session_state["action_log"].append(f"{datetime.date.today()} — Rejected {rid}")
+                        st.rerun()
         st.markdown("---")
     if action_taken:
         st.success(t("rq_saved_hint"))

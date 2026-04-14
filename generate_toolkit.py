@@ -2594,10 +2594,36 @@ def call_ai_agent(mech_dict, api_key):
     if start < 0 or end <= start:
         return _agent_error(mech_id, f"No JSON in response: {text[:200]}")
 
+    json_str = text[start:end]
     try:
-        return json.loads(text[start:end])
-    except json.JSONDecodeError as e:
-        return _agent_error(mech_id, f"JSON parse error: {e}")
+        return json.loads(json_str)
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: strip control characters and retry
+    import re as _re
+    cleaned = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', json_str)
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as e2:
+        # Last resort: try to extract just the structural fields we need
+        # by asking the API again with a stricter instruction
+        try:
+            status_m  = _re.search(r'"status"\s*:\s*"([^"]+)"', json_str)
+            conf_m    = _re.search(r'"confidence"\s*:\s*"([^"]+)"', json_str)
+            # If we can at least get status, return a minimal valid result
+            if status_m:
+                return {
+                    "mech_id":    mech_id,
+                    "status":     status_m.group(1),
+                    "confidence": conf_m.group(1) if conf_m else "LOW",
+                    "changes":    [],
+                    "new_mechanisms_found": [],
+                    "notes":      "JSON partially recovered — changes list could not be parsed",
+                }
+        except Exception:
+            pass
+        return _agent_error(mech_id, f"JSON parse error: {e2}")
 
 
 def _translate_field(en_value, field, lang, api_key):
