@@ -2067,14 +2067,10 @@ def build_word_count_map(rows):
 def build_pdf(access_level, language="EN"):
     lang  = language.upper() if language else "EN"
     label = "Public" if access_level == 1 else "Network"
-    # Suffix output filename for non-EN languages
-    if lang != "EN":
-        base_public  = OUT_PUBLIC.replace(".pdf",  f"_{lang}.pdf")
-        base_network = OUT_NETWORK.replace(".pdf", f"_{lang}.pdf")
-    else:
-        base_public  = OUT_PUBLIC
-        base_network = OUT_NETWORK
-    out = base_public if access_level == 1 else base_network
+    # Use OUT_PUBLIC / OUT_NETWORK exactly as set by the caller.
+    # The CLI __main__ block adds language suffixes before calling;
+    # the app sets gt.OUT_PUBLIC / gt.OUT_NETWORK to the desired path directly.
+    out = OUT_PUBLIC if access_level == 1 else OUT_NETWORK
     print(f"\nBuilding {label} PDF [{lang}] v{VERSION} → {out}")
 
     rows, mechs = load_data(access_level, language=lang)
@@ -3063,6 +3059,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # ── Standard full build ───────────────────────────────────────────────────
+    # For non-EN CLI builds, suffix the output filenames before calling build_pdf
+    global OUT_PUBLIC, OUT_NETWORK
+    if language != "EN":
+        OUT_PUBLIC  = OUT_PUBLIC.replace(".pdf",  f"_{language}.pdf")
+        OUT_NETWORK = OUT_NETWORK.replace(".pdf", f"_{language}.pdf")
+
     build_pdf(1, language=language)
     build_pdf(2, language=language)
 
