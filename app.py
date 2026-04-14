@@ -434,6 +434,27 @@ st.markdown(f"""
     font-size: 15px;
     padding: 4px 0;
   }}
+  /* Sidebar buttons: give them a visible dark-on-dark style */
+  [data-testid="stSidebar"] button {{
+    background-color: rgba(255,255,255,0.15) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.35) !important;
+  }}
+  [data-testid="stSidebar"] button:hover {{
+    background-color: rgba(255,255,255,0.25) !important;
+  }}
+  /* Sidebar selectbox: dark background, white text */
+  [data-testid="stSidebar"] [data-baseweb="select"] > div:first-child {{
+    background-color: rgba(255,255,255,0.15) !important;
+    border-color: rgba(255,255,255,0.35) !important;
+  }}
+  [data-testid="stSidebar"] [data-baseweb="select"] svg {{
+    fill: white !important;
+  }}
+  /* Sidebar file uploader label */
+  [data-testid="stSidebar"] [data-testid="stFileUploader"] label {{
+    color: white !important;
+  }}
   /* Page headings */
   h1 {{ color: {DARK}; border-bottom: 3px solid {TEAL}; padding-bottom: 6px; }}
   h2 {{ color: {DARK}; }}
