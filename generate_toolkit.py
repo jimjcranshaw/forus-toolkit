@@ -282,11 +282,13 @@ def render_feedback(url):
     return [Spacer(1, 4*mm), outer, Spacer(1, 4*mm)]
 
 
-def render_section_banner(text, part):
-    pc = PART_COLORS.get(part, C["dark_green"])
-    pl = PART_LABELS.get(part, f"PART {part}")
+def render_section_banner(text, part, language="EN"):
+    pc  = PART_COLORS.get(part, C["dark_green"])
+    _s  = _PDF_STRINGS.get(language.upper(), _PDF_STRINGS["EN"])
+    pl  = _s["part_labels"].get(part, f"PART {part}")
+    pfx = _s["part_prefix"]
     data = [[
-        Paragraph(f"PART {part}  ·  {pl}", S["section_label"]),
+        Paragraph(f"{pfx} {part}  ·  {pl}", S["section_label"]),
         Paragraph(str(part), S["stepnum"]),
     ],[
         Paragraph(text, S["hdr"]),
@@ -1260,18 +1262,101 @@ PART_INTROS = {
     8: "Regional and country-level resource directories — legal, funding & digital support",
 }
 
-def build_cover(story, access_level, sections_in_order=None, page_map=None):
+# ── Localised strings for cover / ToC / acronyms pages ───────────────────────
+_PDF_STRINGS = {
+    "EN": {
+        "cover_subtitle":  "Navigating Legal, Solidarity Support &amp; Sustainable Resource Models",
+        "cover_public":    "PUBLIC VERSION",
+        "cover_network":   "FORUS NETWORK — CONFIDENTIAL",
+        "cover_updated":   "Updated {date}  ·  Flourish Nonprofits for Forus International",
+        "toc_heading":     "CONTENTS",
+        "toc_placeholder": "Contents will appear here after the first build.",
+        "part_prefix":     "PART",
+        "acr_heading":     "ABBREVIATIONS &amp; ACRONYMS",
+        "acr_intro":       "Abbreviations used throughout this toolkit are listed below.",
+        "part_labels": {
+            1:"CRISIS GUIDES", 2:"SOLIDARITY", 3:"LEGAL SUPPORT",
+            4:"EMERGENCY FUNDING", 5:"SAFE COMMS", 6:"DIVERSIFICATION",
+            7:"FEEDBACK", 8:"ANNEXES",
+        },
+        "part_intros": {
+            1: "Crisis response guides — legislative, funding, digital &amp; reputational",
+            2: "Activating peer solidarity across the Forus network",
+            3: "Finding and accessing legal support when it matters",
+            4: "Emergency funding mechanisms for platforms under pressure",
+            5: "Safe advocacy, communications &amp; digital security",
+            6: "Diversification, mutualisation &amp; long-term sustainability",
+            7: "Keeping this toolkit accurate and up to date",
+            8: "Regional and country-level resource directories — legal, funding &amp; digital support",
+        },
+    },
+    "FR": {
+        "cover_subtitle":  "Naviguer dans les soutiens juridiques, la solidarité et les modèles de ressources durables",
+        "cover_public":    "VERSION PUBLIQUE",
+        "cover_network":   "RÉSEAU FORUS — CONFIDENTIEL",
+        "cover_updated":   "Mis à jour le {date}  ·  Flourish Nonprofits pour Forus International",
+        "toc_heading":     "SOMMAIRE",
+        "toc_placeholder": "Le sommaire apparaîtra ici après la première génération.",
+        "part_prefix":     "PARTIE",
+        "acr_heading":     "ABRÉVIATIONS ET ACRONYMES",
+        "acr_intro":       "Les abréviations utilisées dans cette boîte à outils sont listées ci-dessous.",
+        "part_labels": {
+            1:"GUIDES DE CRISE", 2:"SOLIDARITÉ", 3:"SOUTIEN JURIDIQUE",
+            4:"FINANCEMENT D'URGENCE", 5:"COMMS SÉCURISÉES", 6:"DIVERSIFICATION",
+            7:"RETOURS D'INFORMATION", 8:"ANNEXES",
+        },
+        "part_intros": {
+            1: "Guides de réponse aux crises — législatives, financières, numériques et réputationnelles",
+            2: "Activer la solidarité entre pairs au sein du réseau Forus",
+            3: "Trouver et accéder à un soutien juridique au bon moment",
+            4: "Mécanismes de financement d'urgence pour les plateformes sous pression",
+            5: "Plaidoyer sécurisé, communications et sécurité numérique",
+            6: "Diversification, mutualisation et durabilité à long terme",
+            7: "Maintenir cette boîte à outils précise et à jour",
+            8: "Répertoires de ressources régionales et nationales — soutien juridique, financier et numérique",
+        },
+    },
+    "ES": {
+        "cover_subtitle":  "Navegando el apoyo jurídico, la solidaridad y los modelos de recursos sostenibles",
+        "cover_public":    "VERSIÓN PÚBLICA",
+        "cover_network":   "RED FORUS — CONFIDENCIAL",
+        "cover_updated":   "Actualizado el {date}  ·  Flourish Nonprofits para Forus International",
+        "toc_heading":     "CONTENIDO",
+        "toc_placeholder": "El contenido aparecerá aquí después de la primera generación.",
+        "part_prefix":     "PARTE",
+        "acr_heading":     "ABREVIACIONES Y ACRÓNIMOS",
+        "acr_intro":       "Las abreviaciones utilizadas en esta caja de herramientas se enumeran a continuación.",
+        "part_labels": {
+            1:"GUÍAS DE CRISIS", 2:"SOLIDARIDAD", 3:"APOYO JURÍDICO",
+            4:"FINANCIACIÓN DE EMERGENCIA", 5:"COMMS SEGURAS", 6:"DIVERSIFICACIÓN",
+            7:"RETROALIMENTACIÓN", 8:"ANEXOS",
+        },
+        "part_intros": {
+            1: "Guías de respuesta a crisis — legislativas, financieras, digitales y reputacionales",
+            2: "Activar la solidaridad entre pares en la red Forus",
+            3: "Encontrar y acceder a apoyo jurídico cuando más se necesita",
+            4: "Mecanismos de financiación de emergencia para plataformas bajo presión",
+            5: "Incidencia segura, comunicaciones y seguridad digital",
+            6: "Diversificación, mutualización y sostenibilidad a largo plazo",
+            7: "Mantener esta caja de herramientas precisa y actualizada",
+            8: "Directorios de recursos regionales y nacionales — apoyo jurídico, financiero y digital",
+        },
+    },
+}
+
+def build_cover(story, access_level, sections_in_order=None, page_map=None, language="EN"):
     """Build the cover page.
     sections_in_order: list of (part, section_text) in reading order — used for ToC.
     page_map: {page: (part, section)} from pass 1 — None during pass 1 itself.
     """
-    label = "PUBLIC VERSION" if access_level==1 else "FORUS NETWORK — CONFIDENTIAL"
+    _s    = _PDF_STRINGS.get(language.upper(), _PDF_STRINGS["EN"])
+    label = _s["cover_public"] if access_level == 1 else _s["cover_network"]
     cover_rows = [
         [Paragraph("FORUS RESILIENCE &amp;<br/>SUPPORT TOOLKIT", S["cover_t"])],
-        [Paragraph("Navigating Legal, Solidarity Support &amp; Sustainable Resource Models", S["cover_s"])],
+        [Paragraph(_s["cover_subtitle"], S["cover_s"])],
         [Spacer(1,6*mm)],
         [Paragraph(label, S["cover_m"])],
-        [Paragraph(f"Updated {DATE_STAMP}  ·  Flourish Nonprofits for Forus International", S["cover_m"])],
+        [Paragraph(_s["cover_updated"].format(date=DATE_STAMP), S["cover_m"])],
     ]
     ct = Table(cover_rows, colWidths=[FRAME_W])
     ct.setStyle(TableStyle([
@@ -1292,7 +1377,7 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None):
             if sec and sec not in section_to_page:
                 section_to_page[sec] = pg
 
-    story.append(Paragraph("CONTENTS", ps("_toc_title", size=14, leading=18,
+    story.append(Paragraph(_s["toc_heading"], ps("_toc_title", size=14, leading=18,
                             color=C["dark_green"], bold=True)))
     story.append(Spacer(1, 4*mm))
 
@@ -1307,12 +1392,12 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None):
             # Part heading row — shown once per part
             if part != current_part:
                 current_part = part
-                pl = PART_LABELS.get(part, f"PART {part}")
-                intro = PART_INTROS.get(part, "")
+                pl    = _s["part_labels"].get(part, f"{_s['part_prefix']} {part}")
+                intro = _s["part_intros"].get(part, "")
 
                 # Part label cell
                 part_cell = Table(
-                    [[Paragraph(f"PART {part}", ps("_tp_lbl", size=7, leading=9,
+                    [[Paragraph(f"{_s['part_prefix']} {part}", ps("_tp_lbl", size=7, leading=9,
                                 color=C["white"], bold=True, align=TA_CENTER))]],
                     colWidths=[14*mm], rowHeights=[5.5*mm])
                 part_cell.setStyle(TableStyle([
@@ -1381,18 +1466,19 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None):
         toc_t.setStyle(TableStyle(cmds))
         story.append(toc_t)
     else:
-        story.append(Paragraph("Contents will appear here after the first build.",
+        story.append(Paragraph(_s["toc_placeholder"],
                                 ps("_toc_ph", size=9, color=C["mid_grey"], italic=True)))
 
     story.append(PageBreak())
 
     # ── Acronyms / Abbreviations page ────────────────────────────────────────
-    story += render_acronyms_page()
+    story += render_acronyms_page(language=language)
 
 
 # ── Acronyms page ─────────────────────────────────────────────────────────────
-def render_acronyms_page():
+def render_acronyms_page(language="EN"):
     """One-page glossary of abbreviations used in the toolkit."""
+    _s = _PDF_STRINGS.get(language.upper(), _PDF_STRINGS["EN"])
     ACRONYMS = [
         ("ANC Peru",  "Asociación Nacional de Centros de Investigación, Promoción Social y Desarrollo"),
         ("BRT",       "Building Responses Together (CIVICUS partner network)"),
@@ -1420,11 +1506,11 @@ def render_acronyms_page():
     ]
 
     story = []
-    story.append(Paragraph("ABBREVIATIONS &amp; ACRONYMS", ps(
+    story.append(Paragraph(_s["acr_heading"], ps(
         "_acr_title", size=12, leading=16, color=C["dark_green"], bold=True)))
     story.append(Spacer(1, 3*mm))
     story.append(Paragraph(
-        "Abbreviations used throughout this toolkit are listed below.",
+        _s["acr_intro"],
         ps("_acr_intro", size=8.5, leading=12, color=C["grey"], italic=True)))
     story.append(Spacer(1, 4*mm))
 
@@ -1546,7 +1632,7 @@ def _mech_matches_regions(mech, selected_regions):
     return False
 
 
-def make_story(rows, mechs, access_level, page_map=None, req=None):
+def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"):
     """Build the complete story list. Called twice — once per pass.
     page_map is None in pass 1; supplied from pass 1 results in pass 2.
     req: optional request dict; when supplied, annex sections are generated
@@ -1572,7 +1658,8 @@ def make_story(rows, mechs, access_level, page_map=None, req=None):
 
     build_cover(story, access_level,
                 sections_in_order=sections_in_order,
-                page_map=page_map)
+                page_map=page_map,
+                language=language)
 
     prev_section  = None
     step_counters = {}
@@ -1595,7 +1682,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None):
             if section != prev_section:
                 if prev_section is not None:
                     story.append(Spacer(1, 8*mm))
-                for f in render_section_banner(section, part):
+                for f in render_section_banner(section, part, language=language):
                     story.append(f)
                 story.append(SectionAnchor(anchor_id(section)))
                 story.append(SetMeta(part, section))
@@ -1610,7 +1697,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None):
         if section != prev_section:
             if prev_section is not None:
                 story.append(Spacer(1, 8*mm))
-            for f in render_section_banner(section, part):
+            for f in render_section_banner(section, part, language=language):
                 story.append(f)
             story.append(SectionAnchor(anchor_id(section)))   # ← PDF destination
             story.append(SetMeta(part, section))               # ← chrome metadata
@@ -1690,7 +1777,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None):
                 continue
             # Section banner (part=8 gets its own nav colour)
             story.append(Spacer(1, 8*mm))
-            for f in render_section_banner(ann_sec, 8):
+            for f in render_section_banner(ann_sec, 8, language=language):
                 story.append(f)
             story.append(SectionAnchor(anchor_id(ann_sec)))
             story.append(SetMeta(8, ann_sec))
@@ -2088,7 +2175,7 @@ def build_pdf(access_level, language="EN"):
                      topMargin=MT, bottomMargin=MB)
 
     # ── Pass 1: layout to temp file, collect page→section map ────────────────
-    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=full_req)
+    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=full_req, language=lang)
     tmp = out.replace(".pdf", "_pass1.pdf")
     doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
     doc1.build(story1)
@@ -2104,7 +2191,7 @@ def build_pdf(access_level, language="EN"):
         pass
 
     # ── Pass 2: build real PDF using page map (ToC gets real page numbers + links) ──
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=full_req)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=full_req, language=lang)
     # Write to a temp path first so we can append tool pages
     main_tmp = out.replace(".pdf", "_main.pdf")
     doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
@@ -2334,7 +2421,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
                      topMargin=MT, bottomMargin=MB)
 
     # Pass 1
-    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=req)
+    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=req, language=lang)
     tmp = out_path.replace(".pdf", "_pass1.pdf")
     doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
     doc1.build(story1)
@@ -2348,7 +2435,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
         pass
 
     # Pass 2
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req, language=lang)
     main_tmp = out_path.replace(".pdf", "_main.pdf")
     doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
     doc2.build(story2)
@@ -3060,7 +3147,6 @@ if __name__ == "__main__":
 
     # ── Standard full build ───────────────────────────────────────────────────
     # For non-EN CLI builds, suffix the output filenames before calling build_pdf
-    global OUT_PUBLIC, OUT_NETWORK
     if language != "EN":
         OUT_PUBLIC  = OUT_PUBLIC.replace(".pdf",  f"_{language}.pdf")
         OUT_NETWORK = OUT_NETWORK.replace(".pdf", f"_{language}.pdf")
