@@ -29,16 +29,370 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── Language state (must be set before anything that calls t()) ───────────────
+st.session_state.setdefault("lang", "EN")
+
+# ── Translations ──────────────────────────────────────────────────────────────
+TRANSLATIONS = {
+    "EN": {
+        # Sidebar
+        "nav_dashboard":          "📊 Dashboard",
+        "nav_check_mechanisms":   "🔍 Check Mechanisms",
+        "nav_review_queue":       "📋 Review Queue",
+        "nav_apply_approved":     "✅ Apply Approved",
+        "nav_generate_pdf":       "📄 Generate PDF",
+        "nav_manage_tools":       "🔧 Manage Tools",
+        "sidebar_download_sp":    "⬇ Download updated spreadsheet",
+        "sidebar_save_gdrive":    "☁ Save to Google Drive",
+        "sidebar_no_sp":          "No spreadsheet loaded",
+        "sidebar_upload_sp":      "Upload spreadsheet (.xlsx)",
+        "sidebar_recent_actions": "Recent actions",
+        "language_label":         "Language",
+        # Login
+        "login_title":    "🛡 Forus Toolkit Manager",
+        "login_subtitle": "Enter the access password to continue.",
+        "login_btn":      "Login",
+        "login_error":    "Incorrect password — please try again.",
+        # Dashboard
+        "page_dashboard":        "Forus Toolkit — Dashboard",
+        "dash_content_blocks":   "Content blocks",
+        "dash_over_limit":       "Over word limit",
+        "dash_awaiting_review":  "Awaiting review",
+        "dash_mechanisms_due":   "Mechanisms due",
+        "dash_mechanisms":       "Mechanisms",
+        "dash_review_queue":     "Review Queue",
+        # Check Mechanisms
+        "page_check_mechanisms": "Check Mechanisms",
+        "check_desc": (
+            "Run AI-powered verification against each mechanism entry whose "
+            "next check date is within the next 14 days, or is flagged **VERIFY**. "
+            "Results are written to the **REVIEW_QUEUE** tab of the spreadsheet."
+        ),
+        "check_no_due": "✓ No mechanisms are currently due for verification.",
+        "check_due_label": "mechanism(s) due for verification:",
+        "check_run_verification": "Run verification",
+        "check_api_key":  "Anthropic API key",
+        "check_run_btn":  "🔍 Run checks now",
+        "check_done_msg": "Done — {no_change} unchanged, {changed} change(s) detected, {unable} unable to verify.",
+        "check_review_hint": "Switch to the **Review Queue** page to review and approve proposed changes.",
+        # Review Queue
+        "page_review_queue":  "Review Queue",
+        "rq_filter_status":   "Filter by status",
+        "rq_filter_cat":      "Filter by category",
+        "rq_no_items":        "No items match the current filter.",
+        "rq_items_shown":     "item(s) shown",
+        "rq_current_value":   "Current value",
+        "rq_proposed_value":  "Proposed value",
+        "rq_approve":         "✅ Approve",
+        "rq_reject":          "❌ Reject",
+        "rq_saved_hint":      "✓ Saved. Use **Download updated spreadsheet** in the sidebar to keep your changes.",
+        # Apply Approved
+        "page_apply_approved": "Apply Approved Changes",
+        "apply_desc": (
+            "Write all **APPROVED** items from the Review Queue back to the "
+            "MECHANISMS sheet, and update verification dates."
+        ),
+        "apply_no_approved": "No APPROVED items in the Review Queue. Approve items on the **Review Queue** page first.",
+        "apply_ready":        "{n} approved item(s) ready to apply.",
+        "apply_reviewer_name": "Your name (recorded in spreadsheet)",
+        "apply_btn":           "✅ Apply all approved changes",
+        "apply_done":          "✓ {n} change(s) applied to MECHANISMS sheet. Verification dates updated. Review Queue items marked COMPLETED.",
+        "apply_download_hint": "Use **Download updated spreadsheet** in the sidebar to save your changes, then regenerate the PDF when ready.",
+        # Generate PDF
+        "page_generate_pdf":     "Generate PDF",
+        "pdf_tab_standard":      "Standard build",
+        "pdf_tab_custom":        "Custom member PDF",
+        "pdf_standard_desc":     "Generates both the **Public** and **Network** versions of the full toolkit PDF.",
+        "pdf_build_btn":         "📄 Build PDF(s)",
+        "pdf_download_public":   "⬇ Download Public PDF",
+        "pdf_download_network":  "⬇ Download Network PDF",
+        "pdf_custom_desc": (
+            "Fill in the form below to generate a personalised PDF for a specific member. "
+            "Select only the sections relevant to them."
+        ),
+        "pdf_contact_name":      "Contact name *",
+        "pdf_organisation":      "Organisation *",
+        "pdf_email":             "Email (optional)",
+        "pdf_access_level":      "Access level",
+        "pdf_parts_include":     "**Parts to include**",
+        "pdf_annexes":           "**Annexes**",
+        "pdf_regions":           "**Regions** *(filters annex content)*",
+        "pdf_all_regions":       "All regions",
+        "pdf_tools":             "**Tools** *(single-page visual tools appended after main content)*",
+        "pdf_appendix_tools":    "**Appendix Tools**",
+        "pdf_build_custom_btn":  "📄 Build custom PDF",
+        "pdf_no_name_org_error": "Please enter a contact name and organisation.",
+        "pdf_gen_failed":        "PDF generation failed. Check that at least one section is selected.",
+        # Manage Tools
+        "page_manage_tools": "Manage Tools",
+        "tools_desc": (
+            "View and edit the text content for the seven visual tools (T1–T4, A1–A3). "
+            "Content is loaded from the **TOOLS** sheet of your spreadsheet. "
+            "Changes saved here will appear in the next PDF you generate."
+        ),
+        "tools_filter":        "Filter by tool",
+        "tools_show_flagged":  "Show only flagged entries (VERIFY / UPDATED)",
+        "tools_fields_shown":  "field(s) shown",
+        "tools_content_label": "Content",
+        "tools_status":        "Status",
+        "tools_save_btn":      "💾 Save this field",
+        "tools_instructions": (
+            "**How to use the AI auto-update agent with tools:**\n\n"
+            "1. Set any field's status to **VERIFY** if you think the content may be out of date.\n"
+            "2. The Check Mechanisms agent reviews MECHANISMS entries automatically.\n"
+            "   For tool text, flag fields manually and edit them directly here, "
+            "   or ask the AI agent in a conversation to review specific fields.\n"
+            "3. After editing, use **Save to Google Drive** in the sidebar to persist changes."
+        ),
+        # General
+        "no_spreadsheet_warning": "Please upload the spreadsheet using the sidebar to get started.",
+    },
+    "FR": {
+        # Sidebar
+        "nav_dashboard":          "📊 Tableau de bord",
+        "nav_check_mechanisms":   "🔍 Vérifier mécanismes",
+        "nav_review_queue":       "📋 File de révision",
+        "nav_apply_approved":     "✅ Appliquer approuvés",
+        "nav_generate_pdf":       "📄 Générer PDF",
+        "nav_manage_tools":       "🔧 Gérer les outils",
+        "sidebar_download_sp":    "⬇ Télécharger la feuille de calcul",
+        "sidebar_save_gdrive":    "☁ Sauvegarder sur Google Drive",
+        "sidebar_no_sp":          "Aucune feuille de calcul chargée",
+        "sidebar_upload_sp":      "Importer la feuille de calcul (.xlsx)",
+        "sidebar_recent_actions": "Actions récentes",
+        "language_label":         "Langue",
+        # Login
+        "login_title":    "🛡 Gestionnaire de la Boîte à Outils Forus",
+        "login_subtitle": "Entrez le mot de passe d'accès pour continuer.",
+        "login_btn":      "Se connecter",
+        "login_error":    "Mot de passe incorrect — veuillez réessayer.",
+        # Dashboard
+        "page_dashboard":        "Boîte à Outils Forus — Tableau de bord",
+        "dash_content_blocks":   "Blocs de contenu",
+        "dash_over_limit":       "Au-dessus de la limite",
+        "dash_awaiting_review":  "En attente de révision",
+        "dash_mechanisms_due":   "Mécanismes à vérifier",
+        "dash_mechanisms":       "Mécanismes",
+        "dash_review_queue":     "File de révision",
+        # Check Mechanisms
+        "page_check_mechanisms": "Vérifier les mécanismes",
+        "check_desc": (
+            "Lancez une vérification assistée par IA pour chaque mécanisme dont la prochaine "
+            "date de vérification est dans les 14 prochains jours, ou marqué **VERIFY**. "
+            "Les résultats sont écrits dans l'onglet **REVIEW_QUEUE** de la feuille de calcul."
+        ),
+        "check_no_due":           "✓ Aucun mécanisme n'est actuellement à vérifier.",
+        "check_due_label":        "mécanisme(s) à vérifier :",
+        "check_run_verification": "Lancer la vérification",
+        "check_api_key":          "Clé API Anthropic",
+        "check_run_btn":          "🔍 Lancer les vérifications",
+        "check_done_msg":         "Terminé — {no_change} inchangé(s), {changed} modification(s) détectée(s), {unable} impossible(s) à vérifier.",
+        "check_review_hint":      "Allez sur la page **File de révision** pour examiner et approuver les modifications proposées.",
+        # Review Queue
+        "page_review_queue":  "File de révision",
+        "rq_filter_status":   "Filtrer par statut",
+        "rq_filter_cat":      "Filtrer par catégorie",
+        "rq_no_items":        "Aucun élément ne correspond au filtre actuel.",
+        "rq_items_shown":     "élément(s) affiché(s)",
+        "rq_current_value":   "Valeur actuelle",
+        "rq_proposed_value":  "Valeur proposée",
+        "rq_approve":         "✅ Approuver",
+        "rq_reject":          "❌ Rejeter",
+        "rq_saved_hint":      "✓ Sauvegardé. Utilisez **Télécharger la feuille de calcul** dans la barre latérale pour conserver vos modifications.",
+        # Apply Approved
+        "page_apply_approved": "Appliquer les modifications approuvées",
+        "apply_desc": (
+            "Écrit tous les éléments **APPROUVÉS** de la file de révision dans "
+            "la feuille MECHANISMS et met à jour les dates de vérification."
+        ),
+        "apply_no_approved":   "Aucun élément APPROUVÉ dans la file. Approuvez des éléments sur la page **File de révision**.",
+        "apply_ready":         "{n} élément(s) approuvé(s) prêt(s) à appliquer.",
+        "apply_reviewer_name": "Votre nom (enregistré dans la feuille)",
+        "apply_btn":           "✅ Appliquer toutes les modifications approuvées",
+        "apply_done":          "✓ {n} modification(s) appliquée(s). Dates de vérification mises à jour. Éléments marqués COMPLETED.",
+        "apply_download_hint": "Utilisez **Télécharger la feuille de calcul** pour sauvegarder vos modifications, puis régénérez le PDF.",
+        # Generate PDF
+        "page_generate_pdf":    "Générer le PDF",
+        "pdf_tab_standard":     "Génération standard",
+        "pdf_tab_custom":       "PDF personnalisé pour membre",
+        "pdf_standard_desc":    "Génère les versions **Publique** et **Réseau** du PDF complet de la boîte à outils.",
+        "pdf_build_btn":        "📄 Générer le(s) PDF",
+        "pdf_download_public":  "⬇ Télécharger le PDF Public",
+        "pdf_download_network": "⬇ Télécharger le PDF Réseau",
+        "pdf_custom_desc": (
+            "Remplissez le formulaire ci-dessous pour générer un PDF personnalisé pour un membre spécifique. "
+            "Sélectionnez uniquement les sections qui lui sont pertinentes."
+        ),
+        "pdf_contact_name":      "Nom du contact *",
+        "pdf_organisation":      "Organisation *",
+        "pdf_email":             "E-mail (facultatif)",
+        "pdf_access_level":      "Niveau d'accès",
+        "pdf_parts_include":     "**Parties à inclure**",
+        "pdf_annexes":           "**Annexes**",
+        "pdf_regions":           "**Régions** *(filtre le contenu des annexes)*",
+        "pdf_all_regions":       "Toutes les régions",
+        "pdf_tools":             "**Outils** *(outils visuels d'une page ajoutés après le contenu principal)*",
+        "pdf_appendix_tools":    "**Outils en annexe**",
+        "pdf_build_custom_btn":  "📄 Générer le PDF personnalisé",
+        "pdf_no_name_org_error": "Veuillez entrer un nom de contact et une organisation.",
+        "pdf_gen_failed":        "La génération du PDF a échoué. Vérifiez qu'au moins une section est sélectionnée.",
+        # Manage Tools
+        "page_manage_tools": "Gérer les outils",
+        "tools_desc": (
+            "Consultez et modifiez le contenu textuel des sept outils visuels (T1–T4, A1–A3). "
+            "Le contenu est chargé depuis l'onglet **TOOLS** de votre feuille de calcul. "
+            "Les modifications apportées ici apparaîtront dans le prochain PDF généré."
+        ),
+        "tools_filter":        "Filtrer par outil",
+        "tools_show_flagged":  "Afficher uniquement les entrées signalées (VERIFY / UPDATED)",
+        "tools_fields_shown":  "champ(s) affiché(s)",
+        "tools_content_label": "Contenu",
+        "tools_status":        "Statut",
+        "tools_save_btn":      "💾 Sauvegarder ce champ",
+        "tools_instructions": (
+            "**Comment utiliser l'agent IA de mise à jour avec les outils :**\n\n"
+            "1. Définissez le statut d'un champ sur **VERIFY** si vous pensez que le contenu est obsolète.\n"
+            "2. L'agent Check Mechanisms vérifie automatiquement les entrées MECHANISMS.\n"
+            "   Pour le texte des outils, signalez les champs manuellement et modifiez-les directement ici.\n"
+            "3. Après modification, utilisez **Sauvegarder sur Google Drive** pour conserver les changements."
+        ),
+        # General
+        "no_spreadsheet_warning": "Veuillez importer la feuille de calcul via la barre latérale pour commencer.",
+    },
+    "ES": {
+        # Sidebar
+        "nav_dashboard":          "📊 Panel de control",
+        "nav_check_mechanisms":   "🔍 Verificar mecanismos",
+        "nav_review_queue":       "📋 Cola de revisión",
+        "nav_apply_approved":     "✅ Aplicar aprobados",
+        "nav_generate_pdf":       "📄 Generar PDF",
+        "nav_manage_tools":       "🔧 Gestionar herramientas",
+        "sidebar_download_sp":    "⬇ Descargar hoja de cálculo",
+        "sidebar_save_gdrive":    "☁ Guardar en Google Drive",
+        "sidebar_no_sp":          "No se ha cargado ninguna hoja de cálculo",
+        "sidebar_upload_sp":      "Subir hoja de cálculo (.xlsx)",
+        "sidebar_recent_actions": "Acciones recientes",
+        "language_label":         "Idioma",
+        # Login
+        "login_title":    "🛡 Gestor del Kit de Herramientas Forus",
+        "login_subtitle": "Ingrese la contraseña de acceso para continuar.",
+        "login_btn":      "Iniciar sesión",
+        "login_error":    "Contraseña incorrecta — por favor, inténtelo de nuevo.",
+        # Dashboard
+        "page_dashboard":        "Kit de Herramientas Forus — Panel de control",
+        "dash_content_blocks":   "Bloques de contenido",
+        "dash_over_limit":       "Por encima del límite",
+        "dash_awaiting_review":  "Pendiente de revisión",
+        "dash_mechanisms_due":   "Mecanismos pendientes",
+        "dash_mechanisms":       "Mecanismos",
+        "dash_review_queue":     "Cola de revisión",
+        # Check Mechanisms
+        "page_check_mechanisms": "Verificar mecanismos",
+        "check_desc": (
+            "Ejecute la verificación asistida por IA para cada mecanismo cuya próxima "
+            "fecha de verificación esté dentro de los próximos 14 días o esté marcado como **VERIFY**. "
+            "Los resultados se escriben en la pestaña **REVIEW_QUEUE** de la hoja de cálculo."
+        ),
+        "check_no_due":           "✓ No hay mecanismos pendientes de verificación en este momento.",
+        "check_due_label":        "mecanismo(s) pendiente(s) de verificación:",
+        "check_run_verification": "Ejecutar verificación",
+        "check_api_key":          "Clave API de Anthropic",
+        "check_run_btn":          "🔍 Ejecutar verificaciones",
+        "check_done_msg":         "Listo — {no_change} sin cambios, {changed} cambio(s) detectado(s), {unable} no verificable(s).",
+        "check_review_hint":      "Vaya a la página **Cola de revisión** para revisar y aprobar los cambios propuestos.",
+        # Review Queue
+        "page_review_queue":  "Cola de revisión",
+        "rq_filter_status":   "Filtrar por estado",
+        "rq_filter_cat":      "Filtrar por categoría",
+        "rq_no_items":        "Ningún elemento coincide con el filtro actual.",
+        "rq_items_shown":     "elemento(s) mostrado(s)",
+        "rq_current_value":   "Valor actual",
+        "rq_proposed_value":  "Valor propuesto",
+        "rq_approve":         "✅ Aprobar",
+        "rq_reject":          "❌ Rechazar",
+        "rq_saved_hint":      "✓ Guardado. Use **Descargar hoja de cálculo** en la barra lateral para conservar sus cambios.",
+        # Apply Approved
+        "page_apply_approved": "Aplicar cambios aprobados",
+        "apply_desc": (
+            "Escribe todos los elementos **APROBADOS** de la cola de revisión en la "
+            "hoja MECHANISMS y actualiza las fechas de verificación."
+        ),
+        "apply_no_approved":   "No hay elementos APROBADOS. Apruebe elementos en la página **Cola de revisión** primero.",
+        "apply_ready":         "{n} elemento(s) aprobado(s) listo(s) para aplicar.",
+        "apply_reviewer_name": "Su nombre (registrado en la hoja de cálculo)",
+        "apply_btn":           "✅ Aplicar todos los cambios aprobados",
+        "apply_done":          "✓ {n} cambio(s) aplicado(s) a la hoja MECHANISMS. Fechas actualizadas. Elementos marcados como COMPLETED.",
+        "apply_download_hint": "Use **Descargar hoja de cálculo** para guardar sus cambios y luego regenere el PDF.",
+        # Generate PDF
+        "page_generate_pdf":    "Generar PDF",
+        "pdf_tab_standard":     "Generación estándar",
+        "pdf_tab_custom":       "PDF personalizado para miembro",
+        "pdf_standard_desc":    "Genera las versiones **Pública** y **de Red** del PDF completo del kit de herramientas.",
+        "pdf_build_btn":        "📄 Generar PDF(s)",
+        "pdf_download_public":  "⬇ Descargar PDF Público",
+        "pdf_download_network": "⬇ Descargar PDF de Red",
+        "pdf_custom_desc": (
+            "Complete el formulario a continuación para generar un PDF personalizado para un miembro específico. "
+            "Seleccione solo las secciones relevantes para ese miembro."
+        ),
+        "pdf_contact_name":      "Nombre del contacto *",
+        "pdf_organisation":      "Organización *",
+        "pdf_email":             "Correo electrónico (opcional)",
+        "pdf_access_level":      "Nivel de acceso",
+        "pdf_parts_include":     "**Partes a incluir**",
+        "pdf_annexes":           "**Anexos**",
+        "pdf_regions":           "**Regiones** *(filtra el contenido de los anexos)*",
+        "pdf_all_regions":       "Todas las regiones",
+        "pdf_tools":             "**Herramientas** *(herramientas visuales de una página añadidas tras el contenido principal)*",
+        "pdf_appendix_tools":    "**Herramientas de apéndice**",
+        "pdf_build_custom_btn":  "📄 Generar PDF personalizado",
+        "pdf_no_name_org_error": "Por favor, ingrese un nombre de contacto y una organización.",
+        "pdf_gen_failed":        "La generación del PDF falló. Compruebe que haya al menos una sección seleccionada.",
+        # Manage Tools
+        "page_manage_tools": "Gestionar herramientas",
+        "tools_desc": (
+            "Vea y edite el contenido textual de las siete herramientas visuales (T1–T4, A1–A3). "
+            "El contenido se carga desde la pestaña **TOOLS** de su hoja de cálculo. "
+            "Los cambios realizados aquí aparecerán en el próximo PDF generado."
+        ),
+        "tools_filter":        "Filtrar por herramienta",
+        "tools_show_flagged":  "Mostrar solo entradas marcadas (VERIFY / UPDATED)",
+        "tools_fields_shown":  "campo(s) mostrado(s)",
+        "tools_content_label": "Contenido",
+        "tools_status":        "Estado",
+        "tools_save_btn":      "💾 Guardar este campo",
+        "tools_instructions": (
+            "**Cómo usar el agente de IA de actualización automática con las herramientas:**\n\n"
+            "1. Establezca el estado de un campo en **VERIFY** si cree que el contenido puede estar desactualizado.\n"
+            "2. El agente Check Mechanisms revisa las entradas de MECHANISMS automáticamente.\n"
+            "   Para el texto de las herramientas, marque los campos manualmente y edítelos directamente aquí.\n"
+            "3. Después de editar, use **Guardar en Google Drive** para conservar los cambios."
+        ),
+        # General
+        "no_spreadsheet_warning": "Por favor, suba la hoja de cálculo usando la barra lateral para comenzar.",
+    },
+}
+
+
+def t(key):
+    """Return translated string for the current UI language."""
+    lang = st.session_state.get("lang", "EN")
+    return (
+        TRANSLATIONS.get(lang, TRANSLATIONS["EN"]).get(key)
+        or TRANSLATIONS["EN"].get(key, key)
+    )
+
+
 # ── Password gate ──────────────────────────────────────────────────────────────
 def _check_password():
     """Returns True if the user has entered the correct password."""
     if st.session_state.get("authenticated"):
         return True
     st.markdown(
-        """
+        f"""
         <div style='max-width:380px;margin:80px auto 0;text-align:center'>
-            <h2 style='color:#00424D'>🛡 Forus Toolkit Manager</h2>
-            <p style='color:#555;margin-bottom:1.5rem'>Enter the access password to continue.</p>
+            <h2 style='color:#00424D'>{t("login_title")}</h2>
+            <p style='color:#555;margin-bottom:1.5rem'>{t("login_subtitle")}</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -47,13 +401,13 @@ def _check_password():
     with col2:
         pwd = st.text_input("Password", type="password", label_visibility="collapsed",
                             placeholder="Password")
-        if st.button("Login", use_container_width=True, type="primary"):
+        if st.button(t("login_btn"), use_container_width=True, type="primary"):
             correct = st.secrets.get("APP_PASSWORD", "")
             if pwd == correct and correct != "":
                 st.session_state.authenticated = True
                 st.rerun()
             else:
-                st.error("Incorrect password — please try again.")
+                st.error(t("login_error"))
     st.stop()
 
 _check_password()
@@ -206,7 +560,6 @@ def _load_from_gdrive():
     if svc:
         try:
             from googleapiclient.http import MediaIoBaseDownload
-            # Check MIME type: native Google Sheets must be exported, xlsx uses get_media
             meta = svc.files().get(fileId=file_id, fields="mimeType").execute()
             mime = meta.get("mimeType", "")
             if mime == "application/vnd.google-apps.spreadsheet":
@@ -226,15 +579,12 @@ def _load_from_gdrive():
             st.warning(f"Service account access failed ({sa_err}). Trying link-share fallback...")
 
     if data is None:
-        # Fallback: public/link-shared export (file must be shared "Anyone with link")
         try:
-            # Works for Google Sheets files shared publicly
             url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
             r = requests.get(url, timeout=30, allow_redirects=True)
             if r.status_code == 200 and len(r.content) > 1000:
                 data = r.content
             else:
-                # Fallback for native xlsx stored in Drive
                 url = f"https://drive.google.com/uc?export=download&id={file_id}"
                 r = requests.get(url, timeout=30, allow_redirects=True)
                 r.raise_for_status()
@@ -279,8 +629,37 @@ def save_to_gdrive():
 _load_from_gdrive()
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
+# Internal nav keys (language-independent identifiers used in page comparisons)
+_NAV_KEYS = [
+    "dashboard",
+    "check_mechanisms",
+    "review_queue",
+    "apply_approved",
+    "generate_pdf",
+    "manage_tools",
+]
+
 with st.sidebar:
     st.markdown(f"## 🛡 Forus Toolkit")
+
+    # ── Language picker ────────────────────────────────────────────────────────
+    _lang_options = {"🇬🇧 English": "EN", "🇫🇷 Français": "FR", "🇪🇸 Español": "ES"}
+    _lang_display = list(_lang_options.keys())
+    _current_lang_display = next(
+        (k for k, v in _lang_options.items() if v == st.session_state.get("lang", "EN")),
+        "🇬🇧 English",
+    )
+    _selected_lang_display = st.selectbox(
+        t("language_label"),
+        _lang_display,
+        index=_lang_display.index(_current_lang_display),
+        label_visibility="collapsed",
+    )
+    _new_lang = _lang_options[_selected_lang_display]
+    if _new_lang != st.session_state.get("lang"):
+        st.session_state["lang"] = _new_lang
+        st.rerun()
+
     st.markdown("---")
 
     # Spreadsheet status
@@ -288,22 +667,22 @@ with st.sidebar:
         st.success(f"📊 {st.session_state['sp_name']}")
         with open(sp(), "rb") as f:
             st.download_button(
-                "⬇ Download updated spreadsheet",
+                t("sidebar_download_sp"),
                 f.read(),
                 file_name="Forus_Toolkit_Content_DB.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
             )
         if st.secrets.get("GDRIVE_CREDENTIALS"):
-            if st.button("☁ Save to Google Drive", use_container_width=True):
+            if st.button(t("sidebar_save_gdrive"), use_container_width=True):
                 ok, msg = save_to_gdrive()
                 if ok:
                     st.success(msg)
                 else:
                     st.error(msg)
     else:
-        st.warning("No spreadsheet loaded")
-        uploaded = st.file_uploader("Upload spreadsheet (.xlsx)", type=["xlsx"])
+        st.warning(t("sidebar_no_sp"))
+        uploaded = st.file_uploader(t("sidebar_upload_sp"), type=["xlsx"])
         if uploaded:
             tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
             tmp.write(uploaded.read())
@@ -313,17 +692,20 @@ with st.sidebar:
             st.rerun()
 
     st.markdown("---")
-    page = st.radio(
+
+    # Navigation — build display labels from translations, map back to key
+    _nav_display = [t(f"nav_{k}") for k in _NAV_KEYS]
+    _selected_nav = st.radio(
         "Navigation",
-        ["📊 Dashboard", "🔍 Check Mechanisms", "📋 Review Queue",
-         "✅ Apply Approved", "📄 Generate PDF", "🔧 Manage Tools"],
+        _nav_display,
         label_visibility="collapsed",
     )
+    page = _NAV_KEYS[_nav_display.index(_selected_nav)]
 
     # Recent action log
     if st.session_state["action_log"]:
         st.markdown("---")
-        st.markdown("**Recent actions**")
+        st.markdown(f"**{t('sidebar_recent_actions')}**")
         for entry in st.session_state["action_log"][-5:]:
             st.markdown(f"<small>{entry}</small>", unsafe_allow_html=True)
 
@@ -331,15 +713,15 @@ with st.sidebar:
 # ── Guard: require spreadsheet ────────────────────────────────────────────────
 def require_spreadsheet():
     if not sp():
-        st.warning("Please upload the spreadsheet using the sidebar to get started.")
+        st.warning(t("no_spreadsheet_warning"))
         st.stop()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE: Dashboard
 # ═══════════════════════════════════════════════════════════════════════════════
-if page == "📊 Dashboard":
-    st.title("Forus Toolkit — Dashboard")
+if page == "dashboard":
+    st.title(t("page_dashboard"))
     require_spreadsheet()
 
     wb       = _load_wb()
@@ -374,10 +756,10 @@ if page == "📊 Dashboard":
 
     c1, c2, c3, c4 = st.columns(4)
     for col, num, label, colour in [
-        (c1, total_blocks,  "Content blocks",     TEAL),
-        (c2, over_limit,    "Over word limit",     PINK if over_limit else MINT),
-        (c3, pending_rq,    "Awaiting review",     PINK if pending_rq else MINT),
-        (c4, mechs_due,     "Mechanisms due",      LIME if mechs_due else MINT),
+        (c1, total_blocks,  t("dash_content_blocks"),  TEAL),
+        (c2, over_limit,    t("dash_over_limit"),       PINK if over_limit else MINT),
+        (c3, pending_rq,    t("dash_awaiting_review"),  PINK if pending_rq else MINT),
+        (c4, mechs_due,     t("dash_mechanisms_due"),   LIME if mechs_due else MINT),
     ]:
         col.markdown(
             f'<div class="stat-box" style="border-top-color:{colour}">'
@@ -389,7 +771,7 @@ if page == "📊 Dashboard":
     st.markdown("")
 
     # ── Mechanisms table ──────────────────────────────────────────────────────
-    st.subheader("Mechanisms")
+    st.subheader(t("dash_mechanisms"))
     if not df_mech.empty:
         show_cols = ["mech_id", "mechanism_name", "category", "status",
                      "platform_eligible", "last_verified", "next_verify_due"]
@@ -400,7 +782,7 @@ if page == "📊 Dashboard":
 
     # ── Review queue summary ──────────────────────────────────────────────────
     if not df_rq.empty and "status" in df_rq:
-        st.subheader("Review Queue")
+        st.subheader(t("dash_review_queue"))
         status_counts = df_rq["status"].value_counts().reset_index()
         status_counts.columns = ["Status", "Count"]
         st.dataframe(status_counts, use_container_width=True, hide_index=True)
@@ -409,13 +791,9 @@ if page == "📊 Dashboard":
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE: Check Mechanisms
 # ═══════════════════════════════════════════════════════════════════════════════
-elif page == "🔍 Check Mechanisms":
-    st.title("Check Mechanisms")
-    st.markdown(
-        "Run AI-powered verification against each mechanism entry whose "
-        f"next check date is within the next 14 days, or is flagged **VERIFY**. "
-        "Results are written to the **REVIEW_QUEUE** tab of the spreadsheet."
-    )
+elif page == "check_mechanisms":
+    st.title(t("page_check_mechanisms"))
+    st.markdown(t("check_desc"))
     require_spreadsheet()
 
     wb      = _load_wb()
@@ -442,24 +820,23 @@ elif page == "🔍 Check Mechanisms":
                 due.append(row)
 
     if not due:
-        st.success("✓ No mechanisms are currently due for verification.")
+        st.success(t("check_no_due"))
     else:
-        st.info(f"**{len(due)} mechanism(s)** due for verification:")
+        st.info(f"**{len(due)} {t('check_due_label')}**")
         due_df = pd.DataFrame(due)[["mech_id","mechanism_name","category","next_verify_due","status"]]
         st.dataframe(due_df, use_container_width=True, hide_index=True)
 
         st.markdown("---")
-        st.subheader("Run verification")
+        st.subheader(t("check_run_verification"))
 
         api_key = st.text_input(
-            "Anthropic API key",
+            t("check_api_key"),
             type="password",
             value=os.environ.get("ANTHROPIC_API_KEY", ""),
             help="Required to call Claude with web search. Set ANTHROPIC_API_KEY env var to pre-fill.",
         )
 
-        if st.button("🔍 Run checks now", type="primary", disabled=not api_key):
-            # Import the agent function from generate_toolkit
+        if st.button(t("check_run_btn"), type="primary", disabled=not api_key):
             sys.path.insert(0, str(Path(__file__).parent))
             try:
                 import generate_toolkit as gt
@@ -467,7 +844,6 @@ elif page == "🔍 Check Mechanisms":
                 st.error(f"Could not import generate_toolkit: {e}")
                 st.stop()
 
-            # Patch SPREADSHEET global to point at working copy
             gt.SPREADSHEET = sp()
 
             progress = st.progress(0, text="Starting…")
@@ -485,7 +861,6 @@ elif page == "🔍 Check Mechanisms":
 
             progress.progress(1.0, text="Done!")
 
-            # Write results to REVIEW_QUEUE
             wb2   = openpyxl.load_workbook(sp())
             ws_m  = wb2["MECHANISMS"]
             ws_rq = wb2["REVIEW_QUEUE"]
@@ -500,7 +875,6 @@ elif page == "🔍 Check Mechanisms":
                     except ValueError: pass
             next_id = [max_n]
 
-            # Find row index for each mech_id in MECHANISMS
             mech_row_map = {}
             for r_idx, row in enumerate(ws_m.iter_rows(min_row=3, values_only=False), start=3):
                 mid = row[0].value
@@ -559,14 +933,13 @@ elif page == "🔍 Check Mechanisms":
 
             wb2.save(sp())
 
-            # Summary
-            st.success(
-                f"✓ Done — {summary['NO_CHANGE']} unchanged, "
-                f"{summary['CHANGE_DETECTED']} change(s) detected, "
-                f"{summary['UNABLE_TO_VERIFY']} unable to verify."
-            )
+            st.success(t("check_done_msg").format(
+                no_change=summary["NO_CHANGE"],
+                changed=summary["CHANGE_DETECTED"],
+                unable=summary["UNABLE_TO_VERIFY"],
+            ))
             if summary["CHANGE_DETECTED"] or summary["UNABLE_TO_VERIFY"]:
-                st.info("Switch to the **Review Queue** page to review and approve proposed changes.")
+                st.info(t("check_review_hint"))
             st.session_state["action_log"].append(
                 f"{today} — Checked {len(due)} mechanisms"
             )
@@ -575,8 +948,8 @@ elif page == "🔍 Check Mechanisms":
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE: Review Queue
 # ═══════════════════════════════════════════════════════════════════════════════
-elif page == "📋 Review Queue":
-    st.title("Review Queue")
+elif page == "review_queue":
+    st.title(t("page_review_queue"))
     require_spreadsheet()
 
     wb    = _load_wb(data_only=False)
@@ -589,18 +962,16 @@ elif page == "📋 Review Queue":
     rq_hdrs = [c.value for c in ws_rq[2]]
     rqcm    = {h: i for i, h in enumerate(rq_hdrs) if h}
 
-    # Filter controls
     col_f1, col_f2 = st.columns([2, 1])
     with col_f1:
         filter_status = st.multiselect(
-            "Filter by status",
+            t("rq_filter_status"),
             ["PENDING", "APPROVED", "REJECTED", "COMPLETED", "COMPLETED_MANUAL"],
             default=["PENDING"],
         )
     with col_f2:
-        filter_cat = st.multiselect("Filter by category", ["legal", "emergency-funding", "digital-security"])
+        filter_cat = st.multiselect(t("rq_filter_cat"), ["legal", "emergency-funding", "digital-security"])
 
-    # Load rows
     rows = []
     for r_idx, row in enumerate(ws_rq.iter_rows(min_row=3, values_only=False), start=3):
         rid = row[rqcm.get("review_id", 1)].value
@@ -615,9 +986,9 @@ elif page == "📋 Review Queue":
         rows.append((r_idx, row, rid, status, cat))
 
     if not rows:
-        st.info("No items match the current filter.")
+        st.info(t("rq_no_items"))
     else:
-        st.markdown(f"**{len(rows)} item(s)** shown")
+        st.markdown(f"**{len(rows)} {t('rq_items_shown')}**")
         st.markdown("")
 
     action_taken = False
@@ -650,11 +1021,11 @@ elif page == "📋 Review Queue":
 
         inner_c1, inner_c2 = st.columns(2)
         with inner_c1:
-            st.markdown(f"**Current value**")
+            st.markdown(f"**{t('rq_current_value')}**")
             st.markdown(f"<div style='background:#FFF8F8;padding:8px;border-radius:4px;font-size:13px'>{cur or '—'}</div>",
                         unsafe_allow_html=True)
         with inner_c2:
-            st.markdown(f"**Proposed value**")
+            st.markdown(f"**{t('rq_proposed_value')}**")
             st.markdown(f"<div style='background:#F8FFF8;padding:8px;border-radius:4px;font-size:13px'>{prop or '—'}</div>",
                         unsafe_allow_html=True)
 
@@ -667,7 +1038,7 @@ elif page == "📋 Review Queue":
         if status == "PENDING":
             btn_c1, btn_c2, _ = st.columns([1, 1, 4])
             with btn_c1:
-                if st.button(f"✅ Approve", key=f"approve_{rid}"):
+                if st.button(t("rq_approve"), key=f"approve_{rid}"):
                     row[rqcm.get("status", 13)].value         = "APPROVED"
                     row[rqcm.get("reviewed_by",   15)].value  = "Forus staff"
                     row[rqcm.get("reviewed_date", 16)].value  = str(datetime.date.today())
@@ -676,7 +1047,7 @@ elif page == "📋 Review Queue":
                     action_taken = True
                     st.rerun()
             with btn_c2:
-                if st.button(f"❌ Reject", key=f"reject_{rid}"):
+                if st.button(t("rq_reject"), key=f"reject_{rid}"):
                     row[rqcm.get("status", 13)].value         = "REJECTED"
                     row[rqcm.get("reviewed_by",   15)].value  = "Forus staff"
                     row[rqcm.get("reviewed_date", 16)].value  = str(datetime.date.today())
@@ -688,18 +1059,15 @@ elif page == "📋 Review Queue":
         st.markdown("---")
 
     if action_taken:
-        st.success("✓ Saved. Use **Download updated spreadsheet** in the sidebar to keep your changes.")
+        st.success(t("rq_saved_hint"))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE: Apply Approved
 # ═══════════════════════════════════════════════════════════════════════════════
-elif page == "✅ Apply Approved":
-    st.title("Apply Approved Changes")
-    st.markdown(
-        "Write all **APPROVED** items from the Review Queue back to the "
-        "MECHANISMS sheet, and update verification dates."
-    )
+elif page == "apply_approved":
+    st.title(t("page_apply_approved"))
+    st.markdown(t("apply_desc"))
     require_spreadsheet()
 
     wb    = _load_wb(data_only=False)
@@ -720,14 +1088,14 @@ elif page == "✅ Apply Approved":
             approved.append((r_idx, row))
 
     if not approved:
-        st.info("No APPROVED items in the Review Queue. Approve items on the **Review Queue** page first.")
+        st.info(t("apply_no_approved"))
         st.stop()
 
-    st.success(f"**{len(approved)} approved item(s)** ready to apply.")
+    st.success(t("apply_ready").format(n=len(approved)))
 
-    reviewer = st.text_input("Your name (recorded in spreadsheet)", value="Forus staff")
+    reviewer = st.text_input(t("apply_reviewer_name"), value="Forus staff")
 
-    if st.button("✅ Apply all approved changes", type="primary"):
+    if st.button(t("apply_btn"), type="primary"):
         sys.path.insert(0, str(Path(__file__).parent))
         try:
             import generate_toolkit as gt
@@ -739,25 +1107,20 @@ elif page == "✅ Apply Approved":
         gt.apply_approved(reviewer_name=reviewer or "Forus staff")
 
         applied = len(approved)
-        st.success(
-            f"✓ {applied} change(s) applied to MECHANISMS sheet. "
-            f"Verification dates updated. Review Queue items marked COMPLETED."
-        )
+        st.success(t("apply_done").format(n=applied))
         st.session_state["action_log"].append(
             f"{datetime.date.today()} — Applied {applied} approved change(s)"
         )
-        st.info("Use **Download updated spreadsheet** in the sidebar to save your changes, "
-                "then regenerate the PDF when ready.")
+        st.info(t("apply_download_hint"))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE: Generate PDF
 # ═══════════════════════════════════════════════════════════════════════════════
-elif page == "📄 Generate PDF":
-    st.title("Generate PDF")
+elif page == "generate_pdf":
+    st.title(t("page_generate_pdf"))
     require_spreadsheet()
 
-    # Check reportlab is available
     try:
         import reportlab
     except ImportError:
@@ -774,23 +1137,20 @@ elif page == "📄 Generate PDF":
         st.error(f"Could not import generate_toolkit: {e}")
         st.stop()
 
-    # Patch SPREADSHEET
     gt.SPREADSHEET = sp()
 
-    tab1, tab2 = st.tabs(["Standard build", "Custom member PDF"])
+    tab1, tab2 = st.tabs([t("pdf_tab_standard"), t("pdf_tab_custom")])
 
     with tab1:
-        st.subheader("Standard build")
-        st.markdown(
-            "Generates both the **Public** and **Network** versions of the full toolkit PDF."
-        )
+        st.subheader(t("pdf_tab_standard"))
+        st.markdown(t("pdf_standard_desc"))
         col_a, col_b = st.columns(2)
         with col_a:
             build_public  = st.checkbox("Public PDF",  value=True)
         with col_b:
             build_network = st.checkbox("Network PDF (confidential)", value=True)
 
-        if st.button("📄 Build PDF(s)", type="primary"):
+        if st.button(t("pdf_build_btn"), type="primary"):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 v = gt.VERSION
                 pub_path = os.path.join(tmp_dir, f"Forus_Toolkit_v{v}_Public.pdf")
@@ -809,7 +1169,7 @@ elif page == "📄 Generate PDF":
                 if build_public and os.path.exists(pub_path):
                     with open(pub_path, "rb") as f:
                         dl_c1.download_button(
-                            f"⬇ Download Public PDF",
+                            t("pdf_download_public"),
                             f.read(),
                             file_name=f"Forus_Toolkit_v{v}_Public.pdf",
                             mime="application/pdf",
@@ -817,7 +1177,7 @@ elif page == "📄 Generate PDF":
                 if build_network and os.path.exists(net_path):
                     with open(net_path, "rb") as f:
                         dl_c2.download_button(
-                            f"⬇ Download Network PDF",
+                            t("pdf_download_network"),
                             f.read(),
                             file_name=f"Forus_Toolkit_v{v}_Network.pdf",
                             mime="application/pdf",
@@ -827,11 +1187,8 @@ elif page == "📄 Generate PDF":
                 )
 
     with tab2:
-        st.subheader("Custom member PDF")
-        st.markdown(
-            "Fill in the form below to generate a personalised PDF for a specific member. "
-            "Select only the sections relevant to them."
-        )
+        st.subheader(t("pdf_tab_custom"))
+        st.markdown(t("pdf_custom_desc"))
 
         _PART_LABELS = {
             1: "Part 1 — Crisis Guides",
@@ -870,28 +1227,28 @@ elif page == "📄 Generate PDF":
         with st.form("custom_pdf_form"):
             c1, c2 = st.columns(2)
             with c1:
-                cust_name   = st.text_input("Contact name *", placeholder="e.g. Maria Rodriguez")
-                cust_org    = st.text_input("Organisation *", placeholder="e.g. CCFD-Terre Solidaire")
+                cust_name   = st.text_input(t("pdf_contact_name"), placeholder="e.g. Maria Rodriguez")
+                cust_org    = st.text_input(t("pdf_organisation"), placeholder="e.g. CCFD-Terre Solidaire")
             with c2:
-                cust_email  = st.text_input("Email (optional)", placeholder="contact@example.org")
-                cust_access = st.radio("Access level", ["Public", "Network"], horizontal=True)
+                cust_email  = st.text_input(t("pdf_email"), placeholder="contact@example.org")
+                cust_access = st.radio(t("pdf_access_level"), ["Public", "Network"], horizontal=True)
 
-            st.markdown("**Parts to include**")
+            st.markdown(t("pdf_parts_include"))
             pcols = st.columns(4)
             sel_parts = {}
             for i, (pnum, plabel) in enumerate(_PART_LABELS.items()):
                 with pcols[i % 4]:
                     sel_parts[pnum] = st.checkbox(plabel, value=True)
 
-            st.markdown("**Annexes**")
+            st.markdown(t("pdf_annexes"))
             acols = st.columns(3)
             sel_annexes = {}
             for i, ann_label in enumerate(_ANNEX_KEYS.keys()):
                 with acols[i]:
                     sel_annexes[ann_label] = st.checkbox(ann_label, value=True)
 
-            st.markdown("**Regions** *(filters annex content)*")
-            all_regions = st.checkbox("All regions", value=False)
+            st.markdown(t("pdf_regions"))
+            all_regions = st.checkbox(t("pdf_all_regions"), value=False)
             rcols = st.columns(6)
             sel_regions = {}
             for i, (rlabel, rkey) in enumerate(_REGION_LABELS):
@@ -902,24 +1259,24 @@ elif page == "📄 Generate PDF":
                         disabled=all_regions,
                     )
 
-            st.markdown("**Tools** *(single-page visual tools appended after main content)*")
+            st.markdown(t("pdf_tools"))
             tcols = st.columns(2)
             sel_tools = {}
             for i, (tid, tlabel) in enumerate(_TOOL_LABELS):
                 with tcols[i % 2]:
                     sel_tools[tid] = st.checkbox(tlabel, value=True, key=f"tool_{tid}")
 
-            st.markdown("**Appendix Tools**")
+            st.markdown(t("pdf_appendix_tools"))
             atcols = st.columns(3)
             for i, (tid, tlabel) in enumerate(_APPENDIX_TOOL_LABELS):
                 with atcols[i]:
                     sel_tools[tid] = st.checkbox(tlabel, value=True, key=f"tool_{tid}")
 
-            submitted = st.form_submit_button("📄 Build custom PDF", type="primary")
+            submitted = st.form_submit_button(t("pdf_build_custom_btn"), type="primary")
 
         if submitted:
             if not cust_name.strip() or not cust_org.strip():
-                st.error("Please enter a contact name and organisation.")
+                st.error(t("pdf_no_name_org_error"))
             else:
                 effective_regions = (
                     {rkey: True for _, rkey in _REGION_LABELS}
@@ -940,10 +1297,9 @@ elif page == "📄 Generate PDF":
                 safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
                 fname = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}.pdf"
 
-
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     out_path = os.path.join(tmp_dir, fname)
-                    gt.SPREADSHEET = sp()          # ← point at downloaded Drive file
+                    gt.SPREADSHEET = sp()
                     gt.OUT_PUBLIC  = out_path if access_level == 1 else os.path.join(tmp_dir, "pub.pdf")
                     gt.OUT_NETWORK = out_path if access_level == 2 else os.path.join(tmp_dir, "net.pdf")
 
@@ -970,19 +1326,15 @@ elif page == "📄 Generate PDF":
                             f"{datetime.date.today()} — Custom PDF for {cust_name}, {cust_org}"
                         )
                     else:
-                        st.error("PDF generation failed. Check that at least one section is selected.")
+                        st.error(t("pdf_gen_failed"))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE: Manage Tools
 # ═══════════════════════════════════════════════════════════════════════════════
-elif page == "🔧 Manage Tools":
-    st.title("Manage Tools")
-    st.markdown(
-        "View and edit the text content for the seven visual tools (T1–T4, A1–A3). "
-        "Content is loaded from the **TOOLS** sheet of your spreadsheet. "
-        "Changes saved here will appear in the next PDF you generate."
-    )
+elif page == "manage_tools":
+    st.title(t("page_manage_tools"))
+    st.markdown(t("tools_desc"))
     require_spreadsheet()
 
     sys.path.insert(0, str(Path(__file__).parent))
@@ -994,7 +1346,6 @@ elif page == "🔧 Manage Tools":
 
     gt.SPREADSHEET = sp()
 
-    # Ensure TOOLS sheet exists
     wb = _load_wb(data_only=False)
     if "TOOLS" not in wb.sheetnames:
         st.info("TOOLS sheet not found. Creating it with default content…")
@@ -1007,7 +1358,6 @@ elif page == "🔧 Manage Tools":
             st.error(f"Could not create TOOLS sheet: {e}")
             st.stop()
 
-    # Load tools data into a DataFrame
     ws_t = wb["TOOLS"]
     t_hdrs = [c.value for c in ws_t[2]]
     try:
@@ -1040,16 +1390,15 @@ elif page == "🔧 Manage Tools":
         st.warning("No rows found in TOOLS sheet.")
         st.stop()
 
-    # Filter controls
     tool_ids = sorted(set(r["tool_id"] for r in tools_rows))
-    sel_tool = st.selectbox("Filter by tool", ["All"] + tool_ids)
-    show_flagged = st.checkbox("Show only flagged entries (VERIFY / UPDATED)", value=False)
+    sel_tool = st.selectbox(t("tools_filter"), ["All"] + tool_ids)
+    show_flagged = st.checkbox(t("tools_show_flagged"), value=False)
 
     filtered = [r for r in tools_rows
                 if (sel_tool == "All" or r["tool_id"] == sel_tool)
                 and (not show_flagged or r["change_flag"] in ("VERIFY", "UPDATED"))]
 
-    st.markdown(f"**{len(filtered)} field(s)** shown")
+    st.markdown(f"**{len(filtered)} {t('tools_fields_shown')}**")
     st.markdown("")
 
     save_needed = False
@@ -1062,7 +1411,7 @@ elif page == "🔧 Manage Tools":
             expanded=(flag in ("VERIFY", "UPDATED")),
         ):
             new_text = st.text_area(
-                "Content",
+                t("tools_content_label"),
                 value=row_data["content_text"],
                 height=100,
                 key=f"tools_text_{r_idx}",
@@ -1070,13 +1419,13 @@ elif page == "🔧 Manage Tools":
             col_f1, col_f2 = st.columns([2, 1])
             with col_f1:
                 new_flag = st.selectbox(
-                    "Status",
+                    t("tools_status"),
                     ["OK", "VERIFY", "UPDATED"],
                     index=["OK", "VERIFY", "UPDATED"].index(flag) if flag in ["OK","VERIFY","UPDATED"] else 0,
                     key=f"tools_flag_{r_idx}",
                 )
             with col_f2:
-                if st.button("💾 Save this field", key=f"tools_save_{r_idx}"):
+                if st.button(t("tools_save_btn"), key=f"tools_save_{r_idx}"):
                     ws_t.cell(r_idx, vi+1).value  = new_text
                     ws_t.cell(r_idx, fi+1).value  = new_flag
                     ws_t.cell(r_idx, t_hdrs.index("last_updated")+1).value = str(datetime.date.today())
@@ -1086,11 +1435,4 @@ elif page == "🔧 Manage Tools":
                     st.rerun()
 
     st.markdown("---")
-    st.markdown(
-        "**How to use the AI auto-update agent with tools:**\n\n"
-        "1. Set any field's status to **VERIFY** if you think the content may be out of date.\n"
-        "2. The Check Mechanisms agent reviews MECHANISMS entries automatically.\n"
-        "   For tool text, flag fields manually and edit them directly here, "
-        "   or ask the AI agent in a conversation to review specific fields.\n"
-        "3. After editing, use **Save to Google Drive** in the sidebar to persist changes."
-    )
+    st.markdown(t("tools_instructions"))
