@@ -1281,16 +1281,30 @@ elif page == "review_queue":
             st.markdown(f"<div style='background:#FFF8F8;padding:8px;border-radius:4px;font-size:13px'>{cur or '—'}</div>", unsafe_allow_html=True)
         with ic2:
             st.markdown(f"**{t('rq_proposed_value')}**")
-            st.markdown(f"<div style='background:#F8FFF8;padding:8px;border-radius:4px;font-size:13px'>{prop or '—'}</div>", unsafe_allow_html=True)
+            if status == "PENDING":
+                # Editable — staffer can tweak before approving
+                edited_prop = st.text_area(
+                    label="proposed_value_edit",
+                    value=st.session_state.get(f"prop_edit_{rid}", prop),
+                    key=f"prop_edit_{rid}",
+                    height=120,
+                    label_visibility="collapsed",
+                    help="Edit the proposed text before approving if needed.",
+                )
+            else:
+                st.markdown(f"<div style='background:#F8FFF8;padding:8px;border-radius:4px;font-size:13px'>{prop or '—'}</div>", unsafe_allow_html=True)
         if reason: st.markdown(f"<small>**Reason:** {reason}</small>", unsafe_allow_html=True)
         if src:    st.markdown(f"<small>**Source:** <a href='{src}' target='_blank'>{src}</a></small>", unsafe_allow_html=True)
         if status == "PENDING":
             bc1, bc2, _ = st.columns([1, 1, 4])
             with bc1:
                 if st.button(t("rq_approve"), key=f"approve_{rid}"):
-                    row[rqcm.get("status",13)].value       = "APPROVED"
-                    row[rqcm.get("reviewed_by",15)].value  = "Forus staff"
-                    row[rqcm.get("reviewed_date",16)].value= str(datetime.date.today())
+                    # Write the (possibly edited) proposed value back to the spreadsheet
+                    final_prop = st.session_state.get(f"prop_edit_{rid}", prop)
+                    row[rqcm.get("proposed_value", 9)].value = final_prop
+                    row[rqcm.get("status",13)].value         = "APPROVED"
+                    row[rqcm.get("reviewed_by",15)].value    = "Forus staff"
+                    row[rqcm.get("reviewed_date",16)].value  = str(datetime.date.today())
                     wb.save(sp()); action_taken = True
                     st.session_state["action_log"].append(f"{datetime.date.today()} — Approved {rid}")
                     st.rerun()
