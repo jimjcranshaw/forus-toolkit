@@ -2390,6 +2390,8 @@ Check specifically:
 
 Typical sources: organisation's own website, annual reports, ICNL civic freedom resources, PILnet directory.
 
+IMPORTANT — proposed_value length rule: each proposed_value must be no longer than the current_value it replaces. Revise the existing text in place — correct or update the specific facts that have changed. Do not add new sentences, statistics, or background detail that was not already in the current value. If something is now outdated, replace it; do not append the new information alongside the old.
+
 If the entry is fully accurate, return status NO_CHANGE.
 If you find changes, list each changed field with proposed new text and the source URL.
 If you cannot verify, return status UNABLE_TO_VERIFY with a note explaining what was searched.""",
@@ -2407,6 +2409,8 @@ Check specifically:
 
 Typical sources: fund's own website, Fundsforngos.org, CIVICUS Monitor, civic space news sources.
 
+IMPORTANT — proposed_value length rule: each proposed_value must be no longer than the current_value it replaces. Revise the existing text in place — correct or update the specific facts that have changed. Do not add new sentences, statistics, or background detail that was not already in the current value. If something is now outdated, replace it; do not append the new information alongside the old.
+
 If the entry is fully accurate, return status NO_CHANGE.
 If you find changes, list each changed field with proposed new text and the source URL.
 If you cannot verify, return status UNABLE_TO_VERIFY with a note.""",
@@ -2422,6 +2426,8 @@ Check specifically:
 - Are there new security support providers that should be added? (include in new_mechanisms_found)
 
 Typical sources: provider's own website, Access Now reports, Digital Defenders Partnership, CiviCERT.
+
+IMPORTANT — proposed_value length rule: each proposed_value must be no longer than the current_value it replaces. Revise the existing text in place — correct or update the specific facts that have changed. Do not add new sentences, statistics, or background detail that was not already in the current value. If something is now outdated, replace it; do not append the new information alongside the old.
 
 If the entry is fully accurate, return status NO_CHANGE.
 If you find changes, list each changed field with proposed new text and the source URL.
@@ -2485,7 +2491,9 @@ def call_ai_agent(mech_dict, api_key):
     user_msg = (
         f"Current entry data:\n{mech_context}\n\n"
         f"{prompt.strip()}\n\n"
-        "Return ONLY a valid JSON object — no prose before or after it:\n"
+        "Return ONLY a valid JSON object — no prose before or after it.\n"
+        "Reminder: every proposed_value must be the same length or shorter than the current_value it replaces. "
+        "Update facts in place; do not expand or enrich the text.\n"
         "{\n"
         f"  \"mech_id\": \"{mech_id}\",\n"
         "  \"status\": \"CHANGE_DETECTED\" | \"NO_CHANGE\" | \"UNABLE_TO_VERIFY\",\n"
