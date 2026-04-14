@@ -1334,6 +1334,12 @@ elif page == "apply_approved":
         st.info(t("apply_no_approved")); st.stop()
     st.success(t("apply_ready").format(n=len(approved)))
     reviewer = st.text_input(t("apply_reviewer_name"), value="Forus staff")
+    _apply_api_key = st.text_input(
+        "Anthropic API key (for auto-translating changes into FR/ES — optional)",
+        type="password",
+        value=os.environ.get("ANTHROPIC_API_KEY", ""),
+        help="If provided, any changed EN fields will be automatically re-translated into French and Spanish."
+    )
     if st.button(t("apply_btn"), type="primary"):
         sys.path.insert(0, str(Path(__file__).parent))
         try:
@@ -1341,7 +1347,8 @@ elif page == "apply_approved":
             gt.SPREADSHEET = sp()
         except ImportError as e:
             st.error(f"Could not import generate_toolkit: {e}"); st.stop()
-        gt.apply_approved(reviewer_name=reviewer or "Forus staff")
+        gt.apply_approved(reviewer_name=reviewer or "Forus staff",
+                          api_key=_apply_api_key or None)
         st.success(t("apply_done").format(n=len(approved)))
         st.session_state["action_log"].append(
             f"{datetime.date.today()} — Applied {len(approved)} approved change(s)")

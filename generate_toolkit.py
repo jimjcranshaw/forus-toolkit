@@ -2600,6 +2600,55 @@ def call_ai_agent(mech_dict, api_key):
         return _agent_error(mech_id, f"JSON parse error: {e}")
 
 
+def _translate_field(en_value, field, lang, api_key):
+    """Translate a single ANNEX field value from English to FR or ES.
+
+    Returns the translated string, or None on failure.
+    Preserves proper nouns, URLs, email addresses, and mechanism IDs.
+    """
+    import json, urllib.request, urllib.error
+
+    lang_name = {"FR": "French", "ES": "Spanish"}.get(lang.upper())
+    if not lang_name or not en_value or not api_key:
+        return None
+
+    user_msg = (
+        f"Translate the following text from English into {lang_name}.\n\n"
+        "Rules:\n"
+        "1. Preserve all proper nouns (organisation names, fund names, programme names).\n"
+        "2. Preserve all URLs, email addresses, and mechanism IDs exactly as written.\n"
+        "3. Preserve currency codes, amounts, and technical terms.\n"
+        "4. Keep the same sentence length and register as the original.\n"
+        "5. Return ONLY the translated text — no explanation, no quotes around it.\n\n"
+        f"Field: {field}\n"
+        f"Text to translate:\n{en_value}"
+    )
+
+    payload = json.dumps({
+        "model":      "claude-haiku-4-5-20251001",
+        "max_tokens": 1024,
+        "messages":   [{"role": "user", "content": user_msg}],
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages",
+        data=payload,
+        headers={
+            "Content-Type":      "application/json",
+            "x-api-key":         api_key,
+            "anthropic-version": "2023-06-01",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            raw = json.loads(resp.read().decode("utf-8"))
+        text_blocks = [b.get("text", "") for b in raw.get("content", []) if b.get("type") == "text"]
+        return "".join(text_blocks).strip() or None
+    except Exception:
+        return None
+
+
 def _update_mech_verified(ws_m, row_idx, mcm, today, category):
     """Update last_verified, verified_by, next_verify_due for a NO_CHANGE row."""
     import datetime
@@ -2807,10 +2856,11 @@ def show_review_queue():
     print("  then run:   python generate_toolkit.py --apply-approved")
 
 
-def apply_approved(reviewer_name=None):
+def apply_approved(reviewer_name=None, api_key=None):
     """--apply-approved mode.
     Reads APPROVED items from REVIEW_QUEUE, writes new values back to
-    ANNEXES, updates verification dates, and marks items COMPLETED."""
+    ANNEXES, updates verification dates, and marks items COMPLETED.
+    If api_key is provided, auto-translates changed EN fields into FR and ES."""
     import datetime
 
     wb    = openpyxl.load_workbook(SPREADSHEET)
@@ -2867,8 +2917,23 @@ def apply_approved(reviewer_name=None):
             skipped += 1
             continue
 
-        # Write proposed value to ANNEXES
+        # Write proposed value to ANNEXES (EN)
         ws_m.cell(row=mech_row_idx, column=field_col + 1).value = proposed_val
+
+        # Auto-translate changed field into FR and ES if api_key available
+        _translatable = ("eligibility_note", "how_to_access", "timeframe", "constraints", "notes")
+        if api_key and field in _translatable and proposed_val:
+            for lang in ("FR", "ES"):
+                translated = _translate_field(str(proposed_val), field, lang, api_key)
+                if translated:
+                    tr_col = mcm.get(f"{field}_{lang.lower()}")
+                    if tr_col is not None:
+                        ws_m.cell(row=mech_row_idx, column=tr_col + 1).value = translated
+                        print(f"    ↳ Translated {field} → {lang}")
+                    else:
+                        print(f"    ↳ WARNING: no column {field}_{lang.lower()} in schema")
+                else:
+                    print(f"    ↳ Translation to {lang} failed — EN value kept")
 
         # Update verification metadata
         months = _VERIFY_MONTHS.get(cat, 12)
