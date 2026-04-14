@@ -123,6 +123,32 @@ TRANSLATIONS = {
         "pdf_build_custom_btn":  "📄 Build custom PDF",
         "pdf_no_name_org_error": "Please enter a contact name and organisation.",
         "pdf_gen_failed":        "PDF generation failed. Check that at least one section is selected.",
+        # Generate PDF — part / annex / region / tool labels
+        "pdf_part_1": "Part 1 — Crisis Guides",
+        "pdf_part_2": "Part 2 — Solidarity",
+        "pdf_part_3": "Part 3 — Legal Support",
+        "pdf_part_4": "Part 4 — Emergency Funding",
+        "pdf_part_5": "Part 5 — Safe Comms",
+        "pdf_part_6": "Part 6 — Diversification",
+        "pdf_part_7": "Part 7 — Feedback",
+        "pdf_annex_a": "Annex A: Legal Pro Bono Support",
+        "pdf_annex_b": "Annex B: Emergency Grants Mechanisms",
+        "pdf_annex_c": "Annex C: Physical & Digital Security Support",
+        "pdf_region_africa":  "Africa",
+        "pdf_region_asia":    "Asia-Pacific",
+        "pdf_region_europe":  "Europe",
+        "pdf_region_latam":   "Latin America & Caribbean",
+        "pdf_region_pacific": "Pacific",
+        "pdf_region_global":  "Global",
+        "pdf_tool_t1": "Tool 1 — Compliance Self-Check (B1)",
+        "pdf_tool_t2": "Tool 2 — Legal Support Decision Tree (B3)",
+        "pdf_tool_t3": "Tool 3 — Go public or stay quiet? (B5)",
+        "pdf_tool_t4": "Tool 4 — Do-No-Harm Checklist (B5)",
+        "pdf_appendix_a1": "Appendix A1 — Platform Role Clarifier (B2)",
+        "pdf_appendix_a2": "Appendix A2 — Diversification Readiness Gate (B6)",
+        "pdf_appendix_a3": "Appendix A3 — Emergency Funding Navigator (B4)",
+        "pdf_access_public_opt":  "Public",
+        "pdf_access_network_opt": "Network",
         # Manage Tools
         "page_manage_tools": "Manage Tools",
         "tools_desc": (
@@ -236,6 +262,32 @@ TRANSLATIONS = {
         "pdf_build_custom_btn":  "📄 Générer le PDF personnalisé",
         "pdf_no_name_org_error": "Veuillez entrer un nom de contact et une organisation.",
         "pdf_gen_failed":        "La génération du PDF a échoué. Vérifiez qu'au moins une section est sélectionnée.",
+        # Generate PDF — part / annex / region / tool labels
+        "pdf_part_1": "Partie 1 — Guides de crise",
+        "pdf_part_2": "Partie 2 — Solidarité",
+        "pdf_part_3": "Partie 3 — Soutien juridique",
+        "pdf_part_4": "Partie 4 — Financement d'urgence",
+        "pdf_part_5": "Partie 5 — Comms sécurisées",
+        "pdf_part_6": "Partie 6 — Diversification",
+        "pdf_part_7": "Partie 7 — Retours",
+        "pdf_annex_a": "Annexe A : Soutien bénévole juridique",
+        "pdf_annex_b": "Annexe B : Mécanismes de subventions d'urgence",
+        "pdf_annex_c": "Annexe C : Soutien à la sécurité physique et numérique",
+        "pdf_region_africa":  "Afrique",
+        "pdf_region_asia":    "Asie-Pacifique",
+        "pdf_region_europe":  "Europe",
+        "pdf_region_latam":   "Amérique latine et Caraïbes",
+        "pdf_region_pacific": "Pacifique",
+        "pdf_region_global":  "Mondial",
+        "pdf_tool_t1": "Outil 1 — Auto-vérification de conformité (B1)",
+        "pdf_tool_t2": "Outil 2 — Arbre de décision soutien juridique (B3)",
+        "pdf_tool_t3": "Outil 3 — Rendre public ou rester discret ? (B5)",
+        "pdf_tool_t4": "Outil 4 — Liste de contrôle Do-No-Harm (B5)",
+        "pdf_appendix_a1": "Annexe A1 — Clarificateur de rôle de plateforme (B2)",
+        "pdf_appendix_a2": "Annexe A2 — Passerelle de préparation à la diversification (B6)",
+        "pdf_appendix_a3": "Annexe A3 — Navigateur de financement d'urgence (B4)",
+        "pdf_access_public_opt":  "Public",
+        "pdf_access_network_opt": "Réseau",
         # Manage Tools
         "page_manage_tools": "Gérer les outils",
         "tools_desc": (
@@ -348,6 +400,32 @@ TRANSLATIONS = {
         "pdf_build_custom_btn":  "📄 Generar PDF personalizado",
         "pdf_no_name_org_error": "Por favor, ingrese un nombre de contacto y una organización.",
         "pdf_gen_failed":        "La generación del PDF falló. Compruebe que haya al menos una sección seleccionada.",
+        # Generate PDF — part / annex / region / tool labels
+        "pdf_part_1": "Parte 1 — Guías de crisis",
+        "pdf_part_2": "Parte 2 — Solidaridad",
+        "pdf_part_3": "Parte 3 — Apoyo jurídico",
+        "pdf_part_4": "Parte 4 — Financiación de emergencia",
+        "pdf_part_5": "Parte 5 — Comunicaciones seguras",
+        "pdf_part_6": "Parte 6 — Diversificación",
+        "pdf_part_7": "Parte 7 — Retroalimentación",
+        "pdf_annex_a": "Anexo A: Apoyo jurídico pro bono",
+        "pdf_annex_b": "Anexo B: Mecanismos de subvenciones de emergencia",
+        "pdf_annex_c": "Anexo C: Apoyo a la seguridad física y digital",
+        "pdf_region_africa":  "África",
+        "pdf_region_asia":    "Asia-Pacífico",
+        "pdf_region_europe":  "Europa",
+        "pdf_region_latam":   "América Latina y el Caribe",
+        "pdf_region_pacific": "Pacífico",
+        "pdf_region_global":  "Global",
+        "pdf_tool_t1": "Herramienta 1 — Autocomprobación de cumplimiento (B1)",
+        "pdf_tool_t2": "Herramienta 2 — Árbol de decisión de apoyo jurídico (B3)",
+        "pdf_tool_t3": "Herramienta 3 — ¿Hacerlo público o mantenerlo en silencio? (B5)",
+        "pdf_tool_t4": "Herramienta 4 — Lista de verificación Do-No-Harm (B5)",
+        "pdf_appendix_a1": "Apéndice A1 — Clarificador de rol de plataforma (B2)",
+        "pdf_appendix_a2": "Apéndice A2 — Puerta de preparación para la diversificación (B6)",
+        "pdf_appendix_a3": "Apéndice A3 — Navegador de financiación de emergencia (B4)",
+        "pdf_access_public_opt":  "Público",
+        "pdf_access_network_opt": "Red",
         # Manage Tools
         "page_manage_tools": "Gestionar herramientas",
         "tools_desc": (
@@ -1211,39 +1289,42 @@ elif page == "generate_pdf":
         st.subheader(t("pdf_tab_custom"))
         st.markdown(t("pdf_custom_desc"))
 
+        # All labels built from translations so they update when language changes
         _PART_LABELS = {
-            1: "Part 1 — Crisis Guides",
-            2: "Part 2 — Solidarity",
-            3: "Part 3 — Legal Support",
-            4: "Part 4 — Emergency Funding",
-            5: "Part 5 — Safe Comms",
-            6: "Part 6 — Diversification",
-            7: "Part 7 — Feedback",
+            1: t("pdf_part_1"),
+            2: t("pdf_part_2"),
+            3: t("pdf_part_3"),
+            4: t("pdf_part_4"),
+            5: t("pdf_part_5"),
+            6: t("pdf_part_6"),
+            7: t("pdf_part_7"),
         }
+        # Annex: internal English key (used by build function) → translated display label
         _ANNEX_KEYS = {
-            "Annex A: Legal Pro Bono Support":             "annex_a",
-            "Annex B: Emergency Grants Mechanisms":        "annex_b",
-            "Annex C: Physical & Digital Security Support":"annex_c",
+            "Annex A: Legal Pro Bono Support":              t("pdf_annex_a"),
+            "Annex B: Emergency Grants Mechanisms":         t("pdf_annex_b"),
+            "Annex C: Physical & Digital Security Support": t("pdf_annex_c"),
         }
         _REGION_LABELS = [
-            ("Africa",                    "africa"),
-            ("Asia-Pacific",              "asia"),
-            ("Europe",                    "europe"),
-            ("Latin America & Caribbean", "latam"),
-            ("Pacific",                   "pacific"),
-            ("Global",                    "global"),
+            (t("pdf_region_africa"),  "africa"),
+            (t("pdf_region_asia"),    "asia"),
+            (t("pdf_region_europe"),  "europe"),
+            (t("pdf_region_latam"),   "latam"),
+            (t("pdf_region_pacific"), "pacific"),
+            (t("pdf_region_global"),  "global"),
         ]
         _TOOL_LABELS = [
-            ("T1", "Tool 1 — Compliance Self-Check (B1)"),
-            ("T2", "Tool 2 — Legal Support Decision Tree (B3)"),
-            ("T3", "Tool 3 — Go public or stay quiet? (B5)"),
-            ("T4", "Tool 4 — Do-No-Harm Checklist (B5)"),
+            ("T1", t("pdf_tool_t1")),
+            ("T2", t("pdf_tool_t2")),
+            ("T3", t("pdf_tool_t3")),
+            ("T4", t("pdf_tool_t4")),
         ]
         _APPENDIX_TOOL_LABELS = [
-            ("A1", "Appendix A1 — Platform Role Clarifier (B2)"),
-            ("A2", "Appendix A2 — Diversification Readiness Gate (B6)"),
-            ("A3", "Appendix A3 — Emergency Funding Navigator (B4)"),
+            ("A1", t("pdf_appendix_a1")),
+            ("A2", t("pdf_appendix_a2")),
+            ("A3", t("pdf_appendix_a3")),
         ]
+        _access_opts = [t("pdf_access_public_opt"), t("pdf_access_network_opt")]
 
         with st.form("custom_pdf_form"):
             c1, c2 = st.columns(2)
@@ -1252,7 +1333,7 @@ elif page == "generate_pdf":
                 cust_org    = st.text_input(t("pdf_organisation"), placeholder="e.g. CCFD-Terre Solidaire")
             with c2:
                 cust_email  = st.text_input(t("pdf_email"), placeholder="contact@example.org")
-                cust_access = st.radio(t("pdf_access_level"), ["Public", "Network"], horizontal=True)
+                cust_access = st.radio(t("pdf_access_level"), _access_opts, horizontal=True)
 
             st.markdown(t("pdf_parts_include"))
             pcols = st.columns(4)
@@ -1264,9 +1345,9 @@ elif page == "generate_pdf":
             st.markdown(t("pdf_annexes"))
             acols = st.columns(3)
             sel_annexes = {}
-            for i, ann_label in enumerate(_ANNEX_KEYS.keys()):
+            for i, (ann_key, ann_display) in enumerate(_ANNEX_KEYS.items()):
                 with acols[i]:
-                    sel_annexes[ann_label] = st.checkbox(ann_label, value=True)
+                    sel_annexes[ann_key] = st.checkbox(ann_display, value=True)
 
             st.markdown(t("pdf_regions"))
             all_regions = st.checkbox(t("pdf_all_regions"), value=False)
@@ -1313,7 +1394,8 @@ elif page == "generate_pdf":
                     "annexes": sel_annexes,
                     "tools":   sel_tools,
                 }
-                access_level = 1 if cust_access == "Public" else 2
+                # Compare by index so it works regardless of translated label
+                access_level = 1 if _access_opts.index(cust_access) == 0 else 2
                 v = gt.VERSION
                 safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
                 fname = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}.pdf"
