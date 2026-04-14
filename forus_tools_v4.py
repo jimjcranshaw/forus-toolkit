@@ -221,7 +221,7 @@ def draw_t1(c, data=None):
     c.drawString(M+4*mm, ty-6*mm, 'WHY THIS MATTERS')
     _tb(c, d["T1_WHY_THIS_MATTERS"], M+4*mm, ty-13*mm, CW-8*mm, 'Helvetica', 8, col=MIDGREY, ld=10.5)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 7.5)
-    c.drawString(M, ty-ib_h-5*mm, 'HOW TO USE:  Tick each item your organisation can confirm today. Flag any gaps for immediate action.')
+    c.drawString(M, ty-ib_h-5*mm, 'HOW TO USE:  Tick each item your organisation can confirm today. Score one point per tick. Flag any gaps for immediate action.')
 
     cw = (CW - 6*mm) / 2; GAP = 7
 

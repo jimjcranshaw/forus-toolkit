@@ -51,7 +51,7 @@ TRANSLATIONS = {
     "EN": {
         # Sidebar
         "nav_dashboard":          "📊 Dashboard",
-        "nav_check_mechanisms":   "🔍 Check Mechanisms",
+        "nav_check_mechanisms":   "🔍 Check Annexes",
         "nav_review_queue":       "📋 Review Queue",
         "nav_apply_approved":     "✅ Apply Approved",
         "nav_generate_pdf":       "📄 Generate PDF",
@@ -74,17 +74,17 @@ TRANSLATIONS = {
         "dash_content_blocks":   "Content blocks",
         "dash_over_limit":       "Over word limit",
         "dash_awaiting_review":  "Awaiting review",
-        "dash_mechanisms_due":   "Mechanisms due",
-        "dash_mechanisms":       "Mechanisms",
+        "dash_mechanisms_due":   "Annexes due",
+        "dash_mechanisms":       "Annexes",
         "dash_review_queue":     "Review Queue",
         # Check Mechanisms
-        "page_check_mechanisms": "Check Mechanisms",
+        "page_check_mechanisms": "Check Annexes",
         "check_desc": (
             "Run AI-powered verification against each mechanism entry whose "
             "next check date is within the next 14 days, or is flagged **VERIFY**. "
             "Results are written to the **REVIEW_QUEUE** tab of the spreadsheet."
         ),
-        "check_no_due":           "✓ No mechanisms are currently due for verification.",
+        "check_no_due":           "✓ No annex entries are currently due for verification.",
         "check_due_label":        "mechanism(s) due for verification:",
         "check_run_verification": "Run verification",
         "check_api_key":          "Anthropic API key",
@@ -106,13 +106,13 @@ TRANSLATIONS = {
         "page_apply_approved": "Apply Approved Changes",
         "apply_desc": (
             "Write all **APPROVED** items from the Review Queue back to the "
-            "MECHANISMS sheet, and update verification dates."
+            "ANNEXES sheet, and update verification dates."
         ),
         "apply_no_approved":   "No APPROVED items in the Review Queue. Approve items on the **Review Queue** page first.",
         "apply_ready":         "{n} approved item(s) ready to apply.",
         "apply_reviewer_name": "Your name (recorded in spreadsheet)",
         "apply_btn":           "✅ Apply all approved changes",
-        "apply_done":          "✓ {n} change(s) applied to MECHANISMS sheet. Verification dates updated. Review Queue items marked COMPLETED.",
+        "apply_done":          "✓ {n} change(s) applied to ANNEXES sheet. Verification dates updated. Review Queue items marked COMPLETED.",
         "apply_download_hint": "Use **Download updated spreadsheet** in the sidebar to save your changes, then regenerate the PDF when ready.",
         # Generate PDF
         "page_generate_pdf":     "Generate PDF",
@@ -213,7 +213,7 @@ TRANSLATIONS = {
         "tools_instructions": (
             "**How to use the AI auto-update agent with tools:**\n\n"
             "1. Set any field's status to **VERIFY** if you think the content may be out of date.\n"
-            "2. The Check Mechanisms agent reviews MECHANISMS entries automatically.\n"
+            "2. The Check Mechanisms agent reviews ANNEXES entries automatically.\n"
             "   For tool text, flag fields manually and edit them directly here, "
             "   or ask the AI agent in a conversation to review specific fields.\n"
             "3. After editing, use **Save to Google Drive** in the sidebar to persist changes."
@@ -225,7 +225,7 @@ TRANSLATIONS = {
     "FR": {
         # Sidebar
         "nav_dashboard":          "📊 Tableau de bord",
-        "nav_check_mechanisms":   "🔍 Vérifier mécanismes",
+        "nav_check_mechanisms":   "🔍 Vérifier annexes",
         "nav_review_queue":       "📋 File de révision",
         "nav_apply_approved":     "✅ Appliquer approuvés",
         "nav_generate_pdf":       "📄 Générer PDF",
@@ -248,11 +248,11 @@ TRANSLATIONS = {
         "dash_content_blocks":   "Blocs de contenu",
         "dash_over_limit":       "Au-dessus de la limite",
         "dash_awaiting_review":  "En attente de révision",
-        "dash_mechanisms_due":   "Mécanismes à vérifier",
-        "dash_mechanisms":       "Mécanismes",
+        "dash_mechanisms_due":   "Annexes à vérifier",
+        "dash_mechanisms":       "Annexes",
         "dash_review_queue":     "File de révision",
         # Check Mechanisms
-        "page_check_mechanisms": "Vérifier les mécanismes",
+        "page_check_mechanisms": "Vérifier les annexes",
         "check_desc": (
             "Lancez une vérification assistée par IA pour chaque mécanisme dont la prochaine "
             "date de vérification est dans les 14 prochains jours, ou marqué **VERIFY**. "
@@ -280,7 +280,7 @@ TRANSLATIONS = {
         "page_apply_approved": "Appliquer les modifications approuvées",
         "apply_desc": (
             "Écrit tous les éléments **APPROUVÉS** de la file de révision dans "
-            "la feuille MECHANISMS et met à jour les dates de vérification."
+            "la feuille ANNEXES et met à jour les dates de vérification."
         ),
         "apply_no_approved":   "Aucun élément APPROUVÉ dans la file. Approuvez des éléments sur la page **File de révision**.",
         "apply_ready":         "{n} élément(s) approuvé(s) prêt(s) à appliquer.",
@@ -386,7 +386,7 @@ TRANSLATIONS = {
         "tools_instructions": (
             "**Comment utiliser l'agent IA de mise à jour avec les outils :**\n\n"
             "1. Définissez le statut d'un champ sur **VERIFY** si vous pensez que le contenu est obsolète.\n"
-            "2. L'agent Check Mechanisms vérifie automatiquement les entrées MECHANISMS.\n"
+            "2. L'agent Check Annexes vérifie automatiquement les entrées ANNEXES.\n"
             "   Pour le texte des outils, signalez les champs manuellement et modifiez-les directement ici.\n"
             "3. Après modification, utilisez **Sauvegarder sur Google Drive** pour conserver les changements."
         ),
@@ -396,7 +396,7 @@ TRANSLATIONS = {
     "ES": {
         # Sidebar
         "nav_dashboard":          "📊 Panel de control",
-        "nav_check_mechanisms":   "🔍 Verificar mecanismos",
+        "nav_check_mechanisms":   "🔍 Verificar anexos",
         "nav_review_queue":       "📋 Cola de revisión",
         "nav_apply_approved":     "✅ Aplicar aprobados",
         "nav_generate_pdf":       "📄 Generar PDF",
@@ -419,11 +419,11 @@ TRANSLATIONS = {
         "dash_content_blocks":   "Bloques de contenido",
         "dash_over_limit":       "Por encima del límite",
         "dash_awaiting_review":  "Pendiente de revisión",
-        "dash_mechanisms_due":   "Mecanismos pendientes",
-        "dash_mechanisms":       "Mecanismos",
+        "dash_mechanisms_due":   "Anexos pendientes",
+        "dash_mechanisms":       "Anexos",
         "dash_review_queue":     "Cola de revisión",
         # Check Mechanisms
-        "page_check_mechanisms": "Verificar mecanismos",
+        "page_check_mechanisms": "Verificar anexos",
         "check_desc": (
             "Ejecute la verificación asistida por IA para cada mecanismo cuya próxima "
             "fecha de verificación esté dentro de los próximos 14 días o esté marcado como **VERIFY**. "
@@ -451,13 +451,13 @@ TRANSLATIONS = {
         "page_apply_approved": "Aplicar cambios aprobados",
         "apply_desc": (
             "Escribe todos los elementos **APROBADOS** de la cola de revisión en la "
-            "hoja MECHANISMS y actualiza las fechas de verificación."
+            "hoja ANNEXES y actualiza las fechas de verificación."
         ),
         "apply_no_approved":   "No hay elementos APROBADOS. Apruebe elementos en la página **Cola de revisión** primero.",
         "apply_ready":         "{n} elemento(s) aprobado(s) listo(s) para aplicar.",
         "apply_reviewer_name": "Su nombre (registrado en la hoja de cálculo)",
         "apply_btn":           "✅ Aplicar todos los cambios aprobados",
-        "apply_done":          "✓ {n} cambio(s) aplicado(s) a la hoja MECHANISMS. Fechas actualizadas. Elementos marcados como COMPLETED.",
+        "apply_done":          "✓ {n} cambio(s) aplicado(s) a la hoja ANNEXES. Fechas actualizadas. Elementos marcados como COMPLETED.",
         "apply_download_hint": "Use **Descargar hoja de cálculo** para guardar sus cambios y luego regenere el PDF.",
         # Generate PDF
         "page_generate_pdf":    "Generar PDF",
@@ -557,7 +557,7 @@ TRANSLATIONS = {
         "tools_instructions": (
             "**Cómo usar el agente de IA de actualización automática con las herramientas:**\n\n"
             "1. Establezca el estado de un campo en **VERIFY** si cree que el contenido puede estar desactualizado.\n"
-            "2. El agente Check Mechanisms revisa las entradas de MECHANISMS automáticamente.\n"
+            "2. El agente Check Annexes revisa las entradas de ANNEXES automáticamente.\n"
             "   Para el texto de las herramientas, marque los campos manualmente y edítelos directamente aquí.\n"
             "3. Después de editar, use **Guardar en Google Drive** para conservar los cambios."
         ),
@@ -1020,7 +1020,7 @@ if page == "dashboard":
 
     wb      = _load_wb()
     df_cont = _sheet_to_df(wb, "CONTENT")
-    df_mech = _sheet_to_df(wb, "MECHANISMS")
+    df_mech = _sheet_to_df(wb, "ANNEXES")
     df_rq   = _sheet_to_df(wb, "REVIEW_QUEUE")
     today   = datetime.date.today()
 
@@ -1068,7 +1068,7 @@ if page == "dashboard":
                      if c in df_mech.columns]
         st.dataframe(df_mech[show_cols], use_container_width=True, hide_index=True)
     else:
-        st.info("No MECHANISMS sheet found.")
+        st.info("No ANNEXES sheet found.")
 
     if not df_rq.empty and "status" in df_rq:
         st.subheader(t("dash_review_queue"))
@@ -1086,7 +1086,7 @@ if page == "dashboard":
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# PAGE: Check Mechanisms  (admin only)
+# PAGE: Check Annexes  (admin only)
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "check_mechanisms":
     require_admin()
@@ -1095,7 +1095,7 @@ elif page == "check_mechanisms":
     require_spreadsheet()
 
     wb      = _load_wb()
-    df_mech = _sheet_to_df(wb, "MECHANISMS")
+    df_mech = _sheet_to_df(wb, "ANNEXES")
     today   = datetime.date.today()
     window  = today + datetime.timedelta(days=14)
 
@@ -1144,7 +1144,7 @@ elif page == "check_mechanisms":
             progress.progress(1.0, text="Done!")
 
             wb2   = openpyxl.load_workbook(sp())
-            ws_m  = wb2["MECHANISMS"]
+            ws_m  = wb2["ANNEXES"]
             ws_rq = wb2["REVIEW_QUEUE"]
             mhdrs = [c.value for c in ws_m[2]]
             mcm   = {h: i for i, h in enumerate(mhdrs) if h}
@@ -1194,7 +1194,7 @@ elif page == "check_mechanisms":
                 no_change=summary["NO_CHANGE"], changed=summary["CHANGE_DETECTED"], unable=summary["UNABLE_TO_VERIFY"]))
             if summary["CHANGE_DETECTED"] or summary["UNABLE_TO_VERIFY"]:
                 st.info(t("check_review_hint"))
-            st.session_state["action_log"].append(f"{today} — Checked {len(due)} mechanisms")
+            st.session_state["action_log"].append(f"{today} — Checked {len(due)} annex entries")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

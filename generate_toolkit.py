@@ -973,7 +973,7 @@ def load_data(access_level):
         if int(item.get("sensitivity",1) or 1) <= access_level:
             rows.append(item)
 
-    ws_m = wb["MECHANISMS"]
+    ws_m = wb["ANNEXES"]
     mhdrs = [c.value for c in ws_m[2]]
     mcm   = {h:i for i,h in enumerate(mhdrs) if h}
     mechs = {}
@@ -1531,7 +1531,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None):
     """Build the complete story list. Called twice — once per pass.
     page_map is None in pass 1; supplied from pass 1 results in pass 2.
     req: optional request dict; when supplied, annex sections are generated
-         from MECHANISMS data after all CONTENT rows."""
+         from ANNEXES data after all CONTENT rows."""
     story    = []
     warnings = []
 
@@ -1662,7 +1662,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None):
             if btype not in ("DECISION-Q", "DECISION-A"):
                 prev_time = None
 
-    # ── Annex sections from MECHANISMS sheet ────────────────────────────────
+    # ── Annex sections from ANNEXES sheet ────────────────────────────────
     if req:
         selected_annexes = req.get("annexes", {})
         selected_regions = req.get("regions", {})
@@ -2135,7 +2135,7 @@ _ANNEX_TO_KEY = {
     "Annex C: Physical & Digital Security Support":"annex_c",
 }
 
-# Annex section name → MECHANISMS sheet category value
+# Annex section name → ANNEXES sheet category value
 _ANNEX_CATEGORY = {
     "Annex A: Legal Pro Bono Support":             "legal",
     "Annex B: Emergency Grants Mechanisms":        "emergency-funding",
@@ -2567,7 +2567,7 @@ def _update_mech_verified(ws_m, row_idx, mcm, today, category):
 
 def check_mechanisms(api_key):
     """--check-mechanisms mode.
-    Reads MECHANISMS rows due for verification, calls the AI agent for each,
+    Reads ANNEXES rows due for verification, calls the AI agent for each,
     and writes proposals to the REVIEW_QUEUE sheet.
     NO_CHANGE results update last_verified/next_verify_due directly."""
     import datetime
@@ -2578,7 +2578,7 @@ def check_mechanisms(api_key):
         return
 
     wb   = openpyxl.load_workbook(SPREADSHEET)
-    ws_m = wb["MECHANISMS"]
+    ws_m = wb["ANNEXES"]
 
     mhdrs = [c.value for c in ws_m[2]]
     mcm   = {h: i for i, h in enumerate(mhdrs) if h}   # name → 0-indexed
@@ -2760,12 +2760,12 @@ def show_review_queue():
 def apply_approved(reviewer_name=None):
     """--apply-approved mode.
     Reads APPROVED items from REVIEW_QUEUE, writes new values back to
-    MECHANISMS, updates verification dates, and marks items COMPLETED."""
+    ANNEXES, updates verification dates, and marks items COMPLETED."""
     import datetime
 
     wb    = openpyxl.load_workbook(SPREADSHEET)
     ws_rq = wb["REVIEW_QUEUE"]
-    ws_m  = wb["MECHANISMS"]
+    ws_m  = wb["ANNEXES"]
 
     mhdrs = [c.value for c in ws_m[2]]
     mcm   = {h: i for i, h in enumerate(mhdrs) if h}   # field name → 0-indexed col
@@ -2801,7 +2801,7 @@ def apply_approved(reviewer_name=None):
         if field == "new_mechanism":
             # New entries need manual addition; flag and move on
             status_cell.value = "COMPLETED_MANUAL"
-            print(f"  {rid_cell.value}: New mechanism — add manually to MECHANISMS sheet.")
+            print(f"  {rid_cell.value}: New entry — add manually to ANNEXES sheet.")
             applied += 1
             continue
 
@@ -2817,7 +2817,7 @@ def apply_approved(reviewer_name=None):
             skipped += 1
             continue
 
-        # Write proposed value to MECHANISMS
+        # Write proposed value to ANNEXES
         ws_m.cell(row=mech_row_idx, column=field_col + 1).value = proposed_val
 
         # Update verification metadata

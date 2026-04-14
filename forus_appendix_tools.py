@@ -78,7 +78,7 @@ A2_DEFAULTS = {
     "A2_GOVERNANCE_ITEM_2": "At least one party has legal capacity to hold shared funds or contracts on behalf of the group",
     "A2_CAPACITY_ITEM_1": "Combined member capacity covers the service or function being mutualised",
     "A2_CAPACITY_ITEM_2": "A lead organisation is willing to absorb the initial administrative burden",
-    "A2_OUTCOME_ALL_6_HEAD": "ALL 6 TICKED  →  PROCEED TO MODEL SELECTION — see B6 mechanism directory",
+    "A2_OUTCOME_ALL_6_HEAD": "ALL 6 TICKED  →  PROCEED TO MODEL SELECTION — see Part 6 mechanism directory in the Forus Toolkit app",
     "A2_OUTCOME_ALL_6_BODY": (
         "Fewer than 6: address gaps before committing. Governance gaps are the most common cause of "
         "mutualisation failure — resolve these first, then trust, then capacity."),
@@ -215,7 +215,7 @@ def draw_a1(c, data=None):
     _tb(c, d["A1_WHY_THIS_MATTERS"], M+4*mm, ty-13*mm, CW-8*mm, 'Helvetica', 8, col=MIDGREY, ld=10.5)
     c.setFillColor(TEAL); c.setFont('Helvetica-Bold', 7.5)
     c.drawString(M, ty-ib_h-5*mm,
-        'HOW TO USE:  Read each tier. Identify which best matches your platform today. '
+        'HOW TO USE:  Read each tier. Identify which best matches your platform today. Score one point per tick. '
         'Communicate your tier to members in writing.')
 
     gap = 5*mm; ncols = 3; cw = (CW - (ncols-1)*gap) / ncols
@@ -264,7 +264,7 @@ def draw_a2(c, data=None):
     d = dict(A2_DEFAULTS)
     if data: d.update(data)
 
-    _hdr(c, 'A2 of 3', 'B6 · DIVERSIFICATION & MUTUALISATION',
+    _hdr(c, 'A2 of 3', 'PART 6 · DIVERSIFICATION & MUTUALISATION',
          'Diversification Readiness Gate',
          'Complete before committing to a new income model or mutualisation arrangement')
     ty = H - 48*mm - 6*mm
@@ -326,7 +326,7 @@ def draw_a2(c, data=None):
     c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8.5)
     c.drawString(M+4*mm, ab_y+16*mm, d["A2_OUTCOME_ALL_6_HEAD"])
     _tb(c, d["A2_OUTCOME_ALL_6_BODY"], M+4*mm, ab_y+10*mm, CW-8*mm, 'Helvetica', 8, col=WHITE, ld=10)
-    _ftr(c, 'Appendix A2 of 3  ·  Linked from B6 — Diversification & Mutualisation')
+    _ftr(c, 'Appendix A2 of 3  ·  Part 6 — Diversification & Mutualisation')
 
 
 # ── Appendix A3 ───────────────────────────────────────────────────────────────
@@ -335,7 +335,7 @@ def draw_a3(c, data=None):
     d = dict(A3_DEFAULTS)
     if data: d.update(data)
 
-    _hdr(c, 'A3 of 3', 'B4 · EMERGENCY FUNDING',
+    _hdr(c, 'A3 of 3', 'PART 4 · EMERGENCY FUNDING',
          'Emergency Funding Navigator',
          'Match your crisis type to the most accessible rapid-response mechanisms')
     ty = H - 48*mm - 6*mm
@@ -389,7 +389,7 @@ def draw_a3(c, data=None):
             c.drawString(bx+3*mm, y, 'NOTE'); y -= 9
             _tb(c, d[note_key], bx+3*mm, y, bw-6*mm, 'Helvetica-Oblique', 6.5, col=WHITE, ld=9)
 
-    _ftr(c, 'Appendix A3 of 3  ·  Linked from B4 — Emergency Funding')
+    _ftr(c, 'Appendix A3 of 3  ·  Part 4 — Emergency Funding')
 
 
 # ── Public entry point ────────────────────────────────────────────────────────
