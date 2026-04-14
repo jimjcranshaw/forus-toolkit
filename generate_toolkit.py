@@ -929,9 +929,10 @@ class SetMeta(Flowable):
 
 
 class ToolkitDoc(BaseDocTemplate):
-    def __init__(self, fn, access_level=1, page_map=None, **kw):
+    def __init__(self, fn, access_level=1, page_map=None, language="EN", **kw):
         super().__init__(fn, **kw)
         self.access_level = access_level
+        self._s = _PDF_STRINGS.get((language or "EN").upper(), _PDF_STRINGS["EN"])
         # page_map: {page_number: (part, section)} supplied from pass 1.
         # None means this is pass 1 — collect rather than render.
         self._page_map  = page_map or {}
@@ -959,8 +960,10 @@ class ToolkitDoc(BaseDocTemplate):
         canv.saveState()
         pn = canv.getPageNumber()
         part, section = doc._lookup(pn)
+        _s         = doc._s
         pc         = PART_COLORS.get(part, C["dark_green"])
-        part_label = PART_LABELS.get(part, "")
+        part_label = _s["part_labels"].get(part, "")
+        sec_display = _s.get("section_names", {}).get(section, section)
 
         # ── Left navigation strip ────────────────────────────────────────────
         canv.setFillColor(pc)
@@ -979,17 +982,16 @@ class ToolkitDoc(BaseDocTemplate):
         canv.line(FRAME_X, PAGE_H - MT + 2*mm, PAGE_W - MR, PAGE_H - MT + 2*mm)
         canv.setFillColor(C["mid_grey"])
         canv.setFont("Helvetica", 7)
-        canv.drawString(FRAME_X, PAGE_H - MT + 3.5*mm,
-                        "Forus Resilience & Support Toolkit")
+        canv.drawString(FRAME_X, PAGE_H - MT + 3.5*mm, _s["toolkit_title"])
         canv.setFont("Helvetica-Bold", 7)
-        canv.drawRightString(PAGE_W - MR, PAGE_H - MT + 3.5*mm, section)
+        canv.drawRightString(PAGE_W - MR, PAGE_H - MT + 3.5*mm, sec_display)
 
         # ── Footer ───────────────────────────────────────────────────────────
         canv.setStrokeColor(C["mid_grey"])
         canv.line(FRAME_X, MB - 4*mm, PAGE_W - MR, MB - 4*mm)
         canv.setFillColor(C["mid_grey"])
         canv.setFont("Helvetica", 7)
-        al = "PUBLIC VERSION" if doc.access_level == 1 else "FORUS NETWORK — CONFIDENTIAL"
+        al = _s["cover_public"] if doc.access_level == 1 else _s["cover_network"]
         canv.drawString(FRAME_X, MB - 7*mm, al)
         canv.drawCentredString(PAGE_W / 2, MB - 7*mm,
                                f"v{VERSION}  ·  {DATE_STAMP}")
@@ -1303,6 +1305,7 @@ PART_INTROS = {
 _PDF_STRINGS = {
     "EN": {
         "section_names": {},   # no translation needed; keys fall through to original
+        "toolkit_title":   "Forus Resilience & Support Toolkit",
         "cover_subtitle":  "Navigating Legal, Solidarity Support &amp; Sustainable Resource Models",
         "cover_public":    "PUBLIC VERSION",
         "cover_network":   "FORUS NETWORK — CONFIDENTIAL",
@@ -1350,6 +1353,7 @@ _PDF_STRINGS = {
             "Annex B: Emergency Grants Mechanisms":                 "Annexe B : Mécanismes de subventions d'urgence",
             "Annex C: Physical & Digital Security Support":         "Annexe C : Sécurité physique et numérique",
         },
+        "toolkit_title":   "Boîte à outils Résilience Forus",
         "cover_subtitle":  "Naviguer dans les soutiens juridiques, la solidarité et les modèles de ressources durables",
         "cover_public":    "VERSION PUBLIQUE",
         "cover_network":   "RÉSEAU FORUS — CONFIDENTIEL",
@@ -1397,6 +1401,7 @@ _PDF_STRINGS = {
             "Annex B: Emergency Grants Mechanisms":                 "Anexo B: Mecanismos de subvenciones de emergencia",
             "Annex C: Physical & Digital Security Support":         "Anexo C: Seguridad física y digital",
         },
+        "toolkit_title":   "Caja de herramientas Resiliencia Forus",
         "cover_subtitle":  "Navegando el apoyo jurídico, la solidaridad y los modelos de recursos sostenibles",
         "cover_public":    "VERSIÓN PÚBLICA",
         "cover_network":   "RED FORUS — CONFIDENCIAL",
@@ -2267,7 +2272,7 @@ def build_pdf(access_level, language="EN"):
     # ── Pass 1: layout to temp file, collect page→section map ────────────────
     story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=full_req, language=lang)
     tmp = out.replace(".pdf", "_pass1.pdf")
-    doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
+    doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, language=lang, **common_kw)
     doc1.build(story1)
 
     # Build page map: page → (part, section) of the FIRST section starting on that page
@@ -2284,7 +2289,7 @@ def build_pdf(access_level, language="EN"):
     story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=full_req, language=lang)
     # Write to a temp path first so we can append tool pages
     main_tmp = out.replace(".pdf", "_main.pdf")
-    doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
+    doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, language=lang, **common_kw)
     doc2.build(story2)
 
     # ── Insert tool pages inline after their section's last page ────────────
@@ -2456,10 +2461,12 @@ def build_request_pdf(req_id, access_level=1):
     common_kw = dict(pagesize=A4, leftMargin=ML, rightMargin=MR,
                      topMargin=MT, bottomMargin=MB)
 
+    req_lang = str(req.get("language", "EN") or "EN").upper()
+
     # Pass 1
-    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=req)
+    story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=req, language=req_lang)
     tmp = out.replace(".pdf","_pass1.pdf")
-    doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
+    doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, language=req_lang, **common_kw)
     doc1.build(story1)
     page_map = {}
     for (pn, part, section) in doc1._meta_log:
@@ -2469,8 +2476,8 @@ def build_request_pdf(req_id, access_level=1):
     except OSError: pass
 
     # Pass 2
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req)
-    doc2 = ToolkitDoc(out, access_level=access_level, page_map=page_map, **common_kw)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req, language=req_lang)
+    doc2 = ToolkitDoc(out, access_level=access_level, page_map=page_map, language=req_lang, **common_kw)
     doc2.build(story2)
 
     size_kb = os.path.getsize(out) // 1024
@@ -2513,7 +2520,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
     # Pass 1
     story1, warnings = make_story(rows, mechs, access_level, page_map=None, req=req, language=lang)
     tmp = out_path.replace(".pdf", "_pass1.pdf")
-    doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, **common_kw)
+    doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, language=lang, **common_kw)
     doc1.build(story1)
     page_map = {}
     for (pn, part, section) in doc1._meta_log:
@@ -2527,7 +2534,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
     # Pass 2
     story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req, language=lang)
     main_tmp = out_path.replace(".pdf", "_main.pdf")
-    doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, **common_kw)
+    doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, language=lang, **common_kw)
     doc2.build(story2)
 
     # ── Insert tool pages inline after their section's last page ────────────
