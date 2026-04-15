@@ -961,6 +961,9 @@ with st.sidebar:
     _new_lang = _lang_options[_selected_lang_display]
     if _new_lang != st.session_state.get("lang"):
         st.session_state["lang"] = _new_lang
+        # Keep the PDF language selector in sync with the UI language
+        _pdf_lang_label_map = {"EN": "English (EN)", "FR": "Français (FR)", "ES": "Español (ES)"}
+        st.session_state["custom_pdf_lang"] = _pdf_lang_label_map.get(_new_lang, "English (EN)")
         st.rerun()
 
     st.markdown("---")
