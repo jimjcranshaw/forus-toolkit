@@ -126,8 +126,8 @@ TRANSLATIONS = {
             "Fill in the form below to generate a personalised PDF for a specific member. "
             "Select only the sections relevant to them."
         ),
-        "pdf_contact_name":      "Contact name *",
-        "pdf_organisation":      "Organisation *",
+        "pdf_contact_name":      "Contact name (optional)",
+        "pdf_organisation":      "Organisation (optional)",
         "pdf_email":             "Email (optional)",
         "pdf_access_level":      "Access level",
         "pdf_parts_include":     "**Parts to include**",
@@ -137,7 +137,6 @@ TRANSLATIONS = {
         "pdf_tools":             "**Tools** *(single-page visual tools appended after main content)*",
         "pdf_appendix_tools":    "**Appendix Tools**",
         "pdf_build_custom_btn":  "📄 Build custom PDF",
-        "pdf_no_name_org_error": "Please enter a contact name and organisation.",
         "pdf_gen_failed":        "PDF generation failed. Check that at least one section is selected.",
         # Generate PDF — part / annex / region / tool labels
         "pdf_part_1": "Part 1 — Crisis Guides",
@@ -300,8 +299,8 @@ TRANSLATIONS = {
             "Remplissez le formulaire ci-dessous pour générer un PDF personnalisé pour un membre spécifique. "
             "Sélectionnez uniquement les sections qui lui sont pertinentes."
         ),
-        "pdf_contact_name":      "Nom du contact *",
-        "pdf_organisation":      "Organisation *",
+        "pdf_contact_name":      "Nom du contact (facultatif)",
+        "pdf_organisation":      "Organisation (facultatif)",
         "pdf_email":             "E-mail (facultatif)",
         "pdf_access_level":      "Niveau d'accès",
         "pdf_parts_include":     "**Parties à inclure**",
@@ -311,7 +310,6 @@ TRANSLATIONS = {
         "pdf_tools":             "**Outils** *(outils visuels d'une page ajoutés après le contenu principal)*",
         "pdf_appendix_tools":    "**Outils en annexe**",
         "pdf_build_custom_btn":  "📄 Générer le PDF personnalisé",
-        "pdf_no_name_org_error": "Veuillez entrer un nom de contact et une organisation.",
         "pdf_gen_failed":        "La génération du PDF a échoué. Vérifiez qu'au moins une section est sélectionnée.",
         "pdf_part_1": "Partie 1 — Guides de crise",
         "pdf_part_2": "Partie 2 — Solidarité",
@@ -471,8 +469,8 @@ TRANSLATIONS = {
             "Complete el formulario a continuación para generar un PDF personalizado para un miembro específico. "
             "Seleccione solo las secciones relevantes para ese miembro."
         ),
-        "pdf_contact_name":      "Nombre del contacto *",
-        "pdf_organisation":      "Organización *",
+        "pdf_contact_name":      "Nombre del contacto (opcional)",
+        "pdf_organisation":      "Organización (opcional)",
         "pdf_email":             "Correo electrónico (opcional)",
         "pdf_access_level":      "Nivel de acceso",
         "pdf_parts_include":     "**Partes a incluir**",
@@ -482,7 +480,6 @@ TRANSLATIONS = {
         "pdf_tools":             "**Herramientas** *(herramientas visuales de una página añadidas tras el contenido principal)*",
         "pdf_appendix_tools":    "**Herramientas de apéndice**",
         "pdf_build_custom_btn":  "📄 Generar PDF personalizado",
-        "pdf_no_name_org_error": "Por favor, ingrese un nombre de contacto y una organización.",
         "pdf_gen_failed":        "La generación del PDF falló. Compruebe que haya al menos una sección seleccionada.",
         "pdf_part_1": "Parte 1 — Guías de crisis",
         "pdf_part_2": "Parte 2 — Solidaridad",
@@ -1535,39 +1532,38 @@ elif page == "generate_pdf":
         _cust_lang = _cust_lang_opts[_cust_lang_label]
 
         if submitted:
-            if not cust_name.strip() or not cust_org.strip():
-                st.error(t("pdf_no_name_org_error"))
-            else:
-                effective_regions = ({rkey: True for _, rkey in _REGION_LABELS} if all_regions else sel_regions)
-                req = {"req_id":"custom", "name":cust_name.strip(), "org":cust_org.strip(),
-                       "email":cust_email.strip(), "parts":sel_parts, "regions":effective_regions,
-                       "annexes":sel_annexes, "tools":sel_tools}
-                access_level = 1 if _access_opts.index(cust_access) == 0 else 2
-                v        = gt.VERSION
-                safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in cust_org.strip())
-                lang_sfx = f"_{_cust_lang}" if _cust_lang != "EN" else ""
-                fname    = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}{lang_sfx}.pdf"
+            effective_regions = ({rkey: True for _, rkey in _REGION_LABELS} if all_regions else sel_regions)
+            _name = cust_name.strip() or "Anonymous"
+            _org  = cust_org.strip()  or "Forus"
+            req = {"req_id":"custom", "name":_name, "org":_org,
+                   "email":cust_email.strip(), "parts":sel_parts, "regions":effective_regions,
+                   "annexes":sel_annexes, "tools":sel_tools}
+            access_level = 1 if _access_opts.index(cust_access) == 0 else 2
+            v        = gt.VERSION
+            safe_org = "".join(c if c.isalnum() or c in "-_" else "_" for c in _org)
+            lang_sfx = f"_{_cust_lang}" if _cust_lang != "EN" else ""
+            fname    = f"Forus_Toolkit_v{v}_{'Public' if access_level==1 else 'Network'}_{safe_org}{lang_sfx}.pdf"
 
-                with tempfile.TemporaryDirectory() as tmp_dir:
-                    out_path = os.path.join(tmp_dir, fname)
-                    gt.SPREADSHEET = sp()
-                    gt.OUT_PUBLIC  = out_path if access_level == 1 else os.path.join(tmp_dir, "pub.pdf")
-                    gt.OUT_NETWORK = out_path if access_level == 2 else os.path.join(tmp_dir, "net.pdf")
-                    with st.spinner(f"Building custom PDF for {cust_name}…"):
-                        try:
-                            success = gt.build_pdf_from_request_dict(req, access_level=access_level, out_path=out_path, language=_cust_lang)
-                        except Exception as _e:
-                            import traceback
-                            st.error(f"Exception: {_e}"); st.code(traceback.format_exc()); success = False
-                    if success and os.path.exists(out_path):
-                        with open(out_path, "rb") as f:
-                            st.download_button(f"⬇ Download PDF for {cust_org}", f.read(),
-                                file_name=fname, mime="application/pdf")
-                        if is_admin():
-                            st.session_state["action_log"].append(
-                                f"{datetime.date.today()} — Custom PDF for {cust_name}, {cust_org}")
-                    else:
-                        st.error(t("pdf_gen_failed"))
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                out_path = os.path.join(tmp_dir, fname)
+                gt.SPREADSHEET = sp()
+                gt.OUT_PUBLIC  = out_path if access_level == 1 else os.path.join(tmp_dir, "pub.pdf")
+                gt.OUT_NETWORK = out_path if access_level == 2 else os.path.join(tmp_dir, "net.pdf")
+                with st.spinner("Building PDF…"):
+                    try:
+                        success = gt.build_pdf_from_request_dict(req, access_level=access_level, out_path=out_path, language=_cust_lang)
+                    except Exception as _e:
+                        import traceback
+                        st.error(f"Exception: {_e}"); st.code(traceback.format_exc()); success = False
+                if success and os.path.exists(out_path):
+                    with open(out_path, "rb") as f:
+                        st.download_button("⬇ Download PDF", f.read(),
+                            file_name=fname, mime="application/pdf")
+                    if is_admin() and (cust_name.strip() or cust_org.strip()):
+                        st.session_state["action_log"].append(
+                            f"{datetime.date.today()} — Custom PDF for {_name}, {_org}")
+                else:
+                    st.error(t("pdf_gen_failed"))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
