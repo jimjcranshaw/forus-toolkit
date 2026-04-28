@@ -18,9 +18,9 @@ from reportlab.platypus import (
 from reportlab.platypus.flowables import Flowable
 
 # ── Version — increment this each build ──────────────────────────────────────
-VERSION     = "1.9"
+VERSION     = "2.0"
 DATE_STAMP  = datetime.date.today().strftime("%Y-%m-%d")
-SPREADSHEET = "Forus_Toolkit_Content_DB.xlsx"
+SPREADSHEET = "Forus_Toolkit_Content_DB_v2-4.xlsx"
 OUT_PUBLIC  = f"/mnt/user-data/outputs/Forus_Toolkit_v{VERSION}_Public.pdf"
 OUT_NETWORK = f"/mnt/user-data/outputs/Forus_Toolkit_v{VERSION}_Network.pdf"
 
@@ -1022,6 +1022,13 @@ def load_data(access_level, language="EN"):
         if row_lang != lang:
             continue
         if int(item.get("sensitivity",1) or 1) <= access_level:
+            # Skip blocks marked as deleted — do not include in any build
+            if str(item.get("block_type","")).strip().upper() == "DELETED":
+                continue
+            # Skip FR/ES placeholder blocks awaiting translation
+            ct = str(item.get("content_text","") or "")
+            if ct.startswith("[TRANSLATION NEEDED"):
+                continue
             rows.append(item)
 
     ws_m = wb["ANNEXES"]
@@ -1317,7 +1324,7 @@ _PDF_STRINGS = {
         "acr_intro":       "Abbreviations used throughout this toolkit are listed below.",
         "part_labels": {
             1:"CRISIS GUIDES", 2:"SOLIDARITY", 3:"LEGAL SUPPORT",
-            4:"EMERGENCY FUNDING", 5:"SAFE COMMS", 6:"DIVERSIFICATION",
+            4:"EMERGENCY FUNDING", 5:"SAFE COMMS", 6:"DIVERSIFICATION &amp; MUTUALISATION",
             7:"FEEDBACK", 8:"ANNEXES",
         },
         "part_intros": {
@@ -1347,7 +1354,8 @@ _PDF_STRINGS = {
             "3. Legal Support":                     "3. Soutien juridique",
             "4. Emergency Funding":                 "4. Financement d'urgence",
             "5. Safe Comms":                        "5. Communications sécurisées",
-            "6. Diversification":                   "6. Diversification",
+            "6. Diversification":                   "6. Diversification et mutualisation",
+            "6. Diversification and Mutualisation": "6. Diversification et mutualisation",
             "7. Update Guide":                      "7. Guide de mise à jour",
             "Annex A: Legal Pro Bono Support":                      "Annexe A : Soutien juridique pro bono",
             "Annex B: Emergency Grants Mechanisms":                 "Annexe B : Mécanismes de subventions d'urgence",
@@ -1365,7 +1373,7 @@ _PDF_STRINGS = {
         "acr_intro":       "Les abréviations utilisées dans cette boîte à outils sont listées ci-dessous.",
         "part_labels": {
             1:"GUIDES DE CRISE", 2:"SOLIDARITÉ", 3:"SOUTIEN JURIDIQUE",
-            4:"FINANCEMENT D'URGENCE", 5:"COMMS SÉCURISÉES", 6:"DIVERSIFICATION",
+            4:"FINANCEMENT D'URGENCE", 5:"COMMS SÉCURISÉES", 6:"DIVERSIFICATION &amp; MUTUALISATION",
             7:"RETOURS D'INFORMATION", 8:"ANNEXES",
         },
         "part_intros": {
@@ -1395,7 +1403,8 @@ _PDF_STRINGS = {
             "3. Legal Support":                     "3. Apoyo jurídico",
             "4. Emergency Funding":                 "4. Financiación de emergencia",
             "5. Safe Comms":                        "5. Comunicaciones seguras",
-            "6. Diversification":                   "6. Diversificación",
+            "6. Diversification":                   "6. Diversificación y mutualización",
+            "6. Diversification and Mutualisation": "6. Diversificación y mutualización",
             "7. Update Guide":                      "7. Guía de actualización",
             "Annex A: Legal Pro Bono Support":                      "Anexo A: Apoyo jurídico pro bono",
             "Annex B: Emergency Grants Mechanisms":                 "Anexo B: Mecanismos de subvenciones de emergencia",
@@ -1413,7 +1422,7 @@ _PDF_STRINGS = {
         "acr_intro":       "Las abreviaciones utilizadas en esta caja de herramientas se enumeran a continuación.",
         "part_labels": {
             1:"GUÍAS DE CRISIS", 2:"SOLIDARIDAD", 3:"APOYO JURÍDICO",
-            4:"FINANCIACIÓN DE EMERGENCIA", 5:"COMMS SEGURAS", 6:"DIVERSIFICACIÓN",
+            4:"FINANCIACIÓN DE EMERGENCIA", 5:"COMMS SEGURAS", 6:"DIVERSIFICACIÓN &amp; MUTUALIZACIÓN",
             7:"RETROALIMENTACIÓN", 8:"ANEXOS",
         },
         "part_intros": {
@@ -1434,6 +1443,145 @@ _PDF_STRINGS = {
         "peer_connect_foot":"Para saber más o contactar con la plataforma, consulte el enlace a continuación.",
     },
 }
+
+# ── Forus Glossary — confirmed standard terminology (GE-078) ─────────────────
+# Source: Forus General Glossary (General Glossary tab + EU SEE Glossary tab).
+# All AI-generated translations must use these terms.  Applied by _enforce_glossary().
+#
+# Structure: FORUS_GLOSSARY[lang][english_term] = correct_translation
+# Terms are matched case-insensitively; output uses the casing given here.
+FORUS_GLOSSARY = {
+    "FR": {
+        # Core civic space vocabulary
+        "civic space":                  "espace civique",
+        "enabling environment":         "environnement favorable",
+        "advocacy":                     "plaidoyer",
+        "solidarity":                   "solidarité",
+        "national platform":            "plateforme nationale d'ONG",
+        "national platforms":           "plateformes nationales d'ONG",
+        # Early warning
+        "early warning mechanism":      "mécanisme d'alerte précoce",
+        "early warning":                "alerte précoce",
+        # Shrinking space
+        "shrinking civic space":        "réduction de l'espace civique",
+        "shrinking space":              "réduction de l'espace civique",
+        "civic space restrictions":     "restrictions de l'espace civique",
+        # Resilience
+        "resilience-building":          "renforcement de la résilience",
+        "resilience building":          "renforcement de la résilience",
+        # EU SEE documents
+        "country focus report":         "rapport national (CFR)",
+        "country focus reports":        "rapports nationaux (CFR)",
+        "enabling environment snapshot":"instantané de l'environnement favorable (EES)",
+        # Finance
+        "solidarity grant":             "subvention solidaire",
+        "solidarity grants":            "subventions solidaires",
+        # Forus-specific
+        "forus international":          "Forus",   # brand consistency
+    },
+    "ES": {
+        # Core civic space vocabulary
+        "civic space":                  "espacio cívico",
+        "enabling environment":         "entorno favorable",
+        "advocacy":                     "incidencia política",
+        "solidarity":                   "solidaridad",
+        "national platform":            "plataforma nacional de ONGs",
+        "national platforms":           "plataformas nacionales de ONGs",
+        # Early warning
+        "early warning mechanism":      "mecanismo de alerta temprana",
+        "early warning":                "alerta temprana",
+        # Shrinking space
+        "shrinking civic space":        "reducción del espacio cívico",
+        "shrinking space":              "reducción del espacio cívico",
+        "civic space restrictions":     "restricciones relativas al espacio cívico",
+        # Resilience
+        "resilience-building":          "fortalecimiento de la resiliencia",
+        "resilience building":          "fortalecimiento de la resiliencia",
+        # EU SEE documents
+        "country focus report":         "informe nacional (CFR)",
+        "country focus reports":        "informes nacionales (CFR)",
+        "enabling environment snapshot":"instantánea del entorno favorable (EES)",
+        # Finance
+        "solidarity grant":             "subvención de solidaridad",
+        "solidarity grants":            "subvenciones de solidaridad",
+        # Forus-specific
+        "forus international":          "Forus",   # brand consistency
+    },
+}
+
+# Longest-first ordering ensures multi-word terms match before their sub-terms
+# (e.g. "early warning mechanism" before "early warning").
+_GLOSSARY_ORDER = {
+    lang: sorted(terms.keys(), key=lambda t: -len(t))
+    for lang, terms in FORUS_GLOSSARY.items()
+}
+
+
+def _enforce_glossary(text, lang):
+    """Replace non-standard terminology with Forus-approved translations.
+
+    Performs whole-word, case-insensitive substitution so that, e.g.,
+    "Plaidoyer" and "plaidoyer" are both preserved correctly.
+
+    Args:
+        text: translated string to post-process.
+        lang: "FR" or "ES".
+
+    Returns:
+        Corrected string with all deviating terms replaced.
+    """
+    if not text or lang not in FORUS_GLOSSARY:
+        return text
+    terms = FORUS_GLOSSARY[lang]
+    for en_term in _GLOSSARY_ORDER[lang]:
+        correct = terms[en_term]
+        # Build a word-boundary pattern; use \\b where term starts/ends on word chars
+        escaped = re.escape(en_term)
+        pattern = re.compile(r'\b' + escaped + r'\b', re.IGNORECASE)
+        text = pattern.sub(correct, text)
+    return text
+
+
+def _audit_glossary_content(lang="FR"):
+    """Scan all CONTENT blocks in the given language for non-standard terminology.
+
+    Prints a report of blocks that contain English glossary terms instead of
+    the approved Forus translations.  Does NOT modify the spreadsheet.
+
+    Args:
+        lang: "FR" or "ES".
+    """
+    wb = openpyxl.load_workbook(SPREADSHEET, data_only=True)
+    ws = wb["CONTENT"]
+    hdrs = [c.value for c in ws[2]]
+    cm   = {h: i for i, h in enumerate(hdrs) if h}
+
+    terms = FORUS_GLOSSARY.get(lang.upper(), {})
+    issues = []
+
+    for row in ws.iter_rows(min_row=3, values_only=True):
+        if not row[cm.get("block_id", 0)]:
+            continue
+        row_lang = str(row[cm.get("language", 15)] or "EN").upper()
+        if row_lang != lang.upper():
+            continue
+        block_id = row[cm.get("block_id", 0)]
+        text     = str(row[cm.get("content_text", 7)] or "")
+
+        for en_term in _GLOSSARY_ORDER[lang.upper()]:
+            pattern = re.compile(r'\b' + re.escape(en_term) + r'\b', re.IGNORECASE)
+            if pattern.search(text):
+                correct = terms[en_term]
+                issues.append((block_id, en_term, correct))
+
+    if not issues:
+        print(f"  ✓ No glossary violations found in {lang} CONTENT blocks.")
+    else:
+        print(f"  {len(issues)} glossary violation(s) found in {lang} CONTENT blocks:\n")
+        for block_id, en_term, correct in issues:
+            print(f"    {block_id}: English term '{en_term}' — should be '{correct}'")
+    return issues
+
 
 def build_cover(story, access_level, sections_in_order=None, page_map=None, language="EN"):
     """Build the cover page.
@@ -1695,6 +1843,10 @@ def render_block(item, mechs, story, warnings, _s=None):
 
     elif btype == "DB-REF":
         story += render_db_ref(text, last_upd)
+
+    elif btype in ("DELETED", "DRAFT"):
+        # Silently skip deleted or draft-only blocks — do not render in PDF
+        pass
 
     elif btype == "MECHANISM-REF":
         mids = re.findall(r'MECH-[A-Z]-\d+', text)
@@ -2811,12 +2963,30 @@ def _translate_field(en_value, field, lang, api_key):
 
     Returns the translated string, or None on failure.
     Preserves proper nouns, URLs, email addresses, and mechanism IDs.
+
+    GE-078: Forus glossary terms are injected into the prompt as required
+    terminology, and _enforce_glossary() is applied to the AI output to
+    catch any deviations from the Forus General Glossary standard terms.
     """
     import json, urllib.request, urllib.error
 
     lang_name = {"FR": "French", "ES": "Spanish"}.get(lang.upper())
     if not lang_name or not en_value or not api_key:
         return None
+
+    # Build glossary instruction block from FORUS_GLOSSARY (GE-078)
+    glossary_terms = FORUS_GLOSSARY.get(lang.upper(), {})
+    if glossary_terms:
+        glossary_lines = "\n".join(
+            f"  '{en}' → '{tr}'"
+            for en, tr in sorted(glossary_terms.items(), key=lambda x: -len(x[0]))
+        )
+        glossary_block = (
+            f"\n6. Use these Forus-approved terminology translations exactly — "
+            f"do not paraphrase or substitute:\n{glossary_lines}"
+        )
+    else:
+        glossary_block = ""
 
     user_msg = (
         f"Translate the following text from English into {lang_name}.\n\n"
@@ -2825,7 +2995,8 @@ def _translate_field(en_value, field, lang, api_key):
         "2. Preserve all URLs, email addresses, and mechanism IDs exactly as written.\n"
         "3. Preserve currency codes, amounts, and technical terms.\n"
         "4. Keep the same sentence length and register as the original.\n"
-        "5. Return ONLY the translated text — no explanation, no quotes around it.\n\n"
+        "5. Return ONLY the translated text — no explanation, no quotes around it."
+        f"{glossary_block}\n\n"
         f"Field: {field}\n"
         f"Text to translate:\n{en_value}"
     )
@@ -2850,7 +3021,11 @@ def _translate_field(en_value, field, lang, api_key):
         with urllib.request.urlopen(req, timeout=30) as resp:
             raw = json.loads(resp.read().decode("utf-8"))
         text_blocks = [b.get("text", "") for b in raw.get("content", []) if b.get("type") == "text"]
-        return "".join(text_blocks).strip() or None
+        translated = "".join(text_blocks).strip() or None
+        # GE-078: enforce glossary terms on output to catch any AI deviations
+        if translated:
+            translated = _enforce_glossary(translated, lang.upper())
+        return translated
     except Exception:
         return None
 
@@ -3180,6 +3355,20 @@ if __name__ == "__main__":
         print(f"ERROR: {SPREADSHEET} not found.")
         sys.exit(1)
 
+    # ── Glossary audit: scan FR/ES CONTENT blocks for non-standard terms ────
+    if "--audit-glossary" in sys.argv:
+        audit_lang = "FR"
+        if "--language" in sys.argv:
+            idx = sys.argv.index("--language")
+            if idx + 1 < len(sys.argv):
+                audit_lang = sys.argv[idx + 1].upper()
+        print(f"\nForus Glossary Audit — {audit_lang} CONTENT blocks")
+        print("=" * 60)
+        print("Checking for English terms that should use Forus-approved translations…\n")
+        _audit_glossary_content(lang=audit_lang)
+        print("\n" + "=" * 60)
+        sys.exit(0)
+
     # ── Auto-update: check mechanisms ────────────────────────────────────────
     if "--check-mechanisms" in sys.argv:
         import os as _os
@@ -3267,5 +3456,7 @@ if __name__ == "__main__":
     print("  → Check mechanisms:     python generate_toolkit.py --check-mechanisms [--api-key KEY]")
     print("  → Review queue:         python generate_toolkit.py --review")
     print("  → Apply approved:       python generate_toolkit.py --apply-approved [--reviewer NAME]")
+    print("  → Audit glossary (FR):  python generate_toolkit.py --audit-glossary --language FR")
+    print("  → Audit glossary (ES):  python generate_toolkit.py --audit-glossary --language ES")
     print("  → To set a custom word limit for any row: type a number in column I.")
     print("=" * 60)
