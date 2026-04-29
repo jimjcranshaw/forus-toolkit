@@ -17,7 +17,7 @@ from reportlab.platypus import (
 )
 from reportlab.platypus.flowables import Flowable
 
-# ── Version — increment this each build ──────────────────────────────────────
+# ── Version - increment this each build ──────────────────────────────────────
 VERSION     = "2.0"
 DATE_STAMP  = datetime.date.today().strftime("%Y-%m-%d")
 SPREADSHEET = "Forus_Toolkit_Content_DB_v2-4.xlsx"
@@ -70,15 +70,15 @@ C = {
 
 # Part colours follow Forus brand palette
 PART_COLORS = {
-    0: h("2E2E5E"),   # Deep Navy  — Introduction / pre-content
-    1: h("ED1651"),   # Hot Pink   — Crisis Guides
-    2: h("58C5C7"),   # Teal       — Solidarity Activation
-    3: h("00424D"),   # Dark Blue  — Legal Support
-    4: h("5C9C8E"),   # Mint Green — Emergency Funding
-    5: h("B2C100"),   # Lime Green — Safe Comms
-    6: h("00424D"),   # Dark Blue  — Diversification
-    7: h("888888"),   # Mid Grey   — Feedback
-    8: h("3A3A3A"),   # Near-black — Annexes
+    0: h("2E2E5E"),   # Deep Navy  - Introduction / pre-content
+    1: h("ED1651"),   # Hot Pink   - Crisis Guides
+    2: h("58C5C7"),   # Teal       - Solidarity Activation
+    3: h("00424D"),   # Dark Blue  - Legal Support
+    4: h("5C9C8E"),   # Mint Green - Emergency Funding
+    5: h("B2C100"),   # Lime Green - Safe Comms
+    6: h("00424D"),   # Dark Blue  - Diversification
+    7: h("888888"),   # Mid Grey   - Feedback
+    8: h("3A3A3A"),   # Near-black - Annexes
 }
 PART_LABELS = {
     0:"INTRODUCTION",
@@ -92,7 +92,7 @@ PART_LABELS = {
 TIME_LABELS = {
     "preemptive":  "🛡  PREEMPTIVE ACTIONS",
     "responsive":  "⚡  RESPONSIVE ACTIONS",
-    # Legacy values — rendered as responsive
+    # Legacy values - rendered as responsive
     "first-hour":  "⚡  RESPONSIVE ACTIONS",
     "first-24hrs": "⚡  RESPONSIVE ACTIONS",
     "first-72hrs": "⚡  RESPONSIVE ACTIONS",
@@ -197,7 +197,7 @@ def get_limit(item):
 
 def trim(text, btype_or_limit):
     """Check word limit and flag over-limit blocks for editorial review.
-    NEVER truncates in the PDF — [OVER LIMIT] is a console-only warning so
+    NEVER truncates in the PDF - [OVER LIMIT] is a console-only warning so
     that no content is silently cut off in public-facing output."""
     if isinstance(btype_or_limit, int):
         limit = btype_or_limit
@@ -314,12 +314,12 @@ def render_section_banner(text, part, language="EN"):
     return [t, Spacer(1, 5*mm)]
 
 def render_subsection_divider(text, part, time_horizon):
-    """Labelled divider — more prominent than a timeline bar tab, lighter than a section banner."""
+    """Labelled divider - more prominent than a timeline bar tab, lighter than a section banner."""
     pc = PART_COLORS.get(part, C["dark_green"])
 
     # Accent colour varies by horizon so preemptive has a distinct visual identity
     HORIZON_ACCENTS = {
-        "preemptive":  h("3D6B8A"),   # steel blue — forward-looking
+        "preemptive":  h("3D6B8A"),   # steel blue - forward-looking
         "first-hour":  C["deep_red"],
         "first-24hrs": C["amber"],
         "first-72hrs": C["mid_green"],
@@ -384,7 +384,7 @@ def render_step(text, number, part, truncated, _s=None):
     if _s is None: _s = _PDF_STRINGS["EN"]
     pc = PART_COLORS.get(part, C["dark_green"])
     suffix = ""  # [OVER LIMIT] is console-only; not shown in PDF
-    # Number cell: stacked — big number on top, small "ACTION STEP" label below
+    # Number cell: stacked - big number on top, small "ACTION STEP" label below
     num_cell = Table([
         [Paragraph(str(number), S["stepnum"])],
         [Paragraph(_s["action_step"], ps("_stype", size=5.5, leading=7,
@@ -550,7 +550,7 @@ def render_template(text):
     return [t, Spacer(1,2*mm)]
 
 def render_case(text, _s=None):
-    """Case study block — supports both plain and structured CONTEXT/ACTION/WHAT CHANGED/LESSON format."""
+    """Case study block - supports both plain and structured CONTEXT/ACTION/WHAT CHANGED/LESSON format."""
     if _s is None: _s = _PDF_STRINGS["EN"]
 
     # Structured label sets (EN / FR / ES)
@@ -573,7 +573,7 @@ def render_case(text, _s=None):
                              ps("_cl", size=7.5, leading=9, color=C["white"], bold=True))]
 
     if is_structured:
-        # Split on structured labels — each section becomes label + body
+        # Split on structured labels - each section becomes label + body
         # First, extract any title line (before first label)
         title_match = re.split(r'(?m)^(?:' + label_pattern + r')\s*:', text, maxsplit=1)
         title_text  = title_match[0].strip() if title_match else ""
@@ -618,7 +618,7 @@ def render_case(text, _s=None):
             ("BOX",          (0,0),(-1,-1), 0.5, C["brown"]),
         ]))
     else:
-        # Plain unstructured case — simple layout
+        # Plain unstructured case - simple layout
         data = [header_row, [Paragraph(text, S["case"])]]
         t = Table(data, colWidths=[FRAME_W])
         t.setStyle(TableStyle([
@@ -643,93 +643,114 @@ def _linkify_refs(text):
         # Annexes ── anchor IDs mirror anchor_id(section_text) below
         # English variants
         (r"Annex A\b",
-         '<link dest="s_Annex_A__Legal_Pro_Bono_Support"'
+         '<link href="#s_Annex_A__Legal_Pro_Bono_Support"'
          ' color="#00424D"><u>Annex A</u></link>'),
         (r"Annex B\b",
-         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms"'
+         '<link href="#s_Annex_B__Emergency_Grants_Mechanisms"'
          ' color="#00424D"><u>Annex B</u></link>'),
         (r"Annex C\b",
-         '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
+         '<link href="#s_Annex_C__Physical___Digital_Security_Support"'
          ' color="#00424D"><u>Annex C</u></link>'),
         # French variants (Annexe A/B/C)
         (r"Annexe A\b",
-         '<link dest="s_Annex_A__Legal_Pro_Bono_Support"'
+         '<link href="#s_Annex_A__Legal_Pro_Bono_Support"'
          ' color="#00424D"><u>Annexe A</u></link>'),
         (r"Annexe B\b",
-         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms"'
+         '<link href="#s_Annex_B__Emergency_Grants_Mechanisms"'
          ' color="#00424D"><u>Annexe B</u></link>'),
         (r"Annexe C\b",
-         '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
+         '<link href="#s_Annex_C__Physical___Digital_Security_Support"'
          ' color="#00424D"><u>Annexe C</u></link>'),
         # Spanish variants (Anexo A/B/C)
         (r"Anexo A\b",
-         '<link dest="s_Annex_A__Legal_Pro_Bono_Support"'
+         '<link href="#s_Annex_A__Legal_Pro_Bono_Support"'
          ' color="#00424D"><u>Anexo A</u></link>'),
         (r"Anexo B\b",
-         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms"'
+         '<link href="#s_Annex_B__Emergency_Grants_Mechanisms"'
          ' color="#00424D"><u>Anexo B</u></link>'),
         (r"Anexo C\b",
-         '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
+         '<link href="#s_Annex_C__Physical___Digital_Security_Support"'
          ' color="#00424D"><u>Anexo C</u></link>'),
-        # Named sections — longer/more specific patterns first to avoid double-match
+        # Named sections - longer/more specific patterns first to avoid double-match
         (r"Part 3 \(Legal Support\)",
-         '<link dest="s_3__Legal_Support" color="#00424D">'
+         '<link href="#s_3__Legal_Support" color="#00424D">'
          '<u>Part 3 (Legal Support)</u></link>'),
         (r"Part 4 \(Emergency Funding\)",
-         '<link dest="s_4__Emergency_Funding" color="#00424D">'
+         '<link href="#s_4__Emergency_Funding" color="#00424D">'
          '<u>Part 4 (Emergency Funding)</u></link>'),
         (r"Part 5 \(Safe Comms\)",
-         '<link dest="s_5__Safe_Comms" color="#00424D">'
+         '<link href="#s_5__Safe_Comms" color="#00424D">'
          '<u>Part 5 (Safe Comms)</u></link>'),
         # Section 1.x subsection links (more specific before bare "Section")
         (r"Section 1\.1\b",
-         '<link dest="s_1_1_Legislative_Crisis" color="#00424D">'
+         '<link href="#s_1_1_Legislative_Crisis" color="#00424D">'
          '<u>Section 1.1</u></link>'),
         (r"Section 1\.2\b",
-         '<link dest="s_1_2_Funding_Shock" color="#00424D">'
+         '<link href="#s_1_2_Funding_Shock" color="#00424D">'
          '<u>Section 1.2</u></link>'),
         (r"Section 1\.3\b",
-         '<link dest="s_1_3_Digital_Repression" color="#00424D">'
+         '<link href="#s_1_3_Digital_Repression" color="#00424D">'
          '<u>Section 1.3</u></link>'),
         (r"Section 1\.4\b",
-         '<link dest="s_1_4_Stigmatisation___Intimidation" color="#00424D">'
+         '<link href="#s_1_4_Stigmatisation___Intimidation" color="#00424D">'
          '<u>Section 1.4</u></link>'),
         # Bare Part N links (after named variants above)
         (r"\bPart 1\b",
-         '<link dest="s_1_1_Legislative_Crisis" color="#00424D">'
+         '<link href="#s_1_1_Legislative_Crisis" color="#00424D">'
          '<u>Part 1</u></link>'),
         (r"\bPart 2\b",
-         '<link dest="s_2__Solidarity_Activation" color="#00424D">'
+         '<link href="#s_2__Solidarity_Activation" color="#00424D">'
          '<u>Part 2</u></link>'),
         (r"\bPart 3\b",
-         '<link dest="s_3__Legal_Support" color="#00424D">'
+         '<link href="#s_3__Legal_Support" color="#00424D">'
          '<u>Part 3</u></link>'),
         (r"\bPart 4\b",
-         '<link dest="s_4__Emergency_Funding" color="#00424D">'
+         '<link href="#s_4__Emergency_Funding" color="#00424D">'
          '<u>Part 4</u></link>'),
         (r"\bPart 5\b",
-         '<link dest="s_5__Safe_Comms" color="#00424D">'
+         '<link href="#s_5__Safe_Comms" color="#00424D">'
          '<u>Part 5</u></link>'),
         (r"\bPart 6\b",
-         '<link dest="s_6__Diversification" color="#00424D">'
+         '<link href="#s_6__Diversification" color="#00424D">'
          '<u>Part 6</u></link>'),
         # Mechanism IDs → relevant Annex
         (r"\bL-G-\d+\b",
-         '<link dest="s_Annex_A__Legal_Pro_Bono_Support" color="#00424D">'
+         '<link href="#s_Annex_A__Legal_Pro_Bono_Support" color="#00424D">'
          '<u>\\g<0></u></link>'),
         (r"\bE-G-\d+\b",
-         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms" color="#00424D">'
+         '<link href="#s_Annex_B__Emergency_Grants_Mechanisms" color="#00424D">'
          '<u>\\g<0></u></link>'),
         (r"\bD-G-\d+\b",
-         '<link dest="s_Annex_C__Physical___Digital_Security_Support" color="#00424D">'
+         '<link href="#s_Annex_C__Physical___Digital_Security_Support" color="#00424D">'
          '<u>\\g<0></u></link>'),
         # Solidarity request template
         (r"solidarity request template",
-         '<link dest="tmpl_P2_TEMPLATE_001" color="#00424D">'
+         '<link href="#tmpl_P2_TEMPLATE_001" color="#00424D">'
          '<u>solidarity request template</u></link>'),
     ]
     for pattern, repl in _LINK:
         t = re.sub(pattern, repl, t, flags=re.IGNORECASE)
+    # Bold Forus member/coalition names for legibility (GE-007 / Revision #13)
+    # Multi-word names listed first to avoid partial matches being bolded before full names
+    _MEMBER_ORGS = [
+        r"Uganda NGO Forum",
+        r"Cooperation Canada",
+        r"Spaces for Change",
+        r"NGO Federation Nepal",
+        r"La Coordinadora",
+        r"ANC Peru",
+        r"\bLAPAS\b",
+        r"\bCNONGD\b",
+        r"\bNNNGO\b",
+        r"\bPIANGO\b",
+        r"\bCONCORD\b",
+        r"\bUNNGOF\b",
+        r"\bEU SEE\b",
+        r"\bASONOG\b",
+        r"\bPDA\b",
+    ]
+    for pat in _MEMBER_ORGS:
+        t = re.sub(pat, r'<b>\g<0></b>', t)
     return t
 
 
@@ -894,7 +915,7 @@ def render_region_nav(text, section):
     for r in regions:
         aid = region_slug(r)
         cells.append(Paragraph(
-            f'<link dest="{aid}" color="#FFFFFF">{r}</link>',
+            f'<link href="#{aid}" color="#FFFFFF">{r}</link>',
             ps("_rnav", size=8, leading=11, color=C["white"], bold=True, align=TA_CENTER)))
 
     t = Table([cells], colWidths=[btn_w]*len(regions), rowHeights=[9*mm])
@@ -1064,7 +1085,7 @@ class ToolkitDoc(BaseDocTemplate):
         self.access_level = access_level
         self._s = _PDF_STRINGS.get((language or "EN").upper(), _PDF_STRINGS["EN"])
         # page_map: {page_number: (part, section)} supplied from pass 1.
-        # None means this is pass 1 — collect rather than render.
+        # None means this is pass 1 - collect rather than render.
         self._page_map  = page_map or {}
         self._meta_log  = []   # populated during pass 1 via afterFlowable
         f = Frame(FRAME_X, MB, FRAME_W, PAGE_H - MT - MB, id="main",
@@ -1153,7 +1174,7 @@ def load_data(access_level, language="EN"):
         if row_lang != lang:
             continue
         if int(item.get("sensitivity",1) or 1) <= access_level:
-            # Skip blocks marked as deleted — do not include in any build
+            # Skip blocks marked as deleted - do not include in any build
             if str(item.get("block_type","")).strip().upper() == "DELETED":
                 continue
             # Skip FR/ES placeholder blocks awaiting translation
@@ -1192,7 +1213,7 @@ def load_data(access_level, language="EN"):
         else:
             display_ord = int(do_val)
 
-        # Sort purely by display_order — no global SUBSECTION float.
+        # Sort purely by display_order - no global SUBSECTION float.
         # Each SUBSECTION's display_order is set below the entries that follow it,
         # so regions stay grouped with their country entries (e.g. Africa SUBSECTION
         # at order 0, Africa entries at 1-3, Asia SUBSECTION at 20, entries at 21-23…)
@@ -1244,7 +1265,7 @@ def ensure_tools_sheet(wb):
 
     ws = wb.create_sheet("TOOLS")
     # Header rows
-    ws.cell(1, 1, "FORUS TOOLKIT — TOOLS CONTENT")
+    ws.cell(1, 1, "FORUS TOOLKIT - TOOLS CONTENT")
     ws.cell(2, 1, "tool_id");    ws.cell(2, 2, "tool_name")
     ws.cell(2, 3, "field_key");  ws.cell(2, 4, "field_label")
     ws.cell(2, 5, "content_text"); ws.cell(2, 6, "word_limit")
@@ -1287,7 +1308,7 @@ def ensure_tools_sheet(wb):
             ws.cell(r, 4, label)
             ws.cell(r, 5, fval)
             ws.cell(r, 6, _wl(fkey))
-            ws.cell(r, 7, "AI-updatable field — keep concise, check context carefully")
+            ws.cell(r, 7, "AI-updatable field - keep concise, check context carefully")
             ws.cell(r, 8, today)
             ws.cell(r, 9, "OK")
             r += 1
@@ -1308,7 +1329,7 @@ def ensure_tools_sheet(wb):
 
 # ── PDF merging (tool pages appended after main toolkit) ─────────────────────
 
-# Which part each tool belongs to — tool pages are inserted after that part's last page
+# Which part each tool belongs to - tool pages are inserted after that part's last page
 _TOOL_PART = {
     "T1": 1,   # Compliance Self-Check    → Part 1  (B1 Crisis Scenarios)
     "A1": 2,   # Platform Role Clarifier  → Part 2  (B2 Solidarity)
@@ -1319,7 +1340,7 @@ _TOOL_PART = {
     "A2": 6,   # Diversification Gate     → Part 6  (B6 Diversification)
 }
 
-# Optional section-level placement overrides — {tool_id: (part, section_text_prefix)}
+# Optional section-level placement overrides - {tool_id: (part, section_text_prefix)}
 # When set, the tool is inserted after the LAST page of the named section
 # (matched by prefix) rather than after the entire part.
 _TOOL_SECTION_OVERRIDE = {
@@ -1350,7 +1371,7 @@ def _build_tool_buf_for_ids(ids, tools_data, language="EN"):
 
 
 def _merge_tools_inline(main_path, tools_selection, page_map, out_path, language="EN"):
-    """Insert tool pages inline — each tool appears right after its section's last page.
+    """Insert tool pages inline - each tool appears right after its section's last page.
 
     page_map: {page_number (1-indexed): (part_int, section_str)}  from pass-1 build.
     If pypdf is unavailable the main PDF is simply renamed/copied to out_path.
@@ -1372,7 +1393,7 @@ def _merge_tools_inline(main_path, tools_selection, page_map, out_path, language
         try:
             from PyPDF2 import PdfWriter, PdfReader
         except ImportError:
-            print("  ⚠ pypdf not installed — tool pages skipped. Add pypdf to requirements.txt")
+            print("  ⚠ pypdf not installed - tool pages skipped. Add pypdf to requirements.txt")
             if main_path != out_path:
                 import shutil; shutil.move(main_path, out_path)
             return
@@ -1468,14 +1489,14 @@ def _merge_tools_inline(main_path, tools_selection, page_map, out_path, language
 
 # Part intro lines shown in the ToC (one per part)
 PART_INTROS = {
-    1: "Crisis response guides — legislative, funding, digital & reputational",
+    1: "Crisis response guides - legislative, funding, digital & reputational",
     2: "Activating peer solidarity across the Forus network",
     3: "Finding and accessing legal support when it matters",
     4: "Emergency funding mechanisms for platforms under pressure",
     5: "Safe advocacy, communications & digital security",
     6: "Diversification, mutualisation & long-term sustainability",
     7: "Keeping this toolkit accurate and up to date",
-    8: "Regional and country-level resource directories — legal, funding & digital support",
+    8: "Regional and country-level resource directories - legal, funding & digital support",
 }
 
 # ── Localised strings for cover / ToC / acronyms pages ───────────────────────
@@ -1485,8 +1506,8 @@ _PDF_STRINGS = {
         "toolkit_title":   "Forus Resilience & Support Toolkit",
         "cover_subtitle":  "Navigating Legal, Solidarity Support &amp; Sustainable Resource Models",
         "cover_public":    "PUBLIC VERSION",
-        "cover_network":   "FORUS NETWORK — CONFIDENTIAL",
-        "cover_updated":   "Updated {date}  ·  Flourish Nonprofits for Forus International",
+        "cover_network":   "FORUS NETWORK - CONFIDENTIAL",
+        "cover_updated":   "Updated {date}  ·  Flourish Nonprofits for Forus",
         "toc_heading":     "CONTENTS",
         "toc_placeholder": "Contents will appear here after the first build.",
         "part_prefix":     "PART",
@@ -1499,14 +1520,14 @@ _PDF_STRINGS = {
             7:"FEEDBACK", 8:"ANNEXES",
         },
         "part_intros": {
-            1: "Crisis response guides — legislative, funding, digital &amp; reputational",
+            1: "Crisis response guides - legislative, funding, digital &amp; reputational",
             2: "Activating peer solidarity across the Forus network",
             3: "Finding and accessing legal support when it matters",
             4: "Emergency funding mechanisms for platforms under pressure",
             5: "Safe advocacy, communications &amp; digital security",
             6: "Diversification, mutualisation &amp; long-term sustainability",
             7: "Keeping this toolkit accurate and up to date",
-            8: "Regional and country-level resource directories — legal, funding &amp; digital support",
+            8: "Regional and country-level resource directories - legal, funding &amp; digital support",
         },
         "preemptive":       "🛡  PREEMPTIVE ACTIONS",
         "responsive":       "⚡  RESPONSIVE ACTIONS",
@@ -1535,8 +1556,8 @@ _PDF_STRINGS = {
         "toolkit_title":   "Boîte à outils Résilience Forus",
         "cover_subtitle":  "Naviguer dans les soutiens juridiques, la solidarité et les modèles de ressources durables",
         "cover_public":    "VERSION PUBLIQUE",
-        "cover_network":   "RÉSEAU FORUS — CONFIDENTIEL",
-        "cover_updated":   "Mis à jour le {date}  ·  Flourish Nonprofits pour Forus International",
+        "cover_network":   "RÉSEAU FORUS - CONFIDENTIEL",
+        "cover_updated":   "Mis à jour le {date}  ·  Flourish Nonprofits pour Forus",
         "toc_heading":     "SOMMAIRE",
         "toc_placeholder": "Le sommaire apparaîtra ici après la première génération.",
         "part_prefix":     "PARTIE",
@@ -1549,14 +1570,14 @@ _PDF_STRINGS = {
             7:"RETOURS D'INFORMATION", 8:"ANNEXES",
         },
         "part_intros": {
-            1: "Guides de réponse aux crises — législatives, financières, numériques et réputationnelles",
+            1: "Guides de réponse aux crises - législatives, financières, numériques et réputationnelles",
             2: "Activer la solidarité entre pairs au sein du réseau Forus",
             3: "Trouver et accéder à un soutien juridique au bon moment",
             4: "Mécanismes de financement d'urgence pour les plateformes sous pression",
             5: "Plaidoyer sécurisé, communications et sécurité numérique",
             6: "Diversification, mutualisation et durabilité à long terme",
             7: "Maintenir cette boîte à outils précise et à jour",
-            8: "Répertoires de ressources régionales et nationales — soutien juridique, financier et numérique",
+            8: "Répertoires de ressources régionales et nationales - soutien juridique, financier et numérique",
         },
         "preemptive":       "🛡  ACTIONS PRÉVENTIVES",
         "responsive":       "⚡  ACTIONS RÉACTIVES",
@@ -1585,8 +1606,8 @@ _PDF_STRINGS = {
         "toolkit_title":   "Caja de herramientas Resiliencia Forus",
         "cover_subtitle":  "Navegando el apoyo jurídico, la solidaridad y los modelos de recursos sostenibles",
         "cover_public":    "VERSIÓN PÚBLICA",
-        "cover_network":   "RED FORUS — CONFIDENCIAL",
-        "cover_updated":   "Actualizado el {date}  ·  Flourish Nonprofits para Forus International",
+        "cover_network":   "RED FORUS - CONFIDENCIAL",
+        "cover_updated":   "Actualizado el {date}  ·  Flourish Nonprofits para Forus",
         "toc_heading":     "CONTENIDO",
         "toc_placeholder": "El contenido aparecerá aquí después de la primera generación.",
         "part_prefix":     "PARTE",
@@ -1599,14 +1620,14 @@ _PDF_STRINGS = {
             7:"RETROALIMENTACIÓN", 8:"ANEXOS",
         },
         "part_intros": {
-            1: "Guías de respuesta a crisis — legislativas, financieras, digitales y reputacionales",
+            1: "Guías de respuesta a crisis - legislativas, financieras, digitales y reputacionales",
             2: "Activar la solidaridad entre pares en la red Forus",
             3: "Encontrar y acceder a apoyo jurídico cuando más se necesita",
             4: "Mecanismos de financiación de emergencia para plataformas bajo presión",
             5: "Incidencia segura, comunicaciones y seguridad digital",
             6: "Diversificación, mutualización y sostenibilidad a largo plazo",
             7: "Mantener esta caja de herramientas precisa y actualizada",
-            8: "Directorios de recursos regionales y nacionales — apoyo jurídico, financiero y digital",
+            8: "Directorios de recursos regionales y nacionales - apoyo jurídico, financiero y digital",
         },
         "preemptive":       "🛡  ACCIONES PREVENTIVAS",
         "responsive":       "⚡  ACCIONES REACTIVAS",
@@ -1617,7 +1638,7 @@ _PDF_STRINGS = {
     },
 }
 
-# ── Forus Glossary — confirmed standard terminology (GE-078) ─────────────────
+# ── Forus Glossary - confirmed standard terminology (GE-078) ─────────────────
 # Source: Forus General Glossary (General Glossary tab + EU SEE Glossary tab).
 # All AI-generated translations must use these terms.  Applied by _enforce_glossary().
 #
@@ -1752,15 +1773,15 @@ def _audit_glossary_content(lang="FR"):
     else:
         print(f"  {len(issues)} glossary violation(s) found in {lang} CONTENT blocks:\n")
         for block_id, en_term, correct in issues:
-            print(f"    {block_id}: English term '{en_term}' — should be '{correct}'")
+            print(f"    {block_id}: English term '{en_term}' - should be '{correct}'")
     return issues
 
 
 def build_cover(story, access_level, sections_in_order=None, page_map=None,
                 section_to_page=None, language="EN"):
     """Build the cover page.
-    sections_in_order: list of (part, section_text) in reading order — used for ToC.
-    page_map: {page: (part, section)} from pass 1 — None during pass 1 itself.
+    sections_in_order: list of (part, section_text) in reading order - used for ToC.
+    page_map: {page: (part, section)} from pass 1 - None during pass 1 itself.
     section_to_page: {section_text: page_number} built directly from _meta_log (preferred).
                      If None, falls back to deriving it from page_map.
     """
@@ -1806,7 +1827,7 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None,
         for part, section in sections_in_order:
             pc = PART_COLORS.get(part, C["dark_green"])
 
-            # Part heading row — shown once per part
+            # Part heading row - shown once per part
             if part != current_part:
                 current_part = part
                 pl    = _s["part_labels"].get(part, f"{_s['part_prefix']} {part}")
@@ -1832,7 +1853,7 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None,
                     Paragraph(""),
                 ])
 
-            # Section row — with clickable link in pass 2
+            # Section row - with clickable link in pass 2
             aid = anchor_id(section)
             pg_num = section_to_page.get(section)
             # Use translated section display name if available
@@ -1843,17 +1864,17 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None,
                 link_style = ps("_toc_link", size=9, leading=13,
                                 color=C["forus_dark"])
                 sec_para = Paragraph(
-                    f'<link dest="{aid}" color="#00424D">{sec_display}</link>',
+                    f'<link href="#{aid}" color="#00424D">{sec_display}</link>',
                     link_style)
                 pg_para  = Paragraph(
-                    f'<link dest="{aid}" color="#00424D">{pg_num}</link>',
+                    f'<link href="#{aid}" color="#00424D">{pg_num}</link>',
                     ps("_toc_pg", size=9, leading=13,
                        color=C["forus_dark"], bold=True, align=TA_RIGHT))
             else:
-                # Pass 1: no page numbers yet — render plain text
+                # Pass 1: no page numbers yet - render plain text
                 sec_para = Paragraph(sec_display,
                                      ps("_toc_s", size=9, leading=13, color=C["grey"]))
-                pg_para  = Paragraph("—",
+                pg_para  = Paragraph("-",
                                      ps("_toc_p", size=9, leading=13,
                                         color=C["mid_grey"], align=TA_RIGHT))
 
@@ -1905,14 +1926,16 @@ def render_acronyms_page(language="EN"):
         ("CNONGD",    "Conseil National des ONG de Développement (DRC)"),
         ("CONCORD",   "European NGO Confederation for Relief and Development"),
         ("CSO",       "Civil Society Organisation"),
+        ("DAC",       "Development Assistance Committee (OECD)"),
         ("DDP",       "Democratic Dialogue Programme (European funding)"),
         ("EU SEE",    "EU Civil Society Support Programme for South-East Europe"),
         ("FALE",      "Facility Aiding Locally Led Engagement (PIANGO model)"),
         ("FATF",      "Financial Action Task Force (global anti-money-laundering body)"),
         ("FLD",       "Front Line Defenders"),
         ("ICNL",      "International Center for Not-for-Profit Law"),
-        ("LAPAS",     "Latvijas Pilsoniska alianse — Latvian Civic Alliance"),
+        ("LAPAS",     "Latvijas Pilsoniska alianse - Latvian Civic Alliance"),
         ("MFF",       "EU Multi-Annual Financial Framework"),
+        ("MoU",       "Memorandum of Understanding"),
         ("NGO",       "Non-Governmental Organisation"),
         ("NNNGO",     "Network of Networks for NGOs, Nigeria"),
         ("ODA",       "Official Development Assistance"),
@@ -2023,7 +2046,7 @@ def render_block(item, mechs, story, warnings, _s=None):
         story += render_db_ref(text, last_upd)
 
     elif btype in ("DELETED", "DRAFT"):
-        # Silently skip deleted or draft-only blocks — do not render in PDF
+        # Silently skip deleted or draft-only blocks - do not render in PDF
         pass
 
     elif btype == "MECHANISM-REF":
@@ -2032,7 +2055,7 @@ def render_block(item, mechs, story, warnings, _s=None):
             for mid in mids:
                 story += render_mechanism_card(mechs.get(mid))
         else:
-            # No database code — render as styled arrow line with Annex hyperlinks
+            # No database code - render as styled arrow line with Annex hyperlinks
             story.append(Paragraph(_linkify_refs(text), S["mechref"]))
             story.append(Spacer(1,2*mm))
 
@@ -2058,7 +2081,7 @@ def _mech_matches_regions(mech, selected_regions):
 
 def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN",
                section_to_page=None):
-    """Build the complete story list. Called twice — once per pass.
+    """Build the complete story list. Called twice - once per pass.
     page_map is None in pass 1; supplied from pass 1 results in pass 2.
     section_to_page: {section_text: page_num} built from _meta_log in pass 1 for TOC accuracy.
     req: optional request dict; when supplied, annex sections are generated
@@ -2069,7 +2092,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
 
     # Collect ordered unique (part, section) pairs for the ToC,
     # including any selected annex sections.
-    # NOTE: Part 0 (intro page) is excluded from the ToC — it's pre-content.
+    # NOTE: Part 0 (intro page) is excluded from the ToC - it's pre-content.
     sections_in_order = []
     seen_sections = set()
     for item in rows:
@@ -2093,12 +2116,12 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
                 section_to_page=section_to_page,
                 language=language)
 
-    # ── Part 0: Intro page(s) — rendered between cover/ToC and Part 1 ──────
+    # ── Part 0: Intro page(s) - rendered between cover/ToC and Part 1 ──────
     # Note: render_acronyms_page() already ends with a PageBreak, so no extra one needed here.
     intro_rows = [r for r in rows if (r.get("part") == 0 or r.get("part") == "0")]
     if intro_rows:
         story.append(SetMeta(0, "Introduction"))   # chrome: navy sidebar + "INTRODUCTION"
-        pc_intro = h("2E2E5E")   # deep navy — distinct from part colours
+        pc_intro = h("2E2E5E")   # deep navy - distinct from part colours
         intro_header = Table(
             [[Paragraph("ABOUT THIS TOOLKIT", S["section_label"]), ""]],
             colWidths=[FRAME_W - 14*mm, 14*mm]
@@ -2198,7 +2221,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
         btype   = str(item.get("block_type", "")).strip()
         time_h  = str(item.get("time_horizon", "general") or "general")
 
-        # Section 7 (Update Guide) — network/public builds show only the
+        # Section 7 (Update Guide) - network/public builds show only the
         # FEEDBACK block (a simple "tell us what's out of date" prompt).
         # Full maintenance checklists/tips are only for Secretariat internal use.
         if part == 7 and btype not in _VISIBLE_7:
@@ -2216,7 +2239,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
                 current_phase = "responsive"
                 make_story._prev_display_h = None
             elif section != prev_section:
-                # Section has no visible content — advance prev_section without banner
+                # Section has no visible content - advance prev_section without banner
                 prev_section = section
             continue   # skip everything except FEEDBACK in Part 7
 
@@ -2249,7 +2272,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
             elif time_h in ("responsive", "first-hour", "first-24hrs", "first-72hrs"):
                 display_h = "responsive"
             else:
-                # time_h is "general" (v2.2 default) — derive phase from HEADER context
+                # time_h is "general" (v2.2 default) - derive phase from HEADER context
                 display_h = current_phase
             if display_h != getattr(make_story, "_prev_display_h", None) or time_h != prev_time:
                 story.append(Spacer(1, 5*mm))
@@ -2269,7 +2292,7 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
                 warnings.append(f"  ⚠ OVER LIMIT: {item.get('block_id')} [SUBSECTION, limit={get_limit(item)}]")
             for f in render_subsection_divider(text, part, time_h):
                 story.append(f)
-            # In Part 8 (Annexes), SUBSECTION marks a region — emit reg_ anchor so REGION-NAV links work
+            # In Part 8 (Annexes), SUBSECTION marks a region - emit reg_ anchor so REGION-NAV links work
             if part == 8:
                 reg_slug = "reg_" + re.sub(r'[^a-zA-Z0-9]', '_', text.lower()).strip("_")
                 story.append(SectionAnchor(reg_slug))
@@ -2374,7 +2397,7 @@ def update_spreadsheet(all_rows_by_id):
         # Col I: write SWITCH formula unless there's a manual numeric override
         i_cell = ws.cell(row=row_idx, column=cm["word_limit"])
         try:
-            int(i_cell.value)   # manual override — leave it alone
+            int(i_cell.value)   # manual override - leave it alone
         except (TypeError, ValueError):
             i_cell.value = f'=SWITCH({col_F_letter}{row_idx},{SWITCH_TYPES})'
             i_cell.font  = FORM_FONT
@@ -2445,7 +2468,7 @@ def update_spreadsheet(all_rows_by_id):
     # Title
     wd.merge_cells("A1:G1")
     t = wd.cell(row=1, column=1,
-                value=f"FORUS TOOLKIT — UPDATE DASHBOARD   (last built {DATE_STAMP}  v{VERSION})")
+                value=f"FORUS TOOLKIT - UPDATE DASHBOARD   (last built {DATE_STAMP}  v{VERSION})")
     t.font      = Font(name="Arial", bold=True, size=13, color="FFFFFF")
     t.fill      = PatternFill("solid", fgColor="00424D")
     t.alignment = Alignment(horizontal="left", vertical="center")
@@ -2453,7 +2476,7 @@ def update_spreadsheet(all_rows_by_id):
 
     # ── Section 1: OVER LIMIT rows ────────────────────────────────────────────
     wd.merge_cells("A3:G3")
-    h1 = wd.cell(row=3, column=1, value="⚠  OVER LIMIT — fix these before distributing")
+    h1 = wd.cell(row=3, column=1, value="⚠  OVER LIMIT - fix these before distributing")
     h1.font  = Font(name="Arial", bold=True, size=11, color="FFFFFF")
     h1.fill  = PatternFill("solid", fgColor="ED1651")
     h1.alignment = Alignment(horizontal="left", vertical="center")
@@ -2486,7 +2509,7 @@ def update_spreadsheet(all_rows_by_id):
 
     if not over_items:
         wd.merge_cells(f"A5:G5")
-        c = wd.cell(row=5, column=1, value="✓  No over-limit rows — all content within limits")
+        c = wd.cell(row=5, column=1, value="✓  No over-limit rows - all content within limits")
         c.font  = Font(name="Arial", bold=True, size=10, color="00424D")
         c.fill  = OK
         c.alignment = Alignment(horizontal="left", vertical="center")
@@ -2497,7 +2520,7 @@ def update_spreadsheet(all_rows_by_id):
 
     # ── Section 2: Review due ─────────────────────────────────────────────────
     wd.merge_cells(f"A{r}:G{r}")
-    h2 = wd.cell(row=r, column=1, value="📅  REVIEW DUE — check these are still accurate")
+    h2 = wd.cell(row=r, column=1, value="📅  REVIEW DUE - check these are still accurate")
     h2.font  = Font(name="Arial", bold=True, size=11, color="FFFFFF")
     h2.fill  = PatternFill("solid", fgColor="B2C100")
     h2.alignment = Alignment(horizontal="left", vertical="center")
@@ -2606,7 +2629,7 @@ def update_spreadsheet(all_rows_by_id):
     r += 1
     wd.merge_cells(f"A{r}:G{r}")
     h4 = wd.cell(row=r, column=1,
-                 value="📝  WORD LIMITS — default per block type (override in column I of CONTENT sheet)")
+                 value="📝  WORD LIMITS - default per block type (override in column I of CONTENT sheet)")
     h4.font  = Font(name="Arial", bold=True, size=11, color="FFFFFF")
     h4.fill  = PatternFill("solid", fgColor="4A4A4A")
     h4.alignment = Alignment(horizontal="left", vertical="center")
@@ -2658,7 +2681,7 @@ def update_spreadsheet(all_rows_by_id):
     ws.column_dimensions["K"].width = 10
 
     wb.save(SPREADSHEET)
-    print(f"  ✓ Spreadsheet updated — {len(over_items)} over-limit rows, {len(due_items)} reviews due")
+    print(f"  ✓ Spreadsheet updated - {len(over_items)} over-limit rows, {len(due_items)} reviews due")
 
 
 def build_word_count_map(rows):
@@ -2733,7 +2756,7 @@ def build_pdf(access_level, language="EN"):
     _merge_tools_inline(main_tmp, full_req.get("tools", {}), page_map, out, language=lang)
 
     size_kb = os.path.getsize(out) // 1024
-    print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out}")
+    print(f"  ✓ Done - {size_kb}KB - {len(rows)} rows - {out}")
     for w in warnings:
         print(w)
 
@@ -2865,7 +2888,7 @@ def filter_rows_for_request(rows, req):
                     country_or_region = text.strip()
                 # Match the region name against selected regions.
                 # Only include rows whose region tag is in the selected set.
-                # "Global" is treated as a region like any other — ticking it
+                # "Global" is treated as a region like any other - ticking it
                 # shows globally-applicable entries, not all regional entries.
                 region_key = _REGION_NAME_TO_KEY.get(country_or_region)
                 if region_key and region_key not in selected_regions:
@@ -2922,7 +2945,7 @@ def build_request_pdf(req_id, access_level=1):
     doc2.build(story2)
 
     size_kb = os.path.getsize(out) // 1024
-    print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out}")
+    print(f"  ✓ Done - {size_kb}KB - {len(rows)} rows - {out}")
     for w in warnings:
         print(w)
 
@@ -2987,7 +3010,7 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
 
     if os.path.exists(out_path):
         size_kb = os.path.getsize(out_path) // 1024
-        print(f"  ✓ Done — {size_kb}KB — {len(rows)} rows — {out_path}")
+        print(f"  ✓ Done - {size_kb}KB - {len(rows)} rows - {out_path}")
         for w in warnings:
             print(w)
         return True
@@ -3045,8 +3068,8 @@ Check specifically:
 
 Typical sources: organisation's own website, annual reports, ICNL civic freedom resources, PILnet directory.
 
-IMPORTANT — proposed_value writing rules:
-1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place — update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
+IMPORTANT - proposed_value writing rules:
+1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place - update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
 2. Relevance: include only information a national platform needs to decide whether to apply and how. Omit organisational history, network size figures, internal statistics, and any background that does not affect access or eligibility.
 
 If the entry is fully accurate, return status NO_CHANGE.
@@ -3068,8 +3091,8 @@ Check specifically:
 
 Typical sources: fund's own website, Fundsforngos.org, CIVICUS Monitor, civic space news sources.
 
-IMPORTANT — proposed_value writing rules:
-1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place — update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
+IMPORTANT - proposed_value writing rules:
+1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place - update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
 2. Relevance: include only information a national platform needs to decide whether to apply and how. Omit fund history, donor lists, total disbursement figures, and any background that does not affect access or eligibility.
 
 If the entry is fully accurate, return status NO_CHANGE.
@@ -3090,8 +3113,8 @@ Check specifically:
 
 Typical sources: provider's own website, Access Now reports, Digital Defenders Partnership, CiviCERT.
 
-IMPORTANT — proposed_value writing rules:
-1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place — update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
+IMPORTANT - proposed_value writing rules:
+1. Length: proposed_value must be no longer than the current_value it replaces. Revise in place - update the specific facts that have changed. Do not add new sentences or detail not already in the current value.
 2. Relevance: include only information a national platform needs to decide whether to reach out and how. Omit provider history, case volume statistics, and any background that does not affect access or eligibility.
 
 If the entry is fully accurate, return status NO_CHANGE.
@@ -3107,7 +3130,7 @@ def _rq_append(ws_rq, item_dict, next_id_holder):
     next_id_holder[0] += 1
     rid = f"RQ-{next_id_holder[0]:04d}"
     ws_rq.append([
-        None,                                       # approve (checkbox — left blank)
+        None,                                       # approve (checkbox - left blank)
         rid,                                        # review_id
         item_dict.get("date_flagged", ""),
         item_dict.get("mech_id", ""),
@@ -3156,7 +3179,7 @@ def call_ai_agent(mech_dict, api_key):
     user_msg = (
         f"Current entry data:\n{mech_context}\n\n"
         f"{prompt.strip()}\n\n"
-        "Return ONLY a valid JSON object — no prose before or after it.\n"
+        "Return ONLY a valid JSON object - no prose before or after it.\n"
         "Reminder: every proposed_value must be no longer than the current_value it replaces, and must contain "
         "only information a national civil society platform needs to decide whether to apply and how. "
         "Omit organisational history, statistics, and any background that does not affect access or eligibility. "
@@ -3244,7 +3267,7 @@ def call_ai_agent(mech_dict, api_key):
                     "confidence": conf_m.group(1) if conf_m else "LOW",
                     "changes":    [],
                     "new_mechanisms_found": [],
-                    "notes":      "JSON partially recovered — changes list could not be parsed",
+                    "notes":      "JSON partially recovered - changes list could not be parsed",
                 }
         except Exception:
             pass
@@ -3275,7 +3298,7 @@ def _translate_field(en_value, field, lang, api_key):
             for en, tr in sorted(glossary_terms.items(), key=lambda x: -len(x[0]))
         )
         glossary_block = (
-            f"\n6. Use these Forus-approved terminology translations exactly — "
+            f"\n6. Use these Forus-approved terminology translations exactly - "
             f"do not paraphrase or substitute:\n{glossary_lines}"
         )
     else:
@@ -3288,7 +3311,7 @@ def _translate_field(en_value, field, lang, api_key):
         "2. Preserve all URLs, email addresses, and mechanism IDs exactly as written.\n"
         "3. Preserve currency codes, amounts, and technical terms.\n"
         "4. Keep the same sentence length and register as the original.\n"
-        "5. Return ONLY the translated text — no explanation, no quotes around it."
+        "5. Return ONLY the translated text - no explanation, no quotes around it."
         f"{glossary_block}\n\n"
         f"Field: {field}\n"
         f"Text to translate:\n{en_value}"
@@ -3410,7 +3433,7 @@ def check_mechanisms(api_key):
         cat     = mech_dict.get("category", "")
         print(f"  Checking {mech_id} ({name})…", end="", flush=True)
 
-        # Strip translated columns before sending to AI — it should only review EN fields
+        # Strip translated columns before sending to AI - it should only review EN fields
         en_only_dict = {k: v for k, v in mech_dict.items()
                         if not (k.endswith("_fr") or k.endswith("_es"))}
         result  = call_ai_agent(en_only_dict, api_key)
@@ -3483,7 +3506,7 @@ def check_mechanisms(api_key):
 
     wb.save(SPREADSHEET)
     print()
-    print(f"  ✓ {checked} checked — {no_change} unchanged, "
+    print(f"  ✓ {checked} checked - {no_change} unchanged, "
           f"{proposed} proposal(s) added to REVIEW_QUEUE, {unable} unable to verify")
     print("  → Open REVIEW_QUEUE tab in the spreadsheet to review and approve.")
 
@@ -3581,19 +3604,19 @@ def apply_approved(reviewer_name=None, api_key=None):
         if field == "new_mechanism":
             # New entries need manual addition; flag and move on
             status_cell.value = "COMPLETED_MANUAL"
-            print(f"  {rid_cell.value}: New entry — add manually to ANNEXES sheet.")
+            print(f"  {rid_cell.value}: New entry - add manually to ANNEXES sheet.")
             applied += 1
             continue
 
         mech_row_idx = mech_row_map.get(mech_id)
         if not mech_row_idx:
-            print(f"  {rid_cell.value}: WARNING — mech_id {mech_id!r} not found. Skipping.")
+            print(f"  {rid_cell.value}: WARNING - mech_id {mech_id!r} not found. Skipping.")
             skipped += 1
             continue
 
         field_col = mcm.get(field)
         if field_col is None:
-            print(f"  {rid_cell.value}: WARNING — field {field!r} not in schema. Skipping.")
+            print(f"  {rid_cell.value}: WARNING - field {field!r} not in schema. Skipping.")
             skipped += 1
             continue
 
@@ -3613,7 +3636,7 @@ def apply_approved(reviewer_name=None, api_key=None):
                     else:
                         print(f"    ↳ WARNING: no column {field}_{lang.lower()} in schema")
                 else:
-                    print(f"    ↳ Translation to {lang} failed — EN value kept")
+                    print(f"    ↳ Translation to {lang} failed - EN value kept")
 
         # Update verification metadata
         months = _VERIFY_MONTHS.get(cat, 12)
@@ -3641,7 +3664,7 @@ def apply_approved(reviewer_name=None, api_key=None):
 
 if __name__ == "__main__":
     print("=" * 60)
-    print(f"Forus Toolkit PDF Generator  —  v{VERSION}")
+    print(f"Forus Toolkit PDF Generator  -  v{VERSION}")
     print(f"Date: {DATE_STAMP}  |  Source: {SPREADSHEET}")
     print("=" * 60)
     if not os.path.exists(SPREADSHEET):
@@ -3655,7 +3678,7 @@ if __name__ == "__main__":
             idx = sys.argv.index("--language")
             if idx + 1 < len(sys.argv):
                 audit_lang = sys.argv[idx + 1].upper()
-        print(f"\nForus Glossary Audit — {audit_lang} CONTENT blocks")
+        print(f"\nForus Glossary Audit - {audit_lang} CONTENT blocks")
         print("=" * 60)
         print("Checking for English terms that should use Forus-approved translations…\n")
         _audit_glossary_content(lang=audit_lang)
@@ -3679,7 +3702,7 @@ if __name__ == "__main__":
 
     # ── Auto-update: show review queue ───────────────────────────────────────
     if "--review" in sys.argv:
-        print("\nReview Queue — Pending Items")
+        print("\nReview Queue - Pending Items")
         print("=" * 60)
         show_review_queue()
         print("\n" + "=" * 60)
