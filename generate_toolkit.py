@@ -18,7 +18,7 @@ from reportlab.platypus import (
 from reportlab.platypus.flowables import Flowable
 
 # ── Version - increment this each build ──────────────────────────────────────
-VERSION     = "2.0"
+VERSION     = "2.1"
 DATE_STAMP  = datetime.date.today().strftime("%Y-%m-%d")
 SPREADSHEET = "Forus_Toolkit_Content_DB_v2-4.xlsx"
 OUT_PUBLIC  = f"/sessions/pensive-nice-cerf/Forus_Toolkit_v{VERSION}_Public.pdf"
@@ -59,7 +59,7 @@ C = {
     "light_purple":     h("E4EFF0"),   # soft background
     "brown":            h("5C9C8E"),   # → Forus Mint (case-example header)
     "light_brown":      h("E0F2EE"),   # → Forus Mint light
-    "amber":            h("B2C100"),   # → Forus Lime (decision / review)
+    "amber":            h("7A8600"),   # → Forus Lime darkened for print legibility (#89)
     "light_amber":      h("F3F7DB"),   # → Forus Lime light
     "orange":           h("ED1651"),   # → Forus Pink (gap notes)
     "grey":             h("3A3A3A"),   # near-black text
@@ -75,7 +75,7 @@ PART_COLORS = {
     2: h("58C5C7"),   # Teal       - Solidarity Activation
     3: h("00424D"),   # Dark Blue  - Legal Support
     4: h("5C9C8E"),   # Mint Green - Emergency Funding
-    5: h("B2C100"),   # Lime Green - Safe Comms
+    5: h("7A8600"),   # Olive/Lime - Safe Comms (darkened for print legibility, #89)
     6: h("00424D"),   # Dark Blue  - Diversification
     7: h("888888"),   # Mid Grey   - Feedback
     8: h("3A3A3A"),   # Near-black - Annexes
@@ -311,7 +311,7 @@ def render_section_banner(text, part, language="EN"):
         ("ROUNDEDCORNERS",[3,3,3,3]),
     ]))
     t.keepWithNext = True  # prevent orphaned section banner at page bottom
-    return [t, Spacer(1, 5*mm)]
+    return [t, Spacer(1, 7*mm)]   # #87: increased breathing room
 
 def render_subsection_divider(text, part, time_horizon):
     """Labelled divider - more prominent than a timeline bar tab, lighter than a section banner."""
@@ -473,7 +473,7 @@ def render_header(text):
         ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
         ("LINEBELOW",     (0, 0), (-1, -1), 2, border),
     ]))
-    return [Spacer(1, 5*mm), t, Spacer(1, 3*mm)]
+    return [Spacer(1, 6*mm), t, Spacer(1, 4*mm)]   # #87: more breathing room
 
 
 def render_decision_q(text):
@@ -1042,7 +1042,7 @@ def render_peer_connect(text, ref=None):
         ("BOTTOMPADDING",(0, 0), (-1, -1), 8),
         ("LINEAFTER",    (0, 0), (0, 0),  1, C["forus_teal"]),
     ]))
-    return [Spacer(1, 3*mm), t, Spacer(1, 3*mm)]
+    return [Spacer(1, 4*mm), t, Spacer(1, 4*mm)]   # #87: more breathing room
 
 
 # ── Page chrome ───────────────────────────────────────────────────────────────
@@ -1136,9 +1136,16 @@ class ToolkitDoc(BaseDocTemplate):
         canv.setStrokeColor(C["mid_grey"])
         canv.setLineWidth(0.4)
         canv.line(FRAME_X, PAGE_H - MT + 2*mm, PAGE_W - MR, PAGE_H - MT + 2*mm)
+        # Forus logo badge (#76) – teal rounded rectangle with white "forus" wordmark
+        _lx, _ly = FRAME_X, PAGE_H - MT + 1.2*mm
+        _lw, _lh = 20*mm, 6.2*mm
+        canv.setFillColor(C["forus_teal"])
+        canv.roundRect(_lx, _ly, _lw, _lh, 2, fill=1, stroke=0)
+        canv.setFillColor(C["white"])
+        canv.setFont("Helvetica-Bold", 8)
+        canv.drawCentredString(_lx + _lw / 2, _ly + 1.8*mm, "forus")
+        # Section name on the right
         canv.setFillColor(C["mid_grey"])
-        canv.setFont("Helvetica", 7)
-        canv.drawString(FRAME_X, PAGE_H - MT + 3.5*mm, _s["toolkit_title"])
         canv.setFont("Helvetica-Bold", 7)
         canv.drawRightString(PAGE_W - MR, PAGE_H - MT + 3.5*mm, sec_display)
 
@@ -1507,6 +1514,7 @@ PART_INTROS = {
 _PDF_STRINGS = {
     "EN": {
         "section_names": {},   # no translation needed; keys fall through to original
+        "cover_title":     "FORUS RESILIENCE &amp;<br/>SUPPORT TOOLKIT",
         "toolkit_title":   "Forus Resilience & Support Toolkit",
         "cover_subtitle":  "Navigating Legal, Solidarity Support &amp; Sustainable Resource Models",
         "cover_public":    "PUBLIC VERSION",
@@ -1557,6 +1565,7 @@ _PDF_STRINGS = {
             "Annex B: Emergency Grants Mechanisms":                 "Annexe B : Mécanismes de subventions d'urgence",
             "Annex C: Physical & Digital Security Support":         "Annexe C : Sécurité physique et numérique",
         },
+        "cover_title":     "BOÎTE À OUTILS<br/>RÉSILIENCE FORUS",
         "toolkit_title":   "Boîte à outils Résilience Forus",
         "cover_subtitle":  "Naviguer dans les soutiens juridiques, la solidarité et les modèles de ressources durables",
         "cover_public":    "VERSION PUBLIQUE",
@@ -1607,6 +1616,7 @@ _PDF_STRINGS = {
             "Annex B: Emergency Grants Mechanisms":                 "Anexo B: Mecanismos de subvenciones de emergencia",
             "Annex C: Physical & Digital Security Support":         "Anexo C: Seguridad física y digital",
         },
+        "cover_title":     "CAJA DE HERRAMIENTAS<br/>RESILIENCIA FORUS",
         "toolkit_title":   "Caja de herramientas Resiliencia Forus",
         "cover_subtitle":  "Navegando el apoyo jurídico, la solidaridad y los modelos de recursos sostenibles",
         "cover_public":    "VERSIÓN PÚBLICA",
@@ -1792,7 +1802,7 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None,
     _s    = _PDF_STRINGS.get(language.upper(), _PDF_STRINGS["EN"])
     label = _s["cover_public"] if access_level == 1 else _s["cover_network"]
     cover_rows = [
-        [Paragraph("FORUS RESILIENCE &amp;<br/>SUPPORT TOOLKIT", S["cover_t"])],
+        [Paragraph(_s.get("cover_title", "FORUS RESILIENCE &amp;<br/>SUPPORT TOOLKIT"), S["cover_t"])],
         [Paragraph(_s["cover_subtitle"], S["cover_s"])],
         [Spacer(1,6*mm)],
         [Paragraph(label, S["cover_m"])],
@@ -1807,6 +1817,56 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None,
         ("ALIGN",(0,0),(-1,-1),"CENTER"),
     ]))
     story.append(ct)
+    story.append(PageBreak())
+
+    # ── Toolkit Structure Overview page (#78) ─────────────────────────────────
+    # Always show the full 6-part structure regardless of which sections were
+    # selected for this PDF, so readers always understand where they sit.
+    _struct_heading_labels = {
+        "EN": "HOW THIS TOOLKIT IS ORGANISED",
+        "FR": "COMMENT EST ORGANISÉE CETTE BOÎTE À OUTILS",
+        "ES": "CÓMO ESTÁ ORGANIZADA ESTA CAJA DE HERRAMIENTAS",
+    }
+    _lang_key = (language or "EN").upper()
+    story.append(Paragraph(
+        _struct_heading_labels.get(_lang_key, _struct_heading_labels["EN"]),
+        ps("_struct_h", size=13, leading=17, color=C["dark_green"], bold=True)))
+    story.append(Spacer(1, 4*mm))
+    _selected_parts = {int(s[0]) for s in (sections_in_order or []) if s[0] != 0}
+    _struct_rows = []
+    for _pnum in range(1, 9):
+        _pcol    = PART_COLORS.get(_pnum, C["mid_grey"])
+        _plabel  = _s["part_labels"].get(_pnum, f"PART {_pnum}")
+        _pintro  = _s.get("part_intros", {}).get(_pnum, "")
+        _is_sel  = _pnum in _selected_parts
+        _txt_col = C["grey"] if _is_sel else C["mid_grey"]
+        _bg_col  = C["white"] if _is_sel else C["light_grey"]
+        _dot = Paragraph(
+            f'<font color="#{_pcol.hexval()[2:] if hasattr(_pcol, "hexval") else "888888"}">■</font>',
+            ps("_sd", size=14, leading=16, align=TA_CENTER))
+        _num_cell = Paragraph(
+            f'<b>{_s.get("part_prefix","PART")} {_pnum}</b>',
+            ps("_sn", size=8, leading=10, color=_pcol, bold=True))
+        _lbl_cell = Paragraph(
+            f'<b>{_plabel}</b>',
+            ps("_sl2", size=9, leading=12, color=_txt_col, bold=_is_sel))
+        _desc_cell = Paragraph(_pintro,
+            ps("_sd2", size=8, leading=11, color=_txt_col, italic=not _is_sel))
+        _struct_rows.append([_dot, _num_cell, _lbl_cell, _desc_cell])
+    _struct_t = Table(_struct_rows, colWidths=[7*mm, 24*mm, 42*mm, FRAME_W-7*mm-24*mm-42*mm])
+    _scmds = [
+        ("VALIGN",       (0,0),(-1,-1), "MIDDLE"),
+        ("LEFTPADDING",  (0,0),(-1,-1), 4),
+        ("RIGHTPADDING", (0,0),(-1,-1), 4),
+        ("TOPPADDING",   (0,0),(-1,-1), 5),
+        ("BOTTOMPADDING",(0,0),(-1,-1), 5),
+        ("LINEBELOW",    (0,0),(-1,-1), 0.3, C["mid_grey"]),
+    ]
+    for _i, _pnum in enumerate(range(1, 9)):
+        _bg = C["light_grey"] if (_i % 2 == 0) else C["white"]
+        _scmds.append(("BACKGROUND", (0, _i), (-1, _i), _bg))
+    _struct_t.setStyle(TableStyle(_scmds))
+    story.append(_struct_t)
     story.append(PageBreak())
 
     # ── Table of Contents page ────────────────────────────────────────────────
@@ -2083,6 +2143,99 @@ def _mech_matches_regions(mech, selected_regions):
     return False
 
 
+def render_resources_page(language="EN", access_level=1):
+    """Build a 'Key Resources' summary page appended to every generated PDF (#77).
+    Provides a standalone reference with key URLs from across the toolkit."""
+    _s = _PDF_STRINGS.get((language or "EN").upper(), _PDF_STRINGS["EN"])
+    _lang = (language or "EN").upper()
+    _headings = {
+        "EN": ("KEY RESOURCES", "Essential links and reference materials from across this toolkit."),
+        "FR": ("RESSOURCES CLÉS", "Liens essentiels et documents de référence de cette boîte à outils."),
+        "ES": ("RECURSOS CLAVE", "Enlaces esenciales y materiales de referencia de esta caja de herramientas."),
+    }
+    _heading, _sub = _headings.get(_lang, _headings["EN"])
+    _section_headings = {
+        "EN": {
+            "forus":    "Forus International",
+            "legal":    "Legal Support",
+            "funding":  "Emergency Funding",
+            "comms":    "Safe Communications & Security",
+            "divers":   "Diversification & Sustainability",
+        },
+        "FR": {
+            "forus":    "Forus International",
+            "legal":    "Soutien juridique",
+            "funding":  "Financement d'urgence",
+            "comms":    "Communications sécurisées & sécurité",
+            "divers":   "Diversification & durabilité",
+        },
+        "ES": {
+            "forus":    "Forus Internacional",
+            "legal":    "Apoyo jurídico",
+            "funding":  "Financiación de emergencia",
+            "comms":    "Comunicaciones seguras & seguridad",
+            "divers":   "Diversificación & sostenibilidad",
+        },
+    }.get(_lang, {"forus":"Forus International","legal":"Legal Support","funding":"Emergency Funding",
+                   "comms":"Safe Communications","divers":"Diversification"})
+    # Curated resource list: (category_key, display_label, url)
+    _resources = [
+        ("forus",   "Forus International",                              "https://www.forus-international.org"),
+        ("forus",   "Forus Safeguarding Toolkit",                       "https://www.forus-international.org/en/pdf/keeping-people-safe"),
+        ("forus",   "Forus Communications Clinic",                      "https://www.forus-international.org/en/news/communications-clinic"),
+        ("legal",   "IFRC Legal Database",                              "https://www.ifrc.org/legal-resources"),
+        ("legal",   "ICNL – Civic Freedom Monitor",                     "https://www.icnl.org/programs/civic-freedom-monitor"),
+        ("legal",   "Front Line Defenders – Emergency Grants",          "https://www.frontlinedefenders.org/en/programme/emergency-grants"),
+        ("funding", "Emergency Response Fund for CSOs",                 "https://www.emergencyresponsefund.org"),
+        ("funding", "ProtectDefenders.eu",                              "https://www.protectdefenders.eu"),
+        ("funding", "Innpactia – Funding Database",                     "https://www.innpactia.com"),
+        ("comms",   "Access Now – Digital Security Helpline",           "https://www.accessnow.org/help"),
+        ("comms",   "EFF – Surveillance Self-Defence",                  "https://ssd.eff.org"),
+        ("comms",   "Handbook Against Disinformation (Latvia)",         "https://www.mk.gov.lv/en/Handbook-Against-Disinformation"),
+        ("comms",   "CPJ – Digital Safety Resources",                   "https://cpj.org/safety/2019/07/digital-safety-resources.php"),
+        ("divers",   "FITO Network – Philanthropy Directory",           "https://www.fito.network/philanthropy"),
+        ("divers",   "OECD – Civil Society Funding Overview",           "https://www.oecd.org/dac/civil-society"),
+    ]
+    # Filter to public-relevant resources only (access_level 1 = public)
+    story = [PageBreak()]
+    story.append(Paragraph(_heading,
+        ps("_rh", size=14, leading=18, color=C["dark_green"], bold=True)))
+    story.append(Spacer(1, 2*mm))
+    story.append(Paragraph(_sub,
+        ps("_rs", size=9, leading=13, color=C["mid_grey"], italic=True)))
+    story.append(Spacer(1, 5*mm))
+    # Group by category
+    _cats_seen = []
+    _cat_order = ["forus","legal","funding","comms","divers"]
+    for _cat in _cat_order:
+        _items = [(lbl,url) for (c,lbl,url) in _resources if c == _cat]
+        if not _items:
+            continue
+        _cat_label = _section_headings.get(_cat, _cat.upper())
+        story.append(Paragraph(_cat_label,
+            ps("_rcat", size=9, leading=12, color=C["forus_teal"], bold=True)))
+        _rows = []
+        for _lbl, _url in _items:
+            _rows.append([
+                Paragraph(f"• {_lbl}", ps("_ritem", size=9, leading=12, color=C["grey"])),
+                Paragraph(
+                    f'<link href="{_url}" color="#00424D"><u>{_url}</u></link>',
+                    ps("_rurl", size=8, leading=11, color=C["blue"])),
+            ])
+        _rt = Table(_rows, colWidths=[55*mm, FRAME_W - 55*mm])
+        _rt.setStyle(TableStyle([
+            ("VALIGN",       (0,0),(-1,-1), "TOP"),
+            ("TOPPADDING",   (0,0),(-1,-1), 3),
+            ("BOTTOMPADDING",(0,0),(-1,-1), 3),
+            ("LEFTPADDING",  (0,0),(-1,-1), 0),
+            ("RIGHTPADDING", (0,0),(-1,-1), 0),
+            ("LINEBELOW",    (0,0),(-1,-1), 0.3, C["light_grey"]),
+        ]))
+        story.append(_rt)
+        story.append(Spacer(1, 4*mm))
+    return story
+
+
 def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN",
                section_to_page=None):
     """Build the complete story list. Called twice - once per pass.
@@ -2351,6 +2504,9 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
                     "No mechanisms matched your selected regions for this annex.",
                     ps("_no_match", size=9, leading=13, color="mid_grey", italic=True)))
                 story.append(Spacer(1, 4*mm))
+
+    # ── Key Resources summary page (#77) ─────────────────────────────────────
+    story += render_resources_page(language=language, access_level=access_level)
 
     return story, warnings
 
