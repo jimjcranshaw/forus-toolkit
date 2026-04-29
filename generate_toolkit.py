@@ -1111,6 +1111,10 @@ class ToolkitDoc(BaseDocTemplate):
     def _chrome(self, canv, doc):
         canv.saveState()
         pn = canv.getPageNumber()
+        # Cover page (p.1) is full-bleed – no chrome
+        if pn == 1:
+            canv.restoreState()
+            return
         part, section = doc._lookup(pn)
         _s         = doc._s
         pc         = PART_COLORS.get(part, C["dark_green"])
