@@ -21,8 +21,8 @@ from reportlab.platypus.flowables import Flowable
 VERSION     = "2.0"
 DATE_STAMP  = datetime.date.today().strftime("%Y-%m-%d")
 SPREADSHEET = "Forus_Toolkit_Content_DB_v2-4.xlsx"
-OUT_PUBLIC  = f"/mnt/user-data/outputs/Forus_Toolkit_v{VERSION}_Public.pdf"
-OUT_NETWORK = f"/mnt/user-data/outputs/Forus_Toolkit_v{VERSION}_Network.pdf"
+OUT_PUBLIC  = f"/sessions/pensive-nice-cerf/Forus_Toolkit_v{VERSION}_Public.pdf"
+OUT_NETWORK = f"/sessions/pensive-nice-cerf/Forus_Toolkit_v{VERSION}_Network.pdf"
 
 # ── Colours ───────────────────────────────────────────────────────────────────
 def h(hex_):
@@ -70,6 +70,7 @@ C = {
 
 # Part colours follow Forus brand palette
 PART_COLORS = {
+    0: h("2E2E5E"),   # Deep Navy  — Introduction / pre-content
     1: h("ED1651"),   # Hot Pink   — Crisis Guides
     2: h("58C5C7"),   # Teal       — Solidarity Activation
     3: h("00424D"),   # Dark Blue  — Legal Support
@@ -80,6 +81,7 @@ PART_COLORS = {
     8: h("3A3A3A"),   # Near-black — Annexes
 }
 PART_LABELS = {
+    0:"INTRODUCTION",
     1:"CRISIS GUIDES", 2:"SOLIDARITY", 3:"LEGAL SUPPORT",
     4:"EMERGENCY FUNDING", 5:"SAFE COMMS", 6:"DIVERSIFICATION",
     7:"FEEDBACK", 8:"ANNEXES",
@@ -194,15 +196,16 @@ def get_limit(item):
     return WORD_LIMITS.get(btype, 9999)
 
 def trim(text, btype_or_limit):
-    """Accept either a block type string (looks up default) or an int limit directly."""
+    """Check word limit and flag over-limit blocks for editorial review.
+    NEVER truncates in the PDF — [OVER LIMIT] is a console-only warning so
+    that no content is silently cut off in public-facing output."""
     if isinstance(btype_or_limit, int):
         limit = btype_or_limit
     else:
         limit = WORD_LIMITS.get(btype_or_limit, 9999)
     words = str(text or "").strip().split()
-    if len(words) > limit:
-        return " ".join(words[:limit]) + " [...]", True
-    return " ".join(words), False
+    truncated = len(words) > limit   # flag for console warning only
+    return " ".join(words), truncated
 
 def tag_cell(text, bg, fg=C["white"], pad=(3,6,3,6)):
     return (Paragraph(text, ps("_tag", size=7.5, leading=9,
@@ -307,6 +310,7 @@ def render_section_banner(text, part, language="EN"):
         ("RIGHTPADDING",(0,0),(-1,-1),6),
         ("ROUNDEDCORNERS",[3,3,3,3]),
     ]))
+    t.keepWithNext = True  # prevent orphaned section banner at page bottom
     return [t, Spacer(1, 5*mm)]
 
 def render_subsection_divider(text, part, time_horizon):
@@ -347,6 +351,7 @@ def render_subsection_divider(text, part, time_horizon):
         ("TOPPADDING",    (0,0),(-1,-1), 5),
         ("BOTTOMPADDING", (0,0),(-1,-1), 5),
     ]))
+    t.keepWithNext = True  # prevent orphaned subsection divider at page bottom
     return [Spacer(1, 6*mm), t, Spacer(1, 4*mm)]
 
 def render_timeline_bar(active_horizon, _s=None):
@@ -415,7 +420,7 @@ def render_callout(text, box_type, truncated):
     data = [[
         Paragraph(icon, ps("_icon", size=7, leading=9,
                            color=accent, bold=True, align=TA_CENTER)),
-        Paragraph(_linkify_refs(text) + suffix, style),
+        Paragraph(_rich_callout(text) + suffix, style),
     ]]
     t = Table(data, colWidths=[14*mm, FRAME_W - 14*mm])
     t.setStyle(TableStyle([
@@ -545,23 +550,88 @@ def render_template(text):
     return [t, Spacer(1,2*mm)]
 
 def render_case(text, _s=None):
-    """Case study teaser — short text only. Full case study accessed via PEER-CONNECT block below."""
+    """Case study block — supports both plain and structured CONTEXT/ACTION/WHAT CHANGED/LESSON format."""
     if _s is None: _s = _PDF_STRINGS["EN"]
-    data = [
-        [Paragraph(_s["case_study_lbl"], ps("_cl",size=7.5,leading=9,color=C["white"],bold=True))],
-        [Paragraph(text, S["case"])],
-        [Paragraph(_s["peer_connect_foot"],
-                   ps("_cfoot", size=7.5, leading=10, color=C["mid_grey"], italic=True))],
+
+    # Structured label sets (EN / FR / ES)
+    STRUCTURED_LABELS = [
+        "CONTEXT", "ACTION", "WHAT CHANGED", "LESSON",
+        "CONTEXTE", "CE QUI A CHANGÉ", "LEÇON",
+        "CONTEXTO", "ACCIÓN", "QUÉ CAMBIÓ", "LECCIÓN",
+        "WHAT CHANGED", "QUÉ CAMBIÓ",
     ]
-    t = Table(data, colWidths=[FRAME_W])
-    t.setStyle(TableStyle([
-        ("BACKGROUND",(0,0),(0,0), C["brown"]),
-        ("BACKGROUND",(0,1),(0,2), C["light_brown"]),
-        ("LEFTPADDING",(0,0),(-1,-1),6),("RIGHTPADDING",(0,0),(-1,-1),6),
-        ("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),
-        ("BOX",(0,0),(-1,-1),0.5,C["brown"]),
-    ]))
-    return [t, Spacer(1,1*mm)]
+    label_pattern = "|".join(re.escape(l) for l in sorted(STRUCTURED_LABELS, key=len, reverse=True))
+
+    # Detect structured format: has a line starting with one of the labels followed by ":"
+    is_structured = bool(re.search(r'(?m)^(' + label_pattern + r')\s*:', text))
+
+    lbl_style  = ps("_clbl2", size=7.5, leading=9, color=h("5C3D1E"), bold=True)
+    body_style = ps("_cbody", size=8.5, leading=12, color=h("3B2507"))
+    hdr_style  = ps("_chdr",  size=8.5, leading=11, color=C["white"], bold=True)
+
+    header_row = [Paragraph(_s["case_study_lbl"],
+                             ps("_cl", size=7.5, leading=9, color=C["white"], bold=True))]
+
+    if is_structured:
+        # Split on structured labels — each section becomes label + body
+        # First, extract any title line (before first label)
+        title_match = re.split(r'(?m)^(?:' + label_pattern + r')\s*:', text, maxsplit=1)
+        title_text  = title_match[0].strip() if title_match else ""
+
+        # Parse sections: split text on "LABEL:" boundaries
+        parts = re.split(r'(?m)^(' + label_pattern + r')\s*:', text)
+        # parts = [pre-text, label1, body1, label2, body2, ...]
+
+        content_rows = []
+        if title_text:
+            _title_style = ps("_ctitle", size=9, leading=12, color=h("3B2507"), bold=True)
+            content_rows.append([Paragraph(title_text, _title_style)])
+
+        # Iterate label/body pairs
+        i = 1
+        while i < len(parts) - 1:
+            lbl  = parts[i].strip()
+            body = parts[i + 1].strip() if i + 1 < len(parts) else ""
+            content_rows.append([Paragraph(lbl, lbl_style)])
+            if body:
+                content_rows.append([Paragraph(body, body_style)])
+            i += 2
+
+        inner = Table(content_rows, colWidths=[FRAME_W - 12*mm])
+        inner.setStyle(TableStyle([
+            ("LEFTPADDING",   (0,0),(-1,-1), 0),
+            ("RIGHTPADDING",  (0,0),(-1,-1), 0),
+            ("TOPPADDING",    (0,0),(-1,-1), 2),
+            ("BOTTOMPADDING", (0,0),(-1,-1), 2),
+            # Shade every label row (odd rows after title)
+        ]))
+
+        data = [header_row, [inner]]
+        t = Table(data, colWidths=[FRAME_W])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0),(0,0), C["brown"]),
+            ("BACKGROUND", (0,1),(0,1), C["light_brown"]),
+            ("LEFTPADDING",  (0,0),(-1,-1), 6),
+            ("RIGHTPADDING", (0,0),(-1,-1), 6),
+            ("TOPPADDING",   (0,0),(-1,-1), 4),
+            ("BOTTOMPADDING",(0,0),(-1,-1), 5),
+            ("BOX",          (0,0),(-1,-1), 0.5, C["brown"]),
+        ]))
+    else:
+        # Plain unstructured case — simple layout
+        data = [header_row, [Paragraph(text, S["case"])]]
+        t = Table(data, colWidths=[FRAME_W])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0),(0,0), C["brown"]),
+            ("BACKGROUND", (0,1),(0,1), C["light_brown"]),
+            ("LEFTPADDING",  (0,0),(-1,-1), 6),
+            ("RIGHTPADDING", (0,0),(-1,-1), 6),
+            ("TOPPADDING",   (0,0),(-1,-1), 4),
+            ("BOTTOMPADDING",(0,0),(-1,-1), 4),
+            ("BOX",          (0,0),(-1,-1), 0.5, C["brown"]),
+        ]))
+
+    return [t, Spacer(1, 1*mm)]
 
 def _linkify_refs(text):
     """Convert cross-references to internal Annex/Part/Template destinations into
@@ -601,7 +671,7 @@ def _linkify_refs(text):
         (r"Anexo C\b",
          '<link dest="s_Annex_C__Physical___Digital_Security_Support"'
          ' color="#00424D"><u>Anexo C</u></link>'),
-        # Named sections
+        # Named sections — longer/more specific patterns first to avoid double-match
         (r"Part 3 \(Legal Support\)",
          '<link dest="s_3__Legal_Support" color="#00424D">'
          '<u>Part 3 (Legal Support)</u></link>'),
@@ -611,6 +681,48 @@ def _linkify_refs(text):
         (r"Part 5 \(Safe Comms\)",
          '<link dest="s_5__Safe_Comms" color="#00424D">'
          '<u>Part 5 (Safe Comms)</u></link>'),
+        # Section 1.x subsection links (more specific before bare "Section")
+        (r"Section 1\.1\b",
+         '<link dest="s_1_1_Legislative_Crisis" color="#00424D">'
+         '<u>Section 1.1</u></link>'),
+        (r"Section 1\.2\b",
+         '<link dest="s_1_2_Funding_Shock" color="#00424D">'
+         '<u>Section 1.2</u></link>'),
+        (r"Section 1\.3\b",
+         '<link dest="s_1_3_Digital_Repression" color="#00424D">'
+         '<u>Section 1.3</u></link>'),
+        (r"Section 1\.4\b",
+         '<link dest="s_1_4_Stigmatisation___Intimidation" color="#00424D">'
+         '<u>Section 1.4</u></link>'),
+        # Bare Part N links (after named variants above)
+        (r"\bPart 1\b",
+         '<link dest="s_1_1_Legislative_Crisis" color="#00424D">'
+         '<u>Part 1</u></link>'),
+        (r"\bPart 2\b",
+         '<link dest="s_2__Solidarity_Activation" color="#00424D">'
+         '<u>Part 2</u></link>'),
+        (r"\bPart 3\b",
+         '<link dest="s_3__Legal_Support" color="#00424D">'
+         '<u>Part 3</u></link>'),
+        (r"\bPart 4\b",
+         '<link dest="s_4__Emergency_Funding" color="#00424D">'
+         '<u>Part 4</u></link>'),
+        (r"\bPart 5\b",
+         '<link dest="s_5__Safe_Comms" color="#00424D">'
+         '<u>Part 5</u></link>'),
+        (r"\bPart 6\b",
+         '<link dest="s_6__Diversification" color="#00424D">'
+         '<u>Part 6</u></link>'),
+        # Mechanism IDs → relevant Annex
+        (r"\bL-G-\d+\b",
+         '<link dest="s_Annex_A__Legal_Pro_Bono_Support" color="#00424D">'
+         '<u>\\g<0></u></link>'),
+        (r"\bE-G-\d+\b",
+         '<link dest="s_Annex_B__Emergency_Grants_Mechanisms" color="#00424D">'
+         '<u>\\g<0></u></link>'),
+        (r"\bD-G-\d+\b",
+         '<link dest="s_Annex_C__Physical___Digital_Security_Support" color="#00424D">'
+         '<u>\\g<0></u></link>'),
         # Solidarity request template
         (r"solidarity request template",
          '<link dest="tmpl_P2_TEMPLATE_001" color="#00424D">'
@@ -648,6 +760,24 @@ def _xesc(text):
             .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;"))
+
+
+def _rich_callout(text):
+    """Prepare TIP/WARNING text for Paragraph rendering:
+    - Converts \\n\\n to <br/><br/> and \\n to <br/>
+    - Bolds ALL-CAPS section headers that end with ':'
+    - Handles XML escaping first
+    Called instead of plain _linkify_refs for callout blocks."""
+    t = _linkify_refs(text)   # already calls _xesc internally
+    # Bold ALL-CAPS lines ending with ':'  e.g. 'PEER EXCHANGE:' → '<b>PEER EXCHANGE:</b>'
+    t = re.sub(
+        r'(?m)^([A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\s]{4,}:)',
+        r'<b>\1</b>',
+        t
+    )
+    # Convert newlines to <br/> so they render in Paragraph
+    t = t.replace('\n\n', '<br/><br/>').replace('\n', '<br/>')
+    return t
 
 
 def render_mechanism_card(mech):
@@ -949,8 +1079,9 @@ class ToolkitDoc(BaseDocTemplate):
             self._meta_log.append((self.page, flowable.part, flowable.section))
 
     def _lookup(self, page_num):
-        """Return (part, section) for page_num using the pass-1 page map."""
-        result = (1, "")
+        """Return (part, section) for page_num using the pass-1 page map.
+        Defaults to (0, 'Introduction') for pre-content pages (cover, ToC, acronyms, intro)."""
+        result = (0, "Introduction")
         for p in sorted(self._page_map):
             if p <= page_num:
                 result = self._page_map[p]
@@ -1188,6 +1319,13 @@ _TOOL_PART = {
     "A2": 6,   # Diversification Gate     → Part 6  (B6 Diversification)
 }
 
+# Optional section-level placement overrides — {tool_id: (part, section_text_prefix)}
+# When set, the tool is inserted after the LAST page of the named section
+# (matched by prefix) rather than after the entire part.
+_TOOL_SECTION_OVERRIDE = {
+    "T1": (1, "1.1"),   # Compliance Self-Check → after Section 1.1 (pre-crisis check)
+}
+
 
 def _build_tool_buf_for_ids(ids, tools_data, language="EN"):
     """Return a BytesIO with pages for the given tool/appendix IDs, in canonical order."""
@@ -1239,54 +1377,86 @@ def _merge_tools_inline(main_path, tools_selection, page_map, out_path, language
                 import shutil; shutil.move(main_path, out_path)
             return
 
-    # Reverse page_map → part → last page number
+    # Reverse page_map → part → last page (SetMeta pages only)
     part_last_page = {}
-    for pgnum, (part, _) in page_map.items():
+    for pgnum, (part, section) in page_map.items():
         part_last_page[part] = max(part_last_page.get(part, 0), pgnum)
 
-    # Group selected tools by part, preserving canonical draw order within each part
-    tools_data = load_tools_data()
-    part_tool_ids = {}
-    for tid in selected:
-        p = _TOOL_PART[tid]
-        part_tool_ids.setdefault(p, []).append(tid)
+    # Compute the TRUE last page of each section by noting that a section ends
+    # on the page BEFORE the next section's SetMeta page (or at end of PDF).
+    # page_map only records SetMeta pages (section start pages), so we extrapolate.
+    # We open the pass-2 PDF temporarily to get total pages, then derive end pages.
+    try:
+        _tmp_r = PdfReader(main_path)
+        _total_pgs = len(_tmp_r.pages)
+    except Exception:
+        _total_pgs = max(page_map.keys()) + 50  # safe fallback
+    sorted_meta = sorted(page_map.items())   # [(pgnum, (part, sec)), ...]
+    # section_end_page: (part, section) → last page of that section's content
+    section_end_page = {}
+    for i, (pgnum, (part, section)) in enumerate(sorted_meta):
+        if i + 1 < len(sorted_meta):
+            end_pg = sorted_meta[i + 1][0] - 1
+        else:
+            end_pg = _total_pgs
+        key = (part, section)
+        section_end_page[key] = max(section_end_page.get(key, 0), end_pg)
 
-    # Pre-build one BytesIO per part group
-    part_bufs = {}
-    for p, ids in part_tool_ids.items():
+    # Determine per-tool insertion page, respecting section-level overrides
+    tools_data = load_tools_data()
+    tool_insertion_pg = {}   # {tid: target_page_number}
+    for tid in selected:
+        if tid in _TOOL_SECTION_OVERRIDE:
+            ovr_part, ovr_sec_prefix = _TOOL_SECTION_OVERRIDE[tid]
+            # True last page of any section whose text starts with the prefix
+            target_pg = 0
+            for (p, s), pg in section_end_page.items():
+                if p == ovr_part and str(s).startswith(ovr_sec_prefix):
+                    target_pg = max(target_pg, pg)
+            tool_insertion_pg[tid] = target_pg or part_last_page.get(ovr_part, 0)
+        else:
+            tool_insertion_pg[tid] = part_last_page.get(_TOOL_PART[tid], 0)
+
+    # Group tools by insertion page; within each page group preserve canonical order
+    _CANONICAL = ["T1", "A1", "T2", "A3", "T3", "T4", "A2"]
+    insertion_groups = {}  # {pg: [tid in canonical order]}
+    for tid in _CANONICAL:
+        if tid in selected and tool_insertion_pg.get(tid, 0):
+            pg = tool_insertion_pg[tid]
+            insertion_groups.setdefault(pg, []).append(tid)
+
+    # Pre-build one combined BytesIO per insertion page
+    page_bufs = {}
+    for pg, ids in insertion_groups.items():
         raw_bufs = _build_tool_buf_for_ids(ids, tools_data, language=language)
         if raw_bufs:
-            # Combine multiple source buffers into one merged buf for this part
             w = PdfWriter()
             for rb in raw_bufs:
                 rb.seek(0)
-                for pg in PdfReader(rb).pages:
-                    w.add_page(pg)
+                for tpg in PdfReader(rb).pages:
+                    w.add_page(tpg)
             combined = io.BytesIO()
             w.write(combined)
             combined.seek(0)
-            part_bufs[p] = combined
+            page_bufs[pg] = combined
 
-    if not part_bufs:
+    if not page_bufs:
         if main_path != out_path:
             import shutil; shutil.move(main_path, out_path)
         return
 
-    # Walk through main PDF; after each page check if tool pages should follow
+    # Walk through main PDF; after each page insert any tool pages due at that point
     writer = PdfWriter()
     with open(main_path, "rb") as f:
         reader = PdfReader(f)
         for i, page in enumerate(reader.pages):
             pg_num = i + 1  # 1-indexed
             writer.add_page(page)
-            # Insert tool pages for any part whose last page is this page
-            # Sort by part to keep tools in section order
-            for part in sorted(part_bufs.keys()):
-                if part_last_page.get(part, 0) == pg_num:
-                    buf = part_bufs[part]
-                    buf.seek(0)
-                    for tpg in PdfReader(buf).pages:
-                        writer.add_page(tpg)
+            if pg_num in page_bufs:
+                buf = page_bufs[pg_num]
+                buf.seek(0)
+                for tpg in PdfReader(buf).pages:
+                    writer.add_page(tpg)
 
     with open(out_path, "wb") as f:
         writer.write(f)
@@ -1323,6 +1493,7 @@ _PDF_STRINGS = {
         "acr_heading":     "ABBREVIATIONS &amp; ACRONYMS",
         "acr_intro":       "Abbreviations used throughout this toolkit are listed below.",
         "part_labels": {
+            0:"INTRODUCTION",
             1:"CRISIS GUIDES", 2:"SOLIDARITY", 3:"LEGAL SUPPORT",
             4:"EMERGENCY FUNDING", 5:"SAFE COMMS", 6:"DIVERSIFICATION &amp; MUTUALISATION",
             7:"FEEDBACK", 8:"ANNEXES",
@@ -1372,6 +1543,7 @@ _PDF_STRINGS = {
         "acr_heading":     "ABRÉVIATIONS ET ACRONYMES",
         "acr_intro":       "Les abréviations utilisées dans cette boîte à outils sont listées ci-dessous.",
         "part_labels": {
+            0:"INTRODUCTION",
             1:"GUIDES DE CRISE", 2:"SOLIDARITÉ", 3:"SOUTIEN JURIDIQUE",
             4:"FINANCEMENT D'URGENCE", 5:"COMMS SÉCURISÉES", 6:"DIVERSIFICATION &amp; MUTUALISATION",
             7:"RETOURS D'INFORMATION", 8:"ANNEXES",
@@ -1421,6 +1593,7 @@ _PDF_STRINGS = {
         "acr_heading":     "ABREVIACIONES Y ACRÓNIMOS",
         "acr_intro":       "Las abreviaciones utilizadas en esta caja de herramientas se enumeran a continuación.",
         "part_labels": {
+            0:"INTRODUCCIÓN",
             1:"GUÍAS DE CRISIS", 2:"SOLIDARIDAD", 3:"APOYO JURÍDICO",
             4:"FINANCIACIÓN DE EMERGENCIA", 5:"COMMS SEGURAS", 6:"DIVERSIFICACIÓN &amp; MUTUALIZACIÓN",
             7:"RETROALIMENTACIÓN", 8:"ANEXOS",
@@ -1583,10 +1756,13 @@ def _audit_glossary_content(lang="FR"):
     return issues
 
 
-def build_cover(story, access_level, sections_in_order=None, page_map=None, language="EN"):
+def build_cover(story, access_level, sections_in_order=None, page_map=None,
+                section_to_page=None, language="EN"):
     """Build the cover page.
     sections_in_order: list of (part, section_text) in reading order — used for ToC.
     page_map: {page: (part, section)} from pass 1 — None during pass 1 itself.
+    section_to_page: {section_text: page_number} built directly from _meta_log (preferred).
+                     If None, falls back to deriving it from page_map.
     """
     _s    = _PDF_STRINGS.get(language.upper(), _PDF_STRINGS["EN"])
     label = _s["cover_public"] if access_level == 1 else _s["cover_network"]
@@ -1609,12 +1785,14 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None, lang
     story.append(PageBreak())
 
     # ── Table of Contents page ────────────────────────────────────────────────
-    # Build a reverse map: section_text → page number (from pass 1 page_map)
-    section_to_page = {}
-    if page_map:
-        for pg, (pt, sec) in sorted(page_map.items()):
-            if sec and sec not in section_to_page:
-                section_to_page[sec] = pg
+    # Use pre-built section_to_page if available (covers all sections including annexes).
+    # Fall back to deriving from page_map for backwards compatibility.
+    if section_to_page is None:
+        section_to_page = {}
+        if page_map:
+            for pg, (pt, sec) in sorted(page_map.items()):
+                if sec and sec not in section_to_page:
+                    section_to_page[sec] = pg
 
     story.append(Paragraph(_s["toc_heading"], ps("_toc_title", size=14, leading=18,
                             color=C["dark_green"], bold=True)))
@@ -1733,7 +1911,7 @@ def render_acronyms_page(language="EN"):
         ("FATF",      "Financial Action Task Force (global anti-money-laundering body)"),
         ("FLD",       "Front Line Defenders"),
         ("ICNL",      "International Center for Not-for-Profit Law"),
-        ("LAPAS",     "Latvijas Pilsoniskā alianse — Latvian Civic Alliance"),
+        ("LAPAS",     "Latvijas Pilsoniska alianse — Latvian Civic Alliance"),
         ("MFF",       "EU Multi-Annual Financial Framework"),
         ("NGO",       "Non-Governmental Organisation"),
         ("NNNGO",     "Network of Networks for NGOs, Nigeria"),
@@ -1878,9 +2056,11 @@ def _mech_matches_regions(mech, selected_regions):
     return False
 
 
-def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"):
+def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN",
+               section_to_page=None):
     """Build the complete story list. Called twice — once per pass.
     page_map is None in pass 1; supplied from pass 1 results in pass 2.
+    section_to_page: {section_text: page_num} built from _meta_log in pass 1 for TOC accuracy.
     req: optional request dict; when supplied, annex sections are generated
          from ANNEXES data after all CONTENT rows."""
     story    = []
@@ -1889,11 +2069,15 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
 
     # Collect ordered unique (part, section) pairs for the ToC,
     # including any selected annex sections.
+    # NOTE: Part 0 (intro page) is excluded from the ToC — it's pre-content.
     sections_in_order = []
     seen_sections = set()
     for item in rows:
-        sec  = str(item.get("section", ""))
-        part = int(item.get("part", 1) or 1)
+        sec       = str(item.get("section", ""))
+        part_raw  = item.get("part", 1)
+        part      = int(part_raw) if part_raw is not None else 1
+        if part == 0:
+            continue   # intro page is not listed in the ToC
         if sec and sec not in seen_sections:
             seen_sections.add(sec)
             sections_in_order.append((part, sec))
@@ -1906,7 +2090,87 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
     build_cover(story, access_level,
                 sections_in_order=sections_in_order,
                 page_map=page_map,
+                section_to_page=section_to_page,
                 language=language)
+
+    # ── Part 0: Intro page(s) — rendered between cover/ToC and Part 1 ──────
+    # Note: render_acronyms_page() already ends with a PageBreak, so no extra one needed here.
+    intro_rows = [r for r in rows if (r.get("part") == 0 or r.get("part") == "0")]
+    if intro_rows:
+        story.append(SetMeta(0, "Introduction"))   # chrome: navy sidebar + "INTRODUCTION"
+        pc_intro = h("2E2E5E")   # deep navy — distinct from part colours
+        intro_header = Table(
+            [[Paragraph("ABOUT THIS TOOLKIT", S["section_label"]), ""]],
+            colWidths=[FRAME_W - 14*mm, 14*mm]
+        )
+        intro_header.setStyle(TableStyle([
+            ("BACKGROUND", (0,0),(-1,-1), pc_intro),
+            ("TOPPADDING",    (0,0),(-1,-1), 10),
+            ("BOTTOMPADDING", (0,0),(-1,-1), 10),
+            ("LEFTPADDING",   (0,0),(-1,-1), 8),
+            ("ROUNDEDCORNERS",[3,3,3,3]),
+        ]))
+        story.append(intro_header)
+        story.append(Spacer(1, 8*mm))
+
+        # Inline styles for the intro page
+        _intro_hdr_style = ParagraphStyle(
+            "intro_hdr",
+            fontName="Helvetica-Bold",
+            fontSize=10,
+            leading=13,
+            textColor=h("2E2E5E"),
+            spaceBefore=6,
+            spaceAfter=2,
+        )
+        _intro_body_style = ParagraphStyle(
+            "intro_body",
+            fontName="Helvetica",
+            fontSize=9,
+            leading=13,
+            textColor=h("444444"),
+            spaceAfter=4,
+        )
+        _intro_quote_style = ParagraphStyle(
+            "intro_quote",
+            fontName="Helvetica-Oblique",
+            fontSize=9,
+            leading=13,
+            textColor=h("2E2E5E"),
+            leftIndent=12,
+            spaceBefore=4,
+            spaceAfter=4,
+        )
+
+        for irow in intro_rows:
+            txt = str(irow.get("content_text", "") or "")
+            if not txt:
+                continue
+            # Split into \n\n blocks; within each block the first line may be
+            # an ALL-CAPS heading followed by the body on subsequent lines.
+            for block in txt.split("\n\n"):
+                block = block.strip()
+                if not block:
+                    continue
+                lines = block.split("\n")
+                first = lines[0].strip()
+                rest  = "\n".join(lines[1:]).strip()
+
+                if first.isupper():
+                    # Render heading then body text
+                    story.append(Paragraph(first, _intro_hdr_style))
+                    story.append(HRFlowable(width=FRAME_W, thickness=0.5,
+                                            color=h("2E2E5E"), spaceAfter=3))
+                    if rest:
+                        story.append(Paragraph(_linkify_refs(rest), _intro_body_style))
+                elif block.startswith("As ") or block.startswith('"'):
+                    # Pull-quote style
+                    story.append(Paragraph(f"<i>{block}</i>", _intro_quote_style))
+                else:
+                    story.append(Paragraph(_linkify_refs(block), _intro_body_style))
+
+        story.append(PageBreak())
+    # ── End intro page ──────────────────────────────────────────────────────
 
     prev_section  = None
     step_counters = {}
@@ -1915,8 +2179,21 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
     # This drives the timeline bar when all rows have time_horizon="general".
     current_phase = "responsive"   # sensible default until first HEADER seen
 
+    # Pre-scan Part 7 to find sections with at least one visible block (FEEDBACK / PEER-CONNECT).
+    # Sections with only internal-use blocks get no banner (avoids lonely orphaned headers).
+    _VISIBLE_7 = {"FEEDBACK", "PEER-CONNECT", "PEER-CONNECTION"}
+    _p7_visible_sections = {
+        str(r.get("section", ""))
+        for r in rows
+        if int(r.get("part", 0) or 0) == 7
+        and str(r.get("block_type", "")).strip() in _VISIBLE_7
+    }
+
     for item in rows:
-        part    = int(item.get("part", 1) or 1)
+        part_raw = item.get("part", 1)
+        part     = int(part_raw) if part_raw is not None else 1
+        if part == 0:
+            continue   # already rendered above as intro page
         section = str(item.get("section", ""))
         btype   = str(item.get("block_type", "")).strip()
         time_h  = str(item.get("time_horizon", "general") or "general")
@@ -1924,9 +2201,9 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
         # Section 7 (Update Guide) — network/public builds show only the
         # FEEDBACK block (a simple "tell us what's out of date" prompt).
         # Full maintenance checklists/tips are only for Secretariat internal use.
-        if part == 7 and btype not in ("FEEDBACK", "PEER-CONNECT", "PEER-CONNECTION"):
-            # Still render the section banner when section changes
-            if section != prev_section:
+        if part == 7 and btype not in _VISIBLE_7:
+            # Only render the section banner if this section has visible content
+            if section != prev_section and section in _p7_visible_sections:
                 if prev_section is not None:
                     story.append(Spacer(1, 8*mm))
                 for f in render_section_banner(section, part, language=language):
@@ -1938,6 +2215,9 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
                 step_counters[section] = {}
                 current_phase = "responsive"
                 make_story._prev_display_h = None
+            elif section != prev_section:
+                # Section has no visible content — advance prev_section without banner
+                prev_section = section
             continue   # skip everything except FEEDBACK in Part 7
 
         # New section → banner, anchor for ToC links, then SetMeta for chrome
@@ -2428,17 +2708,22 @@ def build_pdf(access_level, language="EN"):
     doc1.build(story1)
 
     # Build page map: page → (part, section) of the FIRST section starting on that page
+    # Also build section_to_page: section → first page it appears on (for TOC accuracy)
     page_map = {}
+    section_to_page = {}
     for (pn, part, section) in doc1._meta_log:
         if pn not in page_map:           # take first (topmost) section per page
             page_map[pn] = (part, section)
+        if section and section not in section_to_page:
+            section_to_page[section] = pn
     try:
         os.remove(tmp)
     except OSError:
         pass
 
     # ── Pass 2: build real PDF using page map (ToC gets real page numbers + links) ──
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=full_req, language=lang)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=full_req,
+                           language=lang, section_to_page=section_to_page)
     # Write to a temp path first so we can append tool pages
     main_tmp = out.replace(".pdf", "_main.pdf")
     doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, language=lang, **common_kw)
@@ -2621,14 +2906,18 @@ def build_request_pdf(req_id, access_level=1):
     doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, language=req_lang, **common_kw)
     doc1.build(story1)
     page_map = {}
+    section_to_page = {}
     for (pn, part, section) in doc1._meta_log:
         if pn not in page_map:
             page_map[pn] = (part, section)
+        if section and section not in section_to_page:
+            section_to_page[section] = pn
     try: os.remove(tmp)
     except OSError: pass
 
     # Pass 2
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req, language=req_lang)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req,
+                           language=req_lang, section_to_page=section_to_page)
     doc2 = ToolkitDoc(out, access_level=access_level, page_map=page_map, language=req_lang, **common_kw)
     doc2.build(story2)
 
@@ -2675,16 +2964,20 @@ def build_pdf_from_request_dict(req, access_level=1, out_path=None, language="EN
     doc1 = ToolkitDoc(tmp, access_level=access_level, page_map=None, language=lang, **common_kw)
     doc1.build(story1)
     page_map = {}
+    section_to_page = {}
     for (pn, part, section) in doc1._meta_log:
         if pn not in page_map:
             page_map[pn] = (part, section)
+        if section and section not in section_to_page:
+            section_to_page[section] = pn
     try:
         os.remove(tmp)
     except OSError:
         pass
 
     # Pass 2
-    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req, language=lang)
+    story2, _ = make_story(rows, mechs, access_level, page_map=page_map, req=req,
+                           language=lang, section_to_page=section_to_page)
     main_tmp = out_path.replace(".pdf", "_main.pdf")
     doc2 = ToolkitDoc(main_tmp, access_level=access_level, page_map=page_map, language=lang, **common_kw)
     doc2.build(story2)
