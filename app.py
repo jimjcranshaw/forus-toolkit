@@ -43,6 +43,19 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── Hide Streamlit Cloud toolbar (Share, edit, GitHub, menu) from all users ───
+st.markdown(
+    """
+    <style>
+    [data-testid="stToolbar"] { visibility: hidden !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+    #MainMenu { visibility: hidden !important; }
+    footer { visibility: hidden !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # ── Language state (must initialise before anything calls t()) ────────────────
 st.session_state.setdefault("lang", "EN")
 
