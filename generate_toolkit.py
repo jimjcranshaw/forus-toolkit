@@ -711,7 +711,7 @@ def _linkify_refs(text):
          '<link href="#s_5__Safe_Comms" color="#00424D">'
          '<u>Part 5</u></link>'),
         (r"\bPart 6\b",
-         '<link href="#s_6__Diversification" color="#00424D">'
+         '<link href="#s_6__Diversification_and_Mutualisation" color="#00424D">'
          '<u>Part 6</u></link>'),
         # Mechanism IDs → relevant Annex
         (r"\bL-G-\d+\b",
@@ -1505,7 +1505,7 @@ PART_INTROS = {
     3: "Finding and accessing legal support when it matters",
     4: "Emergency funding mechanisms for platforms under pressure",
     5: "Safe advocacy, communications & digital security",
-    6: "Diversification, mutualisation & long-term sustainability",
+    6: "Diversification and Mutualisation",
     7: "Keeping this toolkit accurate and up to date",
     8: "Regional and country-level resource directories - legal, funding & digital support",
 }
@@ -1537,7 +1537,7 @@ _PDF_STRINGS = {
             3: "Finding and accessing legal support when it matters",
             4: "Emergency funding mechanisms for platforms under pressure",
             5: "Safe advocacy, communications &amp; digital security",
-            6: "Diversification, mutualisation &amp; long-term sustainability",
+            6: "Diversification and Mutualisation",
             7: "Keeping this toolkit accurate and up to date",
             8: "Regional and country-level resource directories - legal, funding &amp; digital support",
         },
@@ -1588,7 +1588,7 @@ _PDF_STRINGS = {
             3: "Trouver et accéder à un soutien juridique au bon moment",
             4: "Mécanismes de financement d'urgence pour les plateformes sous pression",
             5: "Plaidoyer sécurisé, communications et sécurité numérique",
-            6: "Diversification, mutualisation et durabilité à long terme",
+            6: "Diversification et mutualisation",
             7: "Maintenir cette boîte à outils précise et à jour",
             8: "Répertoires de ressources régionales et nationales - soutien juridique, financier et numérique",
         },
@@ -1639,7 +1639,7 @@ _PDF_STRINGS = {
             3: "Encontrar y acceder a apoyo jurídico cuando más se necesita",
             4: "Mecanismos de financiación de emergencia para plataformas bajo presión",
             5: "Incidencia segura, comunicaciones y seguridad digital",
-            6: "Diversificación, mutualización y sostenibilidad a largo plazo",
+            6: "Diversificación y mutualización",
             7: "Mantener esta caja de herramientas precisa y actualizada",
             8: "Directorios de recursos regionales y nacionales - apoyo jurídico, financiero y digital",
         },
@@ -2160,24 +2160,24 @@ def render_resources_page(language="EN", access_level=1):
             "legal":    "Legal Support",
             "funding":  "Emergency Funding",
             "comms":    "Safe Communications & Security",
-            "divers":   "Diversification & Sustainability",
+            "divers":   "Diversification & Mutualisation",
         },
         "FR": {
             "forus":    "Forus International",
             "legal":    "Soutien juridique",
             "funding":  "Financement d'urgence",
             "comms":    "Communications sécurisées & sécurité",
-            "divers":   "Diversification & durabilité",
+            "divers":   "Diversification & mutualisation",
         },
         "ES": {
             "forus":    "Forus Internacional",
             "legal":    "Apoyo jurídico",
             "funding":  "Financiación de emergencia",
             "comms":    "Comunicaciones seguras & seguridad",
-            "divers":   "Diversificación & sostenibilidad",
+            "divers":   "Diversificación & mutualización",
         },
     }.get(_lang, {"forus":"Forus International","legal":"Legal Support","funding":"Emergency Funding",
-                   "comms":"Safe Communications","divers":"Diversification"})
+                   "comms":"Safe Communications","divers":"Diversification & Mutualisation"})
     # Curated resource list: (category_key, display_label, url)
     _resources = [
         ("forus",   "Forus International",                              "https://www.forus-international.org"),

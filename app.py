@@ -56,6 +56,7 @@ TRANSLATIONS = {
         "nav_apply_approved":     "✅ Apply Approved",
         "nav_generate_pdf":       "📄 Generate PDF",
         "nav_give_feedback":      "💬 Give Feedback",
+        "nav_get_support":        "🤝 Get Support",
         "nav_manage_tools":       "🔧 Manage Tools",
         "sidebar_download_sp":    "⬇ Download updated spreadsheet",
         "sidebar_save_gdrive":    "☁ Save to Google Drive",
@@ -144,7 +145,7 @@ TRANSLATIONS = {
         "pdf_part_3": "Part 3 — Legal Support",
         "pdf_part_4": "Part 4 — Emergency Funding",
         "pdf_part_5": "Part 5 — Safe Comms",
-        "pdf_part_6": "Part 6 — Diversification",
+        "pdf_part_6": "Part 6 — Diversification and Mutualisation",
         "pdf_part_7": "Part 7 — Feedback",
         "pdf_annex_a": "Annex A: Legal Pro Bono Support",
         "pdf_annex_b": "Annex B: Emergency Grants Mechanisms",
@@ -164,8 +165,60 @@ TRANSLATIONS = {
         "pdf_appendix_a3": "Appendix A3 — Emergency Funding Navigator (B4)",
         "pdf_access_public_opt":  "Public",
         "pdf_access_network_opt": "Network",
+        "pdf_access_level_help":  "Public – available to any civil society organisation. Network – Forus member platforms only; includes confidential case details.",
         # Give Feedback
         "page_give_feedback":     "Give Feedback",
+        "page_get_support":       "Get Support",
+        "support_intro": (
+            "This toolkit is stronger when you use it alongside people who have been through "
+            "similar challenges. Use this page to request a peer introduction — connecting you "
+            "with a Forus network organisation that has direct experience of the issue you "
+            "are facing — or to reach the Forus Secretariat directly for guidance and support."
+        ),
+        "support_tab_peer":       "Connect with a Peer",
+        "support_tab_secretariat":"Contact the Secretariat",
+        "support_peer_desc": (
+            "Select the case study that most closely matches your situation. The Forus "
+            "Secretariat will make a confidential introduction to the relevant peer organisation."
+        ),
+        "support_case_label":     "Case study — select the closest match to your situation",
+        "support_case_placeholder": "Choose a case study...",
+        "support_peer_name":      "Your name",
+        "support_peer_org":       "Your organisation",
+        "support_peer_email":     "Your email address (so the Secretariat can introduce you)",
+        "support_peer_question":  "What do you need to know or discuss?",
+        "support_peer_btn":       "Request peer introduction",
+        "support_peer_success": (
+            "Your request has been sent to the Forus Secretariat. "
+            "They will be in touch to make the introduction."
+        ),
+        "support_peer_error":     "Please select a case study and provide your email address.",
+        "support_sec_desc": (
+            "For direct guidance from the Forus Secretariat — whether on toolkit content, "
+            "network membership, or immediate support needs."
+        ),
+        "support_sec_name":       "Your name (optional)",
+        "support_sec_org":        "Your organisation (optional)",
+        "support_sec_email":      "Your email address",
+        "support_sec_subject":    "What do you need support with?",
+        "support_sec_message":    "Message",
+        "support_sec_btn":        "Contact the Secretariat",
+        "support_sec_success": (
+            "Your message has been sent to the Forus Secretariat. "
+            "They will respond as soon as possible."
+        ),
+        "support_sec_error":      "Please provide your email address and a message.",
+        "member_home_intro": (
+            "Welcome to the Forus Resilience and Support Toolkit. This resource brings together "
+            "practical guidance, case studies, and network connections to help your organisation "
+            "navigate legal attacks, funding shocks, reputational threats, and operational "
+            "pressures. It is built from the direct experience of Forus member platforms around "
+            "the world.\n\n"
+            "Use this page to generate a personalised PDF - tailored to your organisation, "
+            "your context, and the sections most relevant to you. If you need direct support "
+            "or want to connect with a peer who has been through a similar situation, visit "
+            "the **Get Support** page."
+        ),
         "feedback_member_desc": (
             "Use this form to flag anything in the toolkit that seems outdated, "
             "incorrect, or missing. Your message goes directly to the Forus Secretariat."
@@ -229,6 +282,7 @@ TRANSLATIONS = {
         "nav_apply_approved":     "✅ Appliquer approuvés",
         "nav_generate_pdf":       "📄 Générer PDF",
         "nav_give_feedback":      "💬 Donner un avis",
+        "nav_get_support":        "🤝 Obtenir du soutien",
         "nav_manage_tools":       "🔧 Gérer les outils",
         "sidebar_download_sp":    "⬇ Télécharger la feuille de calcul",
         "sidebar_save_gdrive":    "☁ Sauvegarder sur Google Drive",
@@ -316,7 +370,7 @@ TRANSLATIONS = {
         "pdf_part_3": "Partie 3 — Soutien juridique",
         "pdf_part_4": "Partie 4 — Financement d'urgence",
         "pdf_part_5": "Partie 5 — Comms sécurisées",
-        "pdf_part_6": "Partie 6 — Diversification",
+        "pdf_part_6": "Partie 6 — Diversification et mutualisation",
         "pdf_part_7": "Partie 7 — Retours",
         "pdf_annex_a": "Annexe A : Soutien bénévole juridique",
         "pdf_annex_b": "Annexe B : Mécanismes de subventions d'urgence",
@@ -336,8 +390,61 @@ TRANSLATIONS = {
         "pdf_appendix_a3": "Annexe A3 — Navigateur de financement d'urgence (B4)",
         "pdf_access_public_opt":  "Public",
         "pdf_access_network_opt": "Réseau",
+        "pdf_access_level_help":  "Public – accessible à toute organisation de la société civile. Réseau – réservé aux plateformes membres de Forus ; comprend des cas confidentiels.",
         # Give Feedback
         "page_give_feedback":    "Donner un avis",
+        "page_get_support":      "Obtenir du soutien",
+        "support_intro": (
+            "Cette boîte à outils est plus efficace lorsque vous l'utilisez aux côtés de "
+            "personnes qui ont traversé des défis similaires. Utilisez cette page pour "
+            "demander une mise en relation avec des pairs, ou pour contacter directement "
+            "le Secrétariat de Forus."
+        ),
+        "support_tab_peer":       "Connectez-vous avec un pair",
+        "support_tab_secretariat":"Contacter le Secrétariat",
+        "support_peer_desc": (
+            "Sélectionnez l'étude de cas qui correspond le mieux à votre situation. "
+            "Le Secrétariat de Forus effectuera une mise en relation confidentielle."
+        ),
+        "support_case_label":     "Étude de cas - sélectionnez la plus proche de votre situation",
+        "support_case_placeholder": "Choisissez une étude de cas...",
+        "support_peer_name":      "Votre nom",
+        "support_peer_org":       "Votre organisation",
+        "support_peer_email":     "Votre adresse e-mail (pour que le Secrétariat puisse vous mettre en relation)",
+        "support_peer_question":  "Que souhaitez-vous savoir ou discuter ?",
+        "support_peer_btn":       "Demander une mise en relation avec un pair",
+        "support_peer_success": (
+            "Votre demande a été envoyée au Secrétariat de Forus. "
+            "Il vous contactera pour effectuer la mise en relation."
+        ),
+        "support_peer_error":     "Veuillez sélectionner une étude de cas et fournir votre adresse e-mail.",
+        "support_sec_desc": (
+            "Pour un accompagnement direct du Secrétariat de Forus - que ce soit sur le "
+            "contenu de la boîte à outils, l'adhésion au réseau ou des besoins urgents."
+        ),
+        "support_sec_name":       "Votre nom (facultatif)",
+        "support_sec_org":        "Votre organisation (facultatif)",
+        "support_sec_email":      "Votre adresse e-mail",
+        "support_sec_subject":    "De quel type de soutien avez-vous besoin ?",
+        "support_sec_message":    "Message",
+        "support_sec_btn":        "Contacter le Secrétariat",
+        "support_sec_success": (
+            "Votre message a été envoyé au Secrétariat de Forus. "
+            "Il vous répondra dans les meilleurs délais."
+        ),
+        "support_sec_error":      "Veuillez fournir votre adresse e-mail et un message.",
+        "member_home_intro": (
+            "Bienvenue dans la Boîte à outils Résilience et Soutien de Forus. Cette ressource "
+            "rassemble des orientations pratiques, des études de cas et des connexions au réseau "
+            "pour aider votre organisation à faire face aux attaques législatives, aux chocs de "
+            "financement, aux menaces réputationnelles et aux pressions opérationnelles. Elle est "
+            "construite à partir de l'expérience directe des plateformes membres de Forus dans "
+            "le monde entier.\n\n"
+            "Utilisez cette page pour générer un PDF personnalisé - adapté à votre organisation, "
+            "votre contexte et les sections les plus pertinentes pour vous. Si vous avez besoin "
+            "d'un soutien direct ou souhaitez entrer en contact avec un pair ayant traversé une "
+            "situation similaire, rendez-vous sur la page **Obtenir du soutien**."
+        ),
         "feedback_member_desc": (
             "Utilisez ce formulaire pour signaler tout élément de la boîte à outils qui semble "
             "obsolète, incorrect ou manquant. Votre message est transmis directement au Secrétariat de Forus."
@@ -399,6 +506,7 @@ TRANSLATIONS = {
         "nav_apply_approved":     "✅ Aplicar aprobados",
         "nav_generate_pdf":       "📄 Generar PDF",
         "nav_give_feedback":      "💬 Dar retroalimentación",
+        "nav_get_support":        "🤝 Obtener apoyo",
         "nav_manage_tools":       "🔧 Gestionar herramientas",
         "sidebar_download_sp":    "⬇ Descargar hoja de cálculo",
         "sidebar_save_gdrive":    "☁ Guardar en Google Drive",
@@ -486,7 +594,7 @@ TRANSLATIONS = {
         "pdf_part_3": "Parte 3 — Apoyo jurídico",
         "pdf_part_4": "Parte 4 — Financiación de emergencia",
         "pdf_part_5": "Parte 5 — Comunicaciones seguras",
-        "pdf_part_6": "Parte 6 — Diversificación",
+        "pdf_part_6": "Parte 6 — Diversificación y mutualización",
         "pdf_part_7": "Parte 7 — Retroalimentación",
         "pdf_annex_a": "Anexo A: Apoyo jurídico pro bono",
         "pdf_annex_b": "Anexo B: Mecanismos de subvenciones de emergencia",
@@ -506,8 +614,59 @@ TRANSLATIONS = {
         "pdf_appendix_a3": "Apéndice A3 — Navegador de financiación de emergencia (B4)",
         "pdf_access_public_opt":  "Público",
         "pdf_access_network_opt": "Red",
+        "pdf_access_level_help":  "Público – disponible para cualquier organización de la sociedad civil. Red – exclusivo para plataformas miembros de Forus; incluye casos confidenciales.",
         # Give Feedback
         "page_give_feedback":    "Dar retroalimentación",
+        "page_get_support":      "Obtener apoyo",
+        "support_intro": (
+            "Esta caja de herramientas es más efectiva cuando se utiliza junto a personas "
+            "que han enfrentado desafíos similares. Use esta página para solicitar una "
+            "introducción con un par, o para contactar directamente al Secretariado de Forus."
+        ),
+        "support_tab_peer":       "Conectar con un par",
+        "support_tab_secretariat":"Contactar al Secretariado",
+        "support_peer_desc": (
+            "Seleccione el estudio de caso que más se acerque a su situación. "
+            "El Secretariado de Forus hará una introducción confidencial."
+        ),
+        "support_case_label":     "Estudio de caso - seleccione el más cercano a su situación",
+        "support_case_placeholder": "Elija un estudio de caso...",
+        "support_peer_name":      "Su nombre",
+        "support_peer_org":       "Su organización",
+        "support_peer_email":     "Su dirección de correo electrónico (para que el Secretariado pueda presentarle)",
+        "support_peer_question":  "¿Qué necesita saber o discutir?",
+        "support_peer_btn":       "Solicitar introducción con un par",
+        "support_peer_success": (
+            "Su solicitud ha sido enviada al Secretariado de Forus. "
+            "Se pondrán en contacto con usted para hacer la introducción."
+        ),
+        "support_peer_error":     "Por favor seleccione un estudio de caso y proporcione su correo electrónico.",
+        "support_sec_desc": (
+            "Para orientación directa del Secretariado de Forus - sobre el contenido "
+            "de la caja de herramientas, la membresía en la red o necesidades de apoyo inmediato."
+        ),
+        "support_sec_name":       "Su nombre (opcional)",
+        "support_sec_org":        "Su organización (opcional)",
+        "support_sec_email":      "Su dirección de correo electrónico",
+        "support_sec_subject":    "¿Con qué necesita apoyo?",
+        "support_sec_message":    "Mensaje",
+        "support_sec_btn":        "Contactar al Secretariado",
+        "support_sec_success": (
+            "Su mensaje ha sido enviado al Secretariado de Forus. "
+            "Le responderán lo antes posible."
+        ),
+        "support_sec_error":      "Por favor proporcione su correo electrónico y un mensaje.",
+        "member_home_intro": (
+            "Bienvenido a la Caja de Herramientas de Resiliencia y Apoyo de Forus. Este recurso "
+            "reúne orientaciones prácticas, estudios de caso y conexiones en red para ayudar a "
+            "su organización a navegar ataques legislativos, choques de financiación, amenazas "
+            "reputacionales y presiones operativas. Está construida a partir de la experiencia "
+            "directa de plataformas miembros de Forus en todo el mundo.\n\n"
+            "Use esta página para generar un PDF personalizado - adaptado a su organización, "
+            "su contexto y las secciones más relevantes para usted. Si necesita apoyo directo "
+            "o desea conectar con un par que haya atravesado una situación similar, visite "
+            "la página **Obtener apoyo**."
+        ),
         "feedback_member_desc": (
             "Use este formulario para señalar cualquier elemento del kit de herramientas que parezca "
             "desactualizado, incorrecto o que falte. Su mensaje se envía directamente al Secretariado de Forus."
@@ -579,9 +738,9 @@ ROLE_MEMBER = "member"
 # Nav keys visible to each role
 _ADMIN_NAV_KEYS  = [
     "dashboard", "check_mechanisms", "review_queue",
-    "apply_approved", "generate_pdf", "give_feedback", "manage_tools",
+    "apply_approved", "generate_pdf", "get_support", "give_feedback", "manage_tools",
 ]
-_MEMBER_NAV_KEYS = ["generate_pdf", "give_feedback"]
+_MEMBER_NAV_KEYS = ["generate_pdf", "get_support", "give_feedback"]
 
 
 # ── Password / role gate ───────────────────────────────────────────────────────
@@ -1403,6 +1562,11 @@ elif page == "generate_pdf":
         st.error(f"Could not import generate_toolkit: {e}"); st.stop()
     gt.SPREADSHEET = sp()
 
+    # Members see a welcome intro; admins go straight to tabs
+    if not is_admin():
+        st.markdown(t("member_home_intro"))
+        st.markdown("---")
+
     # Members only see the custom PDF tab
     if is_admin():
         tab1, tab2 = st.tabs([t("pdf_tab_standard"), t("pdf_tab_custom")])
@@ -1484,7 +1648,8 @@ elif page == "generate_pdf":
                 cust_org   = st.text_input(t("pdf_organisation"), placeholder="e.g. CCFD-Terre Solidaire")
             with c2:
                 cust_email  = st.text_input(t("pdf_email"), placeholder="contact@example.org")
-                cust_access = st.radio(t("pdf_access_level"), _access_opts, horizontal=True)
+                cust_access = st.radio(t("pdf_access_level"), _access_opts, horizontal=True,
+                                      help=t("pdf_access_level_help"))
 
             st.markdown(t("pdf_parts_include"))
             pcols = st.columns(4)
@@ -1569,9 +1734,149 @@ elif page == "generate_pdf":
                     st.error(t("pdf_gen_failed"))
 
 
+# ═════════════════════════════════════════���═════════════════════════════════════
+# PAGE: Get Support  (all roles — peer introduction + Secretariat contact)
+# ═══════════════════════════════════════════════════════════════════════════════
+elif page == "get_support":
+    st.title(t("page_get_support"))
+    st.markdown(t("support_intro"))
+    st.markdown("")
+
+    # ── Case study list: label shown to user → internal peer routing note ────
+    # Keys are display labels (anonymised, matching PDF case studies).
+    # Values are the peer context passed to the Secretariat in the email.
+    _CASE_STUDIES = {
+        "Part 1 — Case study: Platform that navigated a bank account freeze using legal compliance strategy":
+            "Peer: Uganda NGO Forum (Part 1, Legislative Crisis - bank freeze)",
+        "Part 1 — Case study: Platform that ran constitutional protection petitions and international advocacy in parallel":
+            "Peer: Pakistan Development Alliance (Part 1, Legislative Crisis - multi-track legal)",
+        "Part 1 — Case study: Platform that navigated state-adjacent disinformation in a European context":
+            "Peer: LAPAS - Latvijas Pilsoniska alianse (Part 1, Stigmatisation & Intimidation)",
+        "Part 2 — Case study: Network that incubated an exiled civil society organisation":
+            "Peer: Cooperation Canada (Part 2, Solidarity - exile incubation)",
+        "Part 2 — Case study: Pacific network with a standing solidarity mechanism (Conshell)":
+            "Peer: PIANGO (Part 2, Solidarity - standing mechanism)",
+        "Part 3 — Case study: Platform that coordinated operational legal support for human rights detention cases":
+            "Peer: Spaces for Change Nigeria (Part 3, Legal Support)",
+        "Part 3 — Case study: Platform running simultaneous legal, ministerial, and international advocacy tracks":
+            "Peer: Pakistan Development Alliance (Part 3, Legal - multi-track)",
+        "Part 4 — Case study: Regional fund (FALE) for locally-led emergency response":
+            "Peer: PIANGO (Part 4, Emergency Funding - FALE fund)",
+        "Part 4 — Case study: Network with current knowledge of live emergency funding mechanisms":
+            "Peer: Building Responses Together / Global Focus (Part 4, Emergency Funding)",
+        "Part 5 — Case study: Platform that launched a public communications campaign under legislative attack":
+            "Peer: (Part 5, Safe Communications - No nos callarán campaign)",
+        "Part 6 — Case study: Platform running shared hosting and cost-sharing with other organisations":
+            "Peer: Cooperation Canada (Part 6, Diversification and Mutualisation - shared services)",
+        "Part 6 — Case study: Platform running a for-profit arm alongside a not-for-profit advocacy body":
+            "Peer: Uganda NGO Forum (Part 6, Diversification - dual model)",
+    }
+
+    _SECRETARIAT_EMAIL = "secretariat@forus-international.org"
+
+    tab_peer, tab_sec = st.tabs([t("support_tab_peer"), t("support_tab_secretariat")])
+
+    with tab_peer:
+        st.markdown(t("support_peer_desc"))
+        st.markdown("")
+
+        _case_options = [""] + list(_CASE_STUDIES.keys())
+
+        with st.form("peer_contact_form", clear_on_submit=True):
+            pc1, pc2 = st.columns(2)
+            with pc1:
+                p_name  = st.text_input(t("support_peer_name"),  placeholder="e.g. Maria Rodriguez")
+                p_org   = st.text_input(t("support_peer_org"),   placeholder="e.g. CCFD-Terre Solidaire")
+            with pc2:
+                p_email = st.text_input(t("support_peer_email"), placeholder="contact@example.org")
+
+            p_case = st.selectbox(
+                t("support_case_label"),
+                _case_options,
+                format_func=lambda x: t("support_case_placeholder") if x == "" else x,
+            )
+            p_question = st.text_area(t("support_peer_question"), height=120,
+                                       placeholder="e.g. We are facing a similar bank account freeze and would like to understand what worked...")
+            p_submitted = st.form_submit_button(t("support_peer_btn"), type="primary")
+
+        if p_submitted:
+            if not p_email.strip() or not p_case:
+                st.error(t("support_peer_error"))
+            else:
+                _peer_context = _CASE_STUDIES.get(p_case, p_case)
+                _subject = f"Peer introduction request – {p_org.strip() or p_name.strip() or 'Forus member'}"
+                _body = (
+                    f"Peer introduction request from Forus Toolkit\n\n"
+                    f"From: {p_name.strip() or '(not provided)'}\n"
+                    f"Organisation: {p_org.strip() or '(not provided)'}\n"
+                    f"Email: {p_email.strip()}\n\n"
+                    f"Case study selected:\n{p_case}\n\n"
+                    f"Routing note: {_peer_context}\n\n"
+                    f"Their question:\n{p_question.strip() or '(none provided)'}"
+                )
+                import urllib.parse
+                _mailto = (
+                    f"mailto:{_SECRETARIAT_EMAIL}"
+                    f"?subject={urllib.parse.quote(_subject)}"
+                    f"&body={urllib.parse.quote(_body)}"
+                )
+                st.success(t("support_peer_success"))
+                st.markdown(
+                    f'<a href="{_mailto}" target="_blank" style="'
+                    f'display:inline-block;padding:0.5em 1.2em;background:#005F6A;color:white;'
+                    f'border-radius:6px;text-decoration:none;font-weight:bold;">'
+                    f'Open email to Secretariat</a>',
+                    unsafe_allow_html=True,
+                )
+
+    with tab_sec:
+        st.markdown(t("support_sec_desc"))
+        st.markdown("")
+
+        with st.form("secretariat_contact_form", clear_on_submit=True):
+            sc1, sc2 = st.columns(2)
+            with sc1:
+                s_name  = st.text_input(t("support_sec_name"),    placeholder="e.g. Maria Rodriguez")
+                s_org   = st.text_input(t("support_sec_org"),     placeholder="e.g. CCFD-Terre Solidaire")
+            with sc2:
+                s_email   = st.text_input(t("support_sec_email"),   placeholder="contact@example.org")
+                s_subject = st.text_input(t("support_sec_subject"), placeholder="e.g. Question about emergency funding mechanisms")
+            s_message = st.text_area(t("support_sec_message"), height=140,
+                                      placeholder="Describe your question or what you need support with...")
+            s_submitted = st.form_submit_button(t("support_sec_btn"), type="primary")
+
+        if s_submitted:
+            if not s_email.strip() or not s_message.strip():
+                st.error(t("support_sec_error"))
+            else:
+                _s_subject = s_subject.strip() or f"Toolkit support request – {s_org.strip() or s_name.strip() or 'Forus member'}"
+                _s_body = (
+                    f"Support request from Forus Toolkit\n\n"
+                    f"From: {s_name.strip() or '(not provided)'}\n"
+                    f"Organisation: {s_org.strip() or '(not provided)'}\n"
+                    f"Email: {s_email.strip()}\n\n"
+                    f"Subject: {_s_subject}\n\n"
+                    f"Message:\n{s_message.strip()}"
+                )
+                import urllib.parse as _up
+                _s_mailto = (
+                    f"mailto:{_SECRETARIAT_EMAIL}"
+                    f"?subject={_up.quote(_s_subject)}"
+                    f"&body={_up.quote(_s_body)}"
+                )
+                st.success(t("support_sec_success"))
+                st.markdown(
+                    f'<a href="{_s_mailto}" target="_blank" style="'
+                    f'display:inline-block;padding:0.5em 1.2em;background:#005F6A;color:white;'
+                    f'border-radius:6px;text-decoration:none;font-weight:bold;">'
+                    f'Open email to Secretariat</a>',
+                    unsafe_allow_html=True,
+                )
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE: Give Feedback  (all roles; admin sees extra review tab)
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════���═════════════════════
 elif page == "give_feedback":
     st.title(t("page_give_feedback"))
 
