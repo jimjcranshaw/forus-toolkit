@@ -773,6 +773,7 @@ def render_db_ref(text, last_verified):
         ("LINEBELOW",(0,0),(-1,0),0.5,C["blue"]),
         ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
     ]))
+    t.splitByRow = False   # keep header + body rows together; prevent orphaned header
     return [t, Spacer(1,2*mm)]
 
 def _xesc(text):
@@ -2156,31 +2157,31 @@ def render_resources_page(language="EN", access_level=1):
     _heading, _sub = _headings.get(_lang, _headings["EN"])
     _section_headings = {
         "EN": {
-            "forus":    "Forus International",
+            "forus":    "Forus",
             "legal":    "Legal Support",
             "funding":  "Emergency Funding",
             "comms":    "Safe Communications & Security",
             "divers":   "Diversification & Mutualisation",
         },
         "FR": {
-            "forus":    "Forus International",
+            "forus":    "Forus",
             "legal":    "Soutien juridique",
             "funding":  "Financement d'urgence",
             "comms":    "Communications sécurisées & sécurité",
             "divers":   "Diversification & mutualisation",
         },
         "ES": {
-            "forus":    "Forus Internacional",
+            "forus":    "Forus",
             "legal":    "Apoyo jurídico",
             "funding":  "Financiación de emergencia",
             "comms":    "Comunicaciones seguras & seguridad",
             "divers":   "Diversificación & mutualización",
         },
-    }.get(_lang, {"forus":"Forus International","legal":"Legal Support","funding":"Emergency Funding",
+    }.get(_lang, {"forus":"Forus","legal":"Legal Support","funding":"Emergency Funding",
                    "comms":"Safe Communications","divers":"Diversification & Mutualisation"})
     # Curated resource list: (category_key, display_label, url)
     _resources = [
-        ("forus",   "Forus International",                              "https://www.forus-international.org"),
+        ("forus",   "Forus",                                            "https://www.forus-international.org"),
         ("forus",   "Forus Safeguarding Toolkit",                       "https://www.forus-international.org/en/pdf/keeping-people-safe"),
         ("forus",   "Forus Communications Clinic",                      "https://www.forus-international.org/en/news/communications-clinic"),
         ("legal",   "IFRC Legal Database",                              "https://www.ifrc.org/legal-resources"),
@@ -2258,6 +2259,8 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
         part      = int(part_raw) if part_raw is not None else 1
         if part == 0:
             continue   # intro page is not listed in the ToC
+        if part == 7:
+            continue   # Part 7 (Feedback) is a separate app link, not a PDF section
         if sec and sec not in seen_sections:
             seen_sections.add(sec)
             sections_in_order.append((part, sec))
