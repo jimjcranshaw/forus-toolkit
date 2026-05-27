@@ -683,7 +683,7 @@ def _linkify_refs(text):
          '<u>Part 5 (Safe Communications)</u></link>'),
         # Section 1.x subsection links (more specific before bare "Section")
         (r"Section 1\.1\b",
-         '<link href="#s_1_1_Legislative_Crisis" color="#00424D">'
+         '<link href="#s_1_1_Legislative_Threats" color="#00424D">'
          '<u>Section 1.1</u></link>'),
         (r"Section 1\.2\b",
          '<link href="#s_1_2_Funding_Shock" color="#00424D">'
@@ -696,7 +696,7 @@ def _linkify_refs(text):
          '<u>Section 1.4</u></link>'),
         # Bare Part N links (after named variants above)
         (r"\bPart 1\b",
-         '<link href="#s_1_1_Legislative_Crisis" color="#00424D">'
+         '<link href="#s_1_1_Legislative_Threats" color="#00424D">'
          '<u>Part 1</u></link>'),
         (r"\bPart 2\b",
          '<link href="#s_2__Solidarity_Activation" color="#00424D">'
