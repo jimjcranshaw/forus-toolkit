@@ -148,7 +148,7 @@ S = {
     "decQ":     ps("decQ",    size=9,   leading=13, color="amber",  bold=True),
     "decA":     ps("decA",    size=8.5, leading=12, color="grey"),
     "check":    ps("check",   size=9,   leading=13, color="grey"),
-    "tmpl":     ps("tmpl", font="Courier", size=8, leading=11.5, color="grey"),
+    "tmpl":     ps("tmpl", size=8.5, leading=12, color="grey"),
     "case":     ps("case",    size=9,   leading=13, color="grey",   italic=True),
     "dbref":    ps("dbref",   size=8.5, leading=12, color="blue"),
     "mechref":  ps("mechref", size=8.5, leading=12, color="dark_green", bold=True),
@@ -521,7 +521,7 @@ def render_checklist(text, part):
         ("LEFTPADDING",(0,0),(-1,-1), 0),("RIGHTPADDING",(0,0),(-1,-1), 0),
         ("ALIGN",(0,0),(-1,-1),"CENTER"),
     ]))
-    data = [[cb_cell, Paragraph(text, S["check"])]]
+    data = [[cb_cell, Paragraph(_format_checklist_text(text), S["check"])]]
     t = Table(data, colWidths=[8*mm, FRAME_W - 8*mm])
     t.setStyle(TableStyle([
         ("VALIGN",(0,0),(-1,-1),"TOP"),
@@ -536,7 +536,7 @@ def render_checklist(text, part):
 def render_template(text):
     data = [
         [Paragraph("TEMPLATE", ps("_tl",size=7.5,leading=9,color=C["white"],bold=True))],
-        [Paragraph(text.replace("\n","<br/>"), S["tmpl"])],
+        [Paragraph(_format_template_text(text), S["tmpl"])],
     ]
     t = Table(data, colWidths=[FRAME_W])
     t.setStyle(TableStyle([
@@ -594,7 +594,7 @@ def render_case(text, _s=None):
             body = parts[i + 1].strip() if i + 1 < len(parts) else ""
             content_rows.append([Paragraph(lbl, lbl_style)])
             if body:
-                content_rows.append([Paragraph(body, body_style)])
+                content_rows.append([Paragraph(_linkify_refs(body), body_style)])
             i += 2
 
         inner = Table(content_rows, colWidths=[FRAME_W - 12*mm])
@@ -619,7 +619,7 @@ def render_case(text, _s=None):
         ]))
     else:
         # Plain unstructured case - simple layout
-        data = [header_row, [Paragraph(text, S["case"])]]
+        data = [header_row, [Paragraph(_linkify_refs(text), S["case"])]]
         t = Table(data, colWidths=[FRAME_W])
         t.setStyle(TableStyle([
             ("BACKGROUND", (0,0),(0,0), C["brown"]),
@@ -633,11 +633,62 @@ def render_case(text, _s=None):
 
     return [t, Spacer(1, 1*mm)]
 
+def _short_url_label(url):
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url if str(url).startswith(("http://", "https://")) else f"https://{url}")
+        host = (parsed.netloc or parsed.path).replace("www.", "")
+        path = parsed.path.strip("/")
+        return host if not path else f"{host}/{path.split('/')[0]}"
+    except Exception:
+        return "Open link"
+
+
+def _escape_preserving_external_links(text):
+    raw = str(text or "")
+    links = []
+
+    def repl(match):
+        url = match.group(1).strip()
+        inner = re.sub(r"</?u>", "", match.group(2), flags=re.I).strip()
+        label = re.sub(r"<[^>]+>", "", inner).strip() or _short_url_label(url)
+        token = f"@@EXTLINK{len(links)}@@"
+        links.append((token, f'<link href="{_xesc(url)}" color="#00424D"><u>{_xesc(label)}</u></link>'))
+        return token
+
+    raw = re.sub(r'<a\s+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', repl, raw, flags=re.I | re.S)
+    escaped = _xesc(raw)
+    for token, markup in links:
+        escaped = escaped.replace(token, markup)
+    return escaped
+
+
+def _format_checklist_text(text):
+    raw = str(text or "").strip()
+    if "✔" not in raw:
+        return _linkify_refs(raw).replace("\n", "<br/>")
+    parts = [p.strip(" -;•\t") for p in raw.split("✔")]
+    title = parts[0].strip()
+    items = [p for p in parts[1:] if p]
+    rendered = []
+    if title:
+        rendered.append(f"<b>{_linkify_refs(title)}</b>")
+    rendered.extend(f"✓ {_linkify_refs(item)}" for item in items)
+    return "<br/>".join(rendered)
+
+
+def _format_template_text(text):
+    raw = str(text or "").strip()
+    raw = re.sub(r"\s+(\d{1,2}\.\s+)", r"\n\1", raw)
+    raw = re.sub(r"\s+■\s+", "\n■ ", raw)
+    return _linkify_refs(raw).replace("\n", "<br/>")
+
+
 def _linkify_refs(text):
     """Convert cross-references to internal Annex/Part/Template destinations into
     clickable PDF links.  Must be applied AFTER XML-escaping (the function
     applies _xesc internally, then adds <link> markup on top)."""
-    t = _xesc(text)
+    t = _escape_preserving_external_links(text)
     # Ordered so longer matches win (Annex A before bare 'A', etc.)
     _LINK = [
         # Annexes ── anchor IDs mirror anchor_id(section_text) below
@@ -1004,20 +1055,20 @@ def render_peer_connect(text, ref=None):
             sep = "&" if "?" in url else "?"
             url = f"{url}{sep}ref={ref}"
         body_para = Paragraph(
-            f'<a href="{url}" color="#D4F0F1"><u>{url}</u></a>',
+            f'<link href="{url}" color="#D4F0F1"><u>{_short_url_label(url)}</u></link>',
             ps("_pcurl", size=8, leading=11, color=C["forus_teal_lt"]))
         ref_row = []
     else:
         # Strip leading personal name: one or more Title-case words followed by ", "
         # e.g. "Moses Isooba, " → "" or "Shannon Kindornay, " → ""
         clean = _re.sub(r'^(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*', '', text)
-        body_para = Paragraph(clean, ps("_pcbody", size=8.5, leading=12,
+        body_para = Paragraph(_linkify_refs(clean), ps("_pcbody", size=8.5, leading=12,
                                          color=C["forus_teal_lt"]))
         # Always show a reference link so members can signal interest via Forus
         base = "https://forus-international.org/peer-connect"
         ref_url = f"{base}?ref={ref}" if ref else base
         ref_row = [Paragraph(
-            f'<a href="{ref_url}" color="#58C5C7"><u>{ref_url}</u></a>',
+            f'<link href="{ref_url}" color="#58C5C7"><u>Request peer connection</u></link>',
             ps("_pcref", size=7.5, leading=11, color=C["forus_teal"]))]
 
     inner_rows = [
@@ -1193,6 +1244,13 @@ def load_data(access_level, language="EN"):
             ct = str(item.get("content_text","") or "")
             if ct.startswith("[TRANSLATION NEEDED"):
                 continue
+            if str(item.get("section", "")).strip() in {"S1", "S2", "S3", "S4"}:
+                item["section"] = {
+                    "S1": "1.1 Legislative Threats",
+                    "S2": "1.2 Funding Shock",
+                    "S3": "1.3 Digital Repression",
+                    "S4": "1.4 Stigmatisation & Intimidation",
+                }[str(item.get("section", "")).strip()]
             rows.append(item)
 
     ws_m = wb["ANNEXES"]
@@ -1232,8 +1290,8 @@ def load_data(access_level, language="EN"):
         return (
             part_int,
             str(x.get("section", "")),
-            TIME_ORDER.get(str(x.get("time_horizon", "general") or "general"), 5),
             display_ord,
+            TIME_ORDER.get(str(x.get("time_horizon", "general") or "general"), 5),
         )
 
     rows.sort(key=sort_key)
@@ -2513,9 +2571,9 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
             text_raw = str(item.get("content_text", "") or "")
             text, _ = trim(text_raw, get_limit(item))
             tl = text.upper()
-            if "BEFORE" in tl:
+            if "BEFORE" in tl or "PRE-CRISIS" in tl:
                 current_phase = "preemptive"
-            elif "DURING" in tl:
+            elif any(marker in tl for marker in ("DURING", "IMMEDIATE", "RESPONSE", "RESPONSIVE", "SHORT", "MEDIUM")):
                 current_phase = "responsive"
             # Force timeline bar to redraw after the phase switch
             make_story._prev_display_h = None
