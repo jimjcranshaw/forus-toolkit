@@ -389,7 +389,7 @@ TRANSLATIONS = {
         "pdf_part_2": "Partie 2 — Solidarité",
         "pdf_part_3": "Partie 3 — Soutien juridique",
         "pdf_part_4": "Partie 4 — Financement d'urgence",
-        "pdf_part_5": "Partie 5 — Comms sécurisées",
+        "pdf_part_5": "Partie 5 — Communications sécurisées",
         "pdf_part_6": "Partie 6 — Diversification et mutualisation",
         "pdf_part_7": "Partie 7 — Retours",
         "pdf_annex_a": "Annexe A : Soutien bénévole juridique",

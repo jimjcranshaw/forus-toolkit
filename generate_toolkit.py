@@ -75,7 +75,7 @@ PART_COLORS = {
     2: h("58C5C7"),   # Teal       - Solidarity Activation
     3: h("00424D"),   # Dark Blue  - Legal Support
     4: h("5C9C8E"),   # Mint Green - Emergency Funding
-    5: h("7A8600"),   # Olive/Lime - Safe Comms (darkened for print legibility, #89)
+    5: h("7A8600"),   # Olive/Lime - Safe Communications (darkened for print legibility, #89)
     6: h("00424D"),   # Dark Blue  - Diversification
     7: h("888888"),   # Mid Grey   - Feedback
     8: h("3A3A3A"),   # Near-black - Annexes
@@ -83,7 +83,7 @@ PART_COLORS = {
 PART_LABELS = {
     0:"INTRODUCTION",
     1:"CRISIS GUIDES", 2:"SOLIDARITY", 3:"LEGAL SUPPORT",
-    4:"EMERGENCY FUNDING", 5:"SAFE COMMS", 6:"DIVERSIFICATION",
+    4:"EMERGENCY FUNDING", 5:"SAFE COMMUNICATIONS", 6:"DIVERSIFICATION",
     7:"FEEDBACK", 8:"ANNEXES",
 }
 
@@ -1347,8 +1347,8 @@ _TOOL_PART = {
     "A1": 2,   # Platform Role Clarifier  → Part 2  (B2 Solidarity)
     "T2": 3,   # Legal Decision Tree      → Part 3  (B3 Legal Support)
     "A3": 4,   # Emergency Funding Nav.   → Part 4  (B4 Emergency Funding)
-    "T3": 5,   # Go public / stay quiet   → Part 5  (B5 Safe Comms)
-    "T4": 5,   # Do-No-Harm Checklist     → Part 5  (B5 Safe Comms)
+    "T3": 5,   # Go public / stay quiet   → Part 5  (B5 Safe Communications)
+    "T4": 5,   # Do-No-Harm Checklist     → Part 5  (B5 Safe Communications)
     "A2": 6,   # Diversification Gate     → Part 6  (B6 Diversification)
 }
 
@@ -1521,6 +1521,17 @@ _PDF_STRINGS = {
         "cover_public":    "PUBLIC VERSION",
         "cover_network":   "FORUS NETWORK - CONFIDENTIAL",
         "cover_updated":   "Updated {date}  ·  Flourish Nonprofits for Forus",
+        "about_heading":   "ABOUT THIS TOOLKIT",
+        "about_sections": [
+            ("WHO THIS TOOLKIT IS FOR",
+             "This toolkit is for Forus members — national platforms and regional coalitions — who need practical, ready-to-use guidance when facing a crisis or planning to strengthen their resilience."),
+            ("HOW TO USE IT",
+             "Each section is self-contained. Go directly to the section most relevant to your situation: Part 1 for crisis guides by type; Part 2 for solidarity activation; Part 3 for legal support; Part 4 for emergency funding; Part 5 for safe communications; Part 6 for diversification."),
+            ("WHAT THIS TOOLKIT DOES — AND DOES NOT DO",
+             "This toolkit gives you direct, actionable guidance you can apply yourself, including step-by-step protocols, case studies, checklists, and links to external mechanisms. It is designed to be used independently, without needing to contact the Forus Secretariat first. The toolkit does not: provide real-time crisis management, operate as a 24/7 emergency helpline, or guarantee access to any external funding or support mechanism listed. All external mechanisms should be verified for current status before application."),
+            ("HOW FORUS CAN HELP",
+             "The Forus network facilitates peer exchanges and amplifies its members' messages. If you see information in this toolkit that you would like to discuss within the network, please use the relevant network channels (working groups, member-to-member communication platform, etc.) to continue the conversation. If you need help navigating the toolkit, you can contact the secretariat at contact@forus-international.org."),
+        ],
         "toc_heading":     "CONTENTS",
         "toc_placeholder": "Contents will appear here after the first build.",
         "part_prefix":     "PART",
@@ -1529,7 +1540,7 @@ _PDF_STRINGS = {
         "part_labels": {
             0:"INTRODUCTION",
             1:"CRISIS GUIDES", 2:"SOLIDARITY", 3:"LEGAL SUPPORT",
-            4:"EMERGENCY FUNDING", 5:"SAFE COMMS", 6:"DIVERSIFICATION &amp; MUTUALISATION",
+            4:"EMERGENCY FUNDING", 5:"SAFE COMMUNICATIONS", 6:"DIVERSIFICATION &amp; MUTUALISATION",
             7:"FEEDBACK", 8:"ANNEXES",
         },
         "part_intros": {
@@ -1551,7 +1562,7 @@ _PDF_STRINGS = {
     },
     "FR": {
         "section_names": {
-            "1.1 Legislative Crisis":               "1.1 Crise législative",
+            "1.1 Legislative Threats":              "1.1 Menaces législatives",
             "1.2 Funding Shock":                    "1.2 Choc de financement",
             "1.3 Digital Repression":               "1.3 Répression numérique",
             "1.4 Stigmatisation & Intimidation":    "1.4 Stigmatisation et intimidation",
@@ -1572,6 +1583,17 @@ _PDF_STRINGS = {
         "cover_public":    "VERSION PUBLIQUE",
         "cover_network":   "RÉSEAU FORUS - CONFIDENTIEL",
         "cover_updated":   "Mis à jour le {date}  ·  Flourish Nonprofits pour Forus",
+        "about_heading":   "À PROPOS DE CETTE BOÎTE À OUTILS",
+        "about_sections": [
+            ("À QUI S'ADRESSE CETTE BOÎTE À OUTILS",
+             "Cette boîte à outils s'adresse aux membres de Forus — plateformes nationales et coalitions régionales — qui ont besoin de conseils pratiques et directement utilisables face à une crise ou pour renforcer leur résilience."),
+            ("COMMENT L'UTILISER",
+             "Chaque section est autonome. Allez directement à la section la plus pertinente pour votre situation : Partie 1 pour les guides de crise par type ; Partie 2 pour l'activation de la solidarité ; Partie 3 pour le soutien juridique ; Partie 4 pour le financement d'urgence ; Partie 5 pour les communications sécurisées ; Partie 6 pour la diversification."),
+            ("CE QUE CETTE BOÎTE À OUTILS FAIT — ET NE FAIT PAS",
+             "Cette boîte à outils fournit des orientations directes et actionnables que vous pouvez appliquer vous-même, notamment des protocoles étape par étape, des études de cas, des checklists et des liens vers des mécanismes externes. Elle est conçue pour être utilisée de manière autonome, sans devoir contacter d'abord le Secrétariat de Forus. Elle ne fournit pas de gestion de crise en temps réel, ne fonctionne pas comme une ligne d'urgence 24/7 et ne garantit pas l'accès aux mécanismes externes listés. Tous les mécanismes externes doivent être vérifiés avant toute demande."),
+            ("COMMENT FORUS PEUT AIDER",
+             "Le réseau Forus facilite les échanges entre pairs et amplifie les messages de ses membres. Si vous souhaitez discuter d'informations présentes dans cette boîte à outils au sein du réseau, utilisez les canaux pertinents du réseau (groupes de travail, plateforme de communication entre membres, etc.). Si vous avez besoin d'aide pour naviguer dans la boîte à outils, vous pouvez contacter le secrétariat à contact@forus-international.org."),
+        ],
         "toc_heading":     "SOMMAIRE",
         "toc_placeholder": "Le sommaire apparaîtra ici après la première génération.",
         "part_prefix":     "PARTIE",
@@ -1580,7 +1602,7 @@ _PDF_STRINGS = {
         "part_labels": {
             0:"INTRODUCTION",
             1:"GUIDES DE CRISE", 2:"SOLIDARITÉ", 3:"SOUTIEN JURIDIQUE",
-            4:"FINANCEMENT D'URGENCE", 5:"COMMS SÉCURISÉES", 6:"DIVERSIFICATION &amp; MUTUALISATION",
+            4:"FINANCEMENT D'URGENCE", 5:"COMMUNICATIONS SÉCURISÉES", 6:"DIVERSIFICATION &amp; MUTUALISATION",
             7:"RETOURS D'INFORMATION", 8:"ANNEXES",
         },
         "part_intros": {
@@ -1602,7 +1624,7 @@ _PDF_STRINGS = {
     },
     "ES": {
         "section_names": {
-            "1.1 Legislative Crisis":               "1.1 Crisis legislativa",
+            "1.1 Legislative Threats":              "1.1 Amenazas legislativas",
             "1.2 Funding Shock":                    "1.2 Choque de financiación",
             "1.3 Digital Repression":               "1.3 Represión digital",
             "1.4 Stigmatisation & Intimidation":    "1.4 Estigmatización e intimidación",
@@ -1623,6 +1645,17 @@ _PDF_STRINGS = {
         "cover_public":    "VERSIÓN PÚBLICA",
         "cover_network":   "RED FORUS - CONFIDENCIAL",
         "cover_updated":   "Actualizado el {date}  ·  Flourish Nonprofits para Forus",
+        "about_heading":   "ACERCA DE ESTA CAJA DE HERRAMIENTAS",
+        "about_sections": [
+            ("A QUIÉN ESTÁ DIRIGIDA",
+             "Esta caja de herramientas está dirigida a miembros de Forus — plataformas nacionales y coaliciones regionales — que necesitan orientación práctica y lista para usar al enfrentar una crisis o al planificar cómo fortalecer su resiliencia."),
+            ("CÓMO USARLA",
+             "Cada sección es autónoma. Vaya directamente a la sección más relevante para su situación: Parte 1 para guías de crisis por tipo; Parte 2 para activación de solidaridad; Parte 3 para apoyo jurídico; Parte 4 para financiación de emergencia; Parte 5 para comunicaciones seguras; Parte 6 para diversificación."),
+            ("QUÉ HACE ESTA CAJA DE HERRAMIENTAS — Y QUÉ NO HACE",
+             "Esta caja de herramientas ofrece orientación directa y accionable que puede aplicar usted mismo, incluidos protocolos paso a paso, estudios de caso, listas de verificación y enlaces a mecanismos externos. Está diseñada para usarse de forma independiente, sin necesidad de contactar primero con el Secretariado de Forus. No proporciona gestión de crisis en tiempo real, no opera como una línea de emergencia 24/7 y no garantiza el acceso a ningún mecanismo externo de financiación o apoyo listado. Todos los mecanismos externos deben verificarse antes de presentar una solicitud."),
+            ("CÓMO PUEDE AYUDAR FORUS",
+             "La red Forus facilita intercambios entre pares y amplifica los mensajes de sus miembros. Si desea debatir información de esta caja de herramientas dentro de la red, utilice los canales pertinentes (grupos de trabajo, plataforma de comunicación entre miembros, etc.). Si necesita ayuda para orientarse en la caja de herramientas, puede contactar al secretariado en contact@forus-international.org."),
+        ],
         "toc_heading":     "CONTENIDO",
         "toc_placeholder": "El contenido aparecerá aquí después de la primera generación.",
         "part_prefix":     "PARTE",
@@ -1631,7 +1664,7 @@ _PDF_STRINGS = {
         "part_labels": {
             0:"INTRODUCCIÓN",
             1:"GUÍAS DE CRISIS", 2:"SOLIDARIDAD", 3:"APOYO JURÍDICO",
-            4:"FINANCIACIÓN DE EMERGENCIA", 5:"COMMS SEGURAS", 6:"DIVERSIFICACIÓN &amp; MUTUALIZACIÓN",
+            4:"FINANCIACIÓN DE EMERGENCIA", 5:"COMUNICACIONES SEGURAS", 6:"DIVERSIFICACIÓN &amp; MUTUALIZACIÓN",
             7:"RETROALIMENTACIÓN", 8:"ANEXOS",
         },
         "part_intros": {
@@ -1818,6 +1851,22 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None,
         ("ALIGN",(0,0),(-1,-1),"CENTER"),
     ]))
     story.append(ct)
+    story.append(PageBreak())
+
+    # ── About this toolkit page ────────────────────────────────────────────────
+    story.append(Paragraph(_s.get("about_heading", "ABOUT THIS TOOLKIT"),
+                            ps("_about_title", size=13, leading=16,
+                               color=C["dark_green"], bold=True)))
+    story.append(HRFlowable(width="100%", thickness=1,
+                             color=C["dark_green"], spaceBefore=3, spaceAfter=6))
+    for heading, body in _s.get("about_sections", _PDF_STRINGS["EN"]["about_sections"]):
+        story.append(Spacer(1, 4*mm))
+        story.append(Paragraph(heading,
+                                ps("_about_h", size=9, leading=12,
+                                   color=C["dark_green"], bold=True)))
+        story.append(Paragraph(body,
+                                ps("_about_b", size=9.5, leading=14, color="grey",
+                                   before=2, after=2)))
     story.append(PageBreak())
 
     # ── Toolkit Structure Overview page (#78) ─────────────────────────────────
