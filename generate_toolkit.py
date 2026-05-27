@@ -534,18 +534,18 @@ def render_checklist(text, part):
     return [t]
 
 def render_template(text):
-    data = [
-        [Paragraph("TEMPLATE", ps("_tl",size=7.5,leading=9,color=C["white"],bold=True))],
-        [Paragraph(_format_template_text(text), S["tmpl"])],
-    ]
+    data = [[Paragraph(
+        '<b>TEMPLATE</b><br/><br/>' + _format_template_text(text),
+        S["tmpl"]
+    )]]
     t = Table(data, colWidths=[FRAME_W])
+    t.splitByRow = False
+    t.keepWithNext = True
     t.setStyle(TableStyle([
-        ("BACKGROUND",(0,0),(0,0), C["purple"]),
-        ("BACKGROUND",(0,1),(0,1), C["light_purple"]),
-        ("LEFTPADDING",(0,0),(-1,-1),6),("RIGHTPADDING",(0,0),(-1,-1),6),
-        ("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),
-        ("LINEBELOW",(0,0),(0,0),1,C["purple"]),
-        ("BOX",(0,0),(-1,-1),0.5,C["purple"]),
+        ("BACKGROUND",(0,0),(-1,-1), C["light_purple"]),
+        ("LEFTPADDING",(0,0),(-1,-1),8),("RIGHTPADDING",(0,0),(-1,-1),8),
+        ("TOPPADDING",(0,0),(-1,-1),7),("BOTTOMPADDING",(0,0),(-1,-1),7),
+        ("BOX",(0,0),(-1,-1),0.75,C["purple"]),
     ]))
     return [t, Spacer(1,2*mm)]
 
@@ -2571,9 +2571,9 @@ def make_story(rows, mechs, access_level, page_map=None, req=None, language="EN"
             text_raw = str(item.get("content_text", "") or "")
             text, _ = trim(text_raw, get_limit(item))
             tl = text.upper()
-            if "BEFORE" in tl or "PRE-CRISIS" in tl:
+            if "BEFORE" in tl or "PRE-CRISIS" in tl or "READINESS" in tl:
                 current_phase = "preemptive"
-            elif any(marker in tl for marker in ("DURING", "IMMEDIATE", "RESPONSE", "RESPONSIVE", "SHORT", "MEDIUM")):
+            else:
                 current_phase = "responsive"
             # Force timeline bar to redraw after the phase switch
             make_story._prev_display_h = None
