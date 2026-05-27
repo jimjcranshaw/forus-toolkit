@@ -678,9 +678,9 @@ def _linkify_refs(text):
         (r"Part 4 \(Emergency Funding\)",
          '<link href="#s_4__Emergency_Funding" color="#00424D">'
          '<u>Part 4 (Emergency Funding)</u></link>'),
-        (r"Part 5 \(Safe Comms\)",
-         '<link href="#s_5__Safe_Comms" color="#00424D">'
-         '<u>Part 5 (Safe Comms)</u></link>'),
+        (r"Part 5 \(Safe Communications\)",
+         '<link href="#s_5__Safe_Communications" color="#00424D">'
+         '<u>Part 5 (Safe Communications)</u></link>'),
         # Section 1.x subsection links (more specific before bare "Section")
         (r"Section 1\.1\b",
          '<link href="#s_1_1_Legislative_Crisis" color="#00424D">'
@@ -708,7 +708,7 @@ def _linkify_refs(text):
          '<link href="#s_4__Emergency_Funding" color="#00424D">'
          '<u>Part 4</u></link>'),
         (r"\bPart 5\b",
-         '<link href="#s_5__Safe_Comms" color="#00424D">'
+         '<link href="#s_5__Safe_Communications" color="#00424D">'
          '<u>Part 5</u></link>'),
         (r"\bPart 6\b",
          '<link href="#s_6__Diversification_and_Mutualisation" color="#00424D">'
@@ -1558,7 +1558,7 @@ _PDF_STRINGS = {
             "2. Solidarity Activation":             "2. Activation de la solidarité",
             "3. Legal Support":                     "3. Soutien juridique",
             "4. Emergency Funding":                 "4. Financement d'urgence",
-            "5. Safe Comms":                        "5. Communications sécurisées",
+            "5. Safe Communications":               "5. Communications sécurisées",
             "6. Diversification":                   "6. Diversification et mutualisation",
             "6. Diversification and Mutualisation": "6. Diversification et mutualisation",
             "7. Update Guide":                      "7. Guide de mise à jour",
@@ -1609,7 +1609,7 @@ _PDF_STRINGS = {
             "2. Solidarity Activation":             "2. Activación de la solidaridad",
             "3. Legal Support":                     "3. Apoyo jurídico",
             "4. Emergency Funding":                 "4. Financiación de emergencia",
-            "5. Safe Comms":                        "5. Comunicaciones seguras",
+            "5. Safe Communications":               "5. Comunicaciones seguras",
             "6. Diversification":                   "6. Diversificación y mutualización",
             "6. Diversification and Mutualisation": "6. Diversificación y mutualización",
             "7. Update Guide":                      "7. Guía de actualización",

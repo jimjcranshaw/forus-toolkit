@@ -157,7 +157,7 @@ TRANSLATIONS = {
         "pdf_part_2": "Part 2 — Solidarity",
         "pdf_part_3": "Part 3 — Legal Support",
         "pdf_part_4": "Part 4 — Emergency Funding",
-        "pdf_part_5": "Part 5 — Safe Comms",
+        "pdf_part_5": "Part 5 — Safe Communications",
         "pdf_part_6": "Part 6 — Diversification and Mutualisation",
         "pdf_part_7": "Part 7 — Feedback",
         "pdf_annex_a": "Annex A: Legal Pro Bono Support",
