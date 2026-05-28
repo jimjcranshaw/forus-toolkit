@@ -1793,9 +1793,9 @@ elif page == "get_support":
     # Values are the peer context passed to the Secretariat in the email.
     _CASE_STUDIES = {
         "Part 1 — Case study: Platform that navigated a bank account freeze using legal compliance strategy":
-            "Peer: Uganda NGO Forum (Part 1, Legislative Crisis - bank freeze)",
+            "Peer: Uganda NGO Forum (Part 1, Legislative Threats - bank freeze)",
         "Part 1 — Case study: Platform that ran constitutional protection petitions and international advocacy in parallel":
-            "Peer: Pakistan Development Alliance (Part 1, Legislative Crisis - multi-track legal)",
+            "Peer: Pakistan Development Alliance (Part 1, Legislative Threats - multi-track legal)",
         "Part 1 — Case study: Platform that navigated state-adjacent disinformation in a European context":
             "Peer: LAPAS - Latvijas Pilsoniska alianse (Part 1, Stigmatisation & Intimidation)",
         "Part 2 — Case study: Network that incubated an exiled civil society organisation":
