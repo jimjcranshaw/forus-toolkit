@@ -1175,6 +1175,15 @@ with st.sidebar:
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True,
                 )
+            uploaded = st.file_uploader(t("sidebar_upload_sp"), type=["xlsx"], key="replace_spreadsheet")
+            if uploaded:
+                tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+                tmp.write(uploaded.read())
+                tmp.close()
+                st.session_state["sp_path"] = tmp.name
+                st.session_state["sp_name"] = uploaded.name
+                st.success("Spreadsheet loaded. Use Save to Google Drive to publish it.")
+                st.rerun()
             if st.secrets.get("GDRIVE_CREDENTIALS"):
                 if st.button(t("sidebar_save_gdrive"), use_container_width=True):
                     ok, msg = save_to_gdrive()
