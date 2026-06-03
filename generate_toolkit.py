@@ -2089,35 +2089,45 @@ def build_cover(story, access_level, sections_in_order=None, page_map=None,
 
 # ── Acronyms page ─────────────────────────────────────────────────────────────
 def render_acronyms_page(language="EN"):
-    """One-page glossary of abbreviations used in the toolkit."""
+    """One-page glossary of abbreviations used in the toolkit.
+
+    Source: ACRONYMS sheet of the content DB. Each row has columns
+    abbreviation, definition_en, definition_fr, definition_es,
+    last_updated, editor_notes. Header row is row 2, data starts at row 3.
+
+    Falls back to EN definition if the requested language has an empty cell.
+    Fails soft (returns []) if the sheet is missing so the build still completes.
+    """
     _s = _PDF_STRINGS.get(language.upper(), _PDF_STRINGS["EN"])
-    ACRONYMS = [
-        ("ANC Peru",  "Asociación Nacional de Centros de Investigación, Promoción Social y Desarrollo"),
-        ("BRT",       "Building Responses Together (CIVICUS partner network)"),
-        ("CIVICUS",   "World Alliance for Citizen Participation"),
-        ("CNONGD",    "Conseil National des ONG de Développement (DRC)"),
-        ("CONCORD",   "European NGO Confederation for Relief and Development"),
-        ("CSO",       "Civil Society Organisation"),
-        ("DAC",       "Development Assistance Committee (OECD)"),
-        ("DDP",       "Democratic Dialogue Programme (European funding)"),
-        ("EU SEE",    "EU Civil Society Support Programme for South-East Europe"),
-        ("FALE",      "Facility Aiding Locally Led Engagement (PIANGO model)"),
-        ("FATF",      "Financial Action Task Force (global anti-money-laundering body)"),
-        ("FLD",       "Front Line Defenders"),
-        ("ICNL",      "International Center for Not-for-Profit Law"),
-        ("LAPAS",     "Latvijas Pilsoniska alianse - Latvian Civic Alliance"),
-        ("MFF",       "EU Multi-Annual Financial Framework"),
-        ("MoU",       "Memorandum of Understanding"),
-        ("NGO",       "Non-Governmental Organisation"),
-        ("NNNGO",     "Network of Networks for NGOs, Nigeria"),
-        ("ODA",       "Official Development Assistance"),
-        ("PDA",       "Pakistan Development Alliance"),
-        ("PIANGO",    "Pacific Islands Association of Non-Governmental Organisations"),
-        ("PILnet",    "Public Interest Law Network"),
-        ("SLAPP",     "Strategic Lawsuit Against Public Participation"),
-        ("UPR",       "Universal Periodic Review (UN Human Rights Council mechanism)"),
-        ("USAID",     "United States Agency for International Development"),
-    ]
+    lang = language.upper()
+    lang_col = {"EN": "definition_en", "FR": "definition_fr", "ES": "definition_es"}.get(lang, "definition_en")
+
+    try:
+        wb = openpyxl.load_workbook(SPREADSHEET, data_only=True)
+        if "ACRONYMS" not in wb.sheetnames:
+            return []
+        ws = wb["ACRONYMS"]
+        hdrs = [c.value for c in ws[2]]
+        cm = {h: i for i, h in enumerate(hdrs) if h}
+    except Exception:
+        return []
+
+    ACRONYMS = []
+    for row in ws.iter_rows(min_row=3, values_only=True):
+        abbr = row[cm["abbreviation"]] if "abbreviation" in cm else None
+        if not abbr:
+            continue
+        defn = None
+        if lang_col in cm:
+            defn = row[cm[lang_col]]
+        if not defn and "definition_en" in cm:
+            defn = row[cm["definition_en"]]
+        if not defn:
+            continue
+        ACRONYMS.append((str(abbr).strip(), str(defn).strip()))
+
+    if not ACRONYMS:
+        return []
 
     story = []
     story.append(Paragraph(_s["acr_heading"], ps(
@@ -2149,8 +2159,6 @@ def render_acronyms_page(language="EN"):
     story.append(t)
     story.append(PageBreak())
     return story
-
-
 # ── Main render ───────────────────────────────────────────────────────────────
 def render_block(item, mechs, story, warnings, _s=None):
     if _s is None: _s = _PDF_STRINGS["EN"]
