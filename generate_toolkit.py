@@ -380,14 +380,21 @@ def render_timeline_bar(active_horizon, _s=None):
     t.setStyle(TableStyle(cmds))
     return [t, Spacer(1,1.5*mm)]
 
-def render_step(text, number, part, truncated, _s=None):
+def render_step(text, number, part, truncated, _s=None, time_horizon="responsive"):
     if _s is None: _s = _PDF_STRINGS["EN"]
     pc = PART_COLORS.get(part, C["dark_green"])
     suffix = ""  # [OVER LIMIT] is console-only; not shown in PDF
-    # Number cell: stacked - big number on top, small "ACTION STEP" label below
+    # Pick label based on time_horizon. Falls back to legacy "action_step" if
+    # the language dict hasn't been updated with the new split keys.
+    th = str(time_horizon or "responsive").lower()
+    if th == "preemptive":
+        _label = _s.get("action_step_preemptive", _s.get("action_step", "ACTION"))
+    else:
+        _label = _s.get("action_step_responsive", _s.get("action_step", "ACTION"))
+    # Number cell: stacked - big number on top, small label below
     num_cell = Table([
         [Paragraph(str(number), S["stepnum"])],
-        [Paragraph(_s["action_step"], ps("_stype", size=5.5, leading=7,
+        [Paragraph(_label, ps("_stype", size=5.5, leading=7,
                     color=C["white"], bold=True, align=TA_CENTER))],
     ], colWidths=[10*mm])
     num_cell.setStyle(TableStyle([
@@ -1614,6 +1621,8 @@ _PDF_STRINGS = {
         "preemptive":       "🛡  PREEMPTIVE ACTIONS",
         "responsive":       "⚡  RESPONSIVE ACTIONS",
         "action_step":      "ACTION<br/>STEP",
+        "action_step_preemptive": "PRE-CRISIS<br/>ACTION",
+        "action_step_responsive": "RESPONSIVE<br/>ACTION",
         "context_lbl":      "CONTEXT",
         "case_study_lbl":   "📖  CASE STUDY",
         "peer_connect_foot":"Want to learn more or speak to the platform involved? See the peer connection link below.",
@@ -1676,6 +1685,8 @@ _PDF_STRINGS = {
         "preemptive":       "🛡  ACTIONS PRÉVENTIVES",
         "responsive":       "⚡  ACTIONS RÉACTIVES",
         "action_step":      "ÉTAPE<br/>D'ACTION",
+        "action_step_preemptive": "ACTION<br/>PRÉVENTIVE",
+        "action_step_responsive": "ACTION<br/>RÉACTIVE",
         "context_lbl":      "CONTEXTE",
         "case_study_lbl":   "📖  ÉTUDE DE CAS",
         "peer_connect_foot":"Pour en savoir plus ou contacter la plateforme concernée, consultez le lien ci-dessous.",
@@ -1738,6 +1749,8 @@ _PDF_STRINGS = {
         "preemptive":       "🛡  ACCIONES PREVENTIVAS",
         "responsive":       "⚡  ACCIONES REACTIVAS",
         "action_step":      "PASO<br/>DE ACCIÓN",
+        "action_step_preemptive": "ACCIÓN<br/>PREVENTIVA",
+        "action_step_responsive": "ACCIÓN<br/>REACTIVA",
         "context_lbl":      "CONTEXTO",
         "case_study_lbl":   "📖  ESTUDIO DE CASO",
         "peer_connect_foot":"Para saber más o contactar con la plataforma, consulte el enlace a continuación.",
@@ -2186,7 +2199,7 @@ def render_block(item, mechs, story, warnings, _s=None):
             # Only draw timeline bar at first step of each horizon group
             tl = render_timeline_bar(time_h, _s=_s)
             for f in tl: story.append(f)
-        story += render_step(text, "·", part, truncated, _s=_s)
+        story += render_step(text, "·", part, truncated, _s=_s, time_horizon=time_h)
 
     elif btype in ("TIP","WARNING"):
         story += render_callout(text, btype, truncated)
