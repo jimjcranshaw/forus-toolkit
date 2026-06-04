@@ -1006,6 +1006,43 @@ def _linkify_refs(text):
         r"\bASONOG\b",
         r"\bPDA\b",
     ]
+    # == New (v2.2): friendlier annex labels ==
+    for label, anchor in _ANNEX_FRIENDLY_LABELS.items():
+        pat = r"(?<!\w)" + re.escape(label) + r"(?!\w)"
+        t = re.sub(
+            pat,
+            f'<link href="{anchor}" color="#00424D"><u>{label}</u></link>',
+            t,
+            count=1,
+        )
+
+    # == New (v2.2): org / mechanism names -> per-entry annex anchor ==
+    for name, anchor in _ANNEX_ENTRY_LINKS:
+        if re.search(r"<link[^>]*>[^<]*" + re.escape(name), t):
+            continue
+        pat = r"(?<!\w)" + re.escape(name) + r"(?!\w)"
+        t = re.sub(
+            pat,
+            f'<link href="{anchor}" color="#00424D"><u>{name}</u></link>',
+            t,
+            count=1,
+        )
+
+    # == New (v2.2): Legal Support Decision Tree -> Part 3 banner ==
+    _DECISION_TREE_PATS = [
+        (r"Legal Support Decision Tree",
+         '<link href="#s_3__Legal_Support" color="#00424D">'
+         '<u>Legal Support Decision Tree</u></link>'),
+        (r"Arbre de d.cision .*?soutien juridique",
+         '<link href="#s_3__Legal_Support" color="#00424D">'
+         '<u>Arbre de decision pour le soutien juridique</u></link>'),
+        (r".rbol de decisi.n .*?apoyo legal",
+         '<link href="#s_3__Legal_Support" color="#00424D">'
+         '<u>Arbol de decision para el apoyo legal</u></link>'),
+    ]
+    for pat, repl in _DECISION_TREE_PATS:
+        t = re.sub(pat, repl, t, count=1)
+
     for pat in _MEMBER_ORGS:
         t = re.sub(pat, r'<b>\g<0></b>', t)
     return t
@@ -1062,6 +1099,17 @@ def _rich_callout(text):
 def render_mechanism_card(mech):
     if not mech:
         return [Paragraph("[Mechanism not found]", S["over"]), Spacer(1,2*mm)]
+
+    # v2.2: per-entry anchors so other parts of the toolkit can deep-link
+    mech_id   = str(mech.get("mech_id", "") or mech.get("mechanism_id", ""))
+    mech_name = str(mech.get("mechanism_name", "") or "")
+    anchors   = []
+    if mech_id:
+        anchors.append(SectionAnchor(_mech_anchor(mech_id)))
+    if mech_name:
+        slug_anchor = _org_slug_anchor(mech_name)
+        if not anchors or anchors[0].name != slug_anchor:
+            anchors.append(SectionAnchor(slug_anchor))
 
     status      = str(mech.get("status", "VERIFY"))
     pe          = str(mech.get("platform_eligible", "PARTIAL"))
@@ -1155,7 +1203,7 @@ def render_mechanism_card(mech):
         ("LEFTPADDING",(0,0),(-1,-1),0),("RIGHTPADDING",(0,0),(-1,-1),0),
         ("TOPPADDING",(0,0),(-1,-1),0),("BOTTOMPADDING",(0,0),(-1,-1),0),
     ]))
-    return [outer, Spacer(1,3*mm)]
+    return anchors + [outer, Spacer(1,3*mm)]
 
 def render_region_nav(text, section):
     """Pipe-separated region names → row of clickable buttons linking to annex anchors.
@@ -1308,6 +1356,125 @@ def render_peer_connect(text, ref=None):
 def anchor_id(section_text):
     """Create a safe, unique PDF anchor name from section text."""
     return "s_" + re.sub(r'[^a-zA-Z0-9]', '_', str(section_text))[:48]
+
+
+# == Internal hyperlink registries (v2.2) ==
+# Friendlier display labels for annexes when they appear inline in body text.
+_ANNEX_FRIENDLY_LABELS = {
+    # EN
+    "Legal pro bono support":               "#s_Annex_A__Legal_Pro_Bono_Support",
+    "legal pro bono support":               "#s_Annex_A__Legal_Pro_Bono_Support",
+    "Emergency grants mechanisms":          "#s_Annex_B__Emergency_Grants_Mechanisms",
+    "emergency grants mechanisms":          "#s_Annex_B__Emergency_Grants_Mechanisms",
+    "Physical and digital security support":"#s_Annex_C__Physical___Digital_Security_Support",
+    "physical and digital security support":"#s_Annex_C__Physical___Digital_Security_Support",
+    # FR
+    "Soutien juridique pro bono":           "#s_Annex_A__Legal_Pro_Bono_Support",
+    "Mecanismes de subventions d'urgence":  "#s_Annex_B__Emergency_Grants_Mechanisms",
+    "Securite physique et numerique":       "#s_Annex_C__Physical___Digital_Security_Support",
+    # ES
+    "Apoyo juridico pro bono":              "#s_Annex_A__Legal_Pro_Bono_Support",
+    "Mecanismos de subvenciones de emergencia": "#s_Annex_B__Emergency_Grants_Mechanisms",
+    "Seguridad fisica y digital":           "#s_Annex_C__Physical___Digital_Security_Support",
+}
+
+
+def _mech_anchor(mech_id):
+    """Stable per-mechanism anchor name."""
+    return "mech_" + re.sub(r'[^a-zA-Z0-9]', '_', str(mech_id).lower()).strip("_")
+
+
+def _org_slug_anchor(org_or_name):
+    """Slug an org/mechanism display name into an anchor."""
+    return "mech_" + re.sub(r'[^a-zA-Z0-9]+', '_', str(org_or_name).lower()).strip("_")
+
+
+# Verbatim org/mechanism names -> per-entry annex anchor. Order matters
+# (longer/more-specific names first to avoid substring shadowing).
+_ANNEX_ENTRY_LINKS = [
+    # Annex A: Legal pro bono support
+    ("Thomson Reuters Foundation",                    "#mech_l_g_001"),
+    ("TrustLaw",                                      "#mech_l_g_001"),
+    ("Public Interest Law Network",                   "#mech_l_g_002"),
+    ("PILnet Asia Pacific",                           "#mech_l_as_001"),
+    ("PILnet",                                        "#mech_l_g_002"),
+    ("Cyrus R. Vance Center for International Justice","#mech_l_g_003"),
+    ("Vance Center",                                  "#mech_l_g_003"),
+    ("Media Defence",                                 "#mech_l_g_004"),
+    ("International Senior Lawyers Project",          "#mech_l_g_005"),
+    ("ISLP",                                          "#mech_l_g_005"),
+    ("International Lawyers Project",                 "#mech_l_g_006"),
+    ("Advocates for International Development",       "#mech_l_g_007"),
+    ("A4ID",                                          "#mech_l_g_007"),
+    ("iProbono",                                      "#mech_l_g_008"),
+    ("Institute for Human Rights and Development in Africa", "#mech_l_af_001"),
+    ("IHRDA",                                         "#mech_l_af_001"),
+    ("Africa Legal Aid",                              "#mech_l_af_002"),
+    ("AFLA",                                          "#mech_l_af_002"),
+    ("Lawyers Without Borders",                       "#mech_l_af_003"),
+    ("Lawyers for Human Rights",                      "#mech_l_af_004"),
+    ("Legal and Human Rights Centre",                 "#mech_l_af_005"),
+    ("Legal Aid Forum Rwanda",                        "#mech_l_af_006"),
+    ("BarefootLaw",                                   "#mech_l_af_007"),
+    ("Centre for Asia-Pacific Pro Bono",              "#mech_l_as_002"),
+    ("Mekong Region Law Center",                      "#mech_l_as_003"),
+    ("Australian Lawyers for Human Rights",           "#mech_l_as_004"),
+    ("Gilbert + Tobin",                               "#mech_l_as_005"),
+    ("Bangladesh Legal Aid and Services Trust",       "#mech_l_as_006"),
+    ("BLAST",                                         "#mech_l_as_006"),
+    ("Thai Lawyers for Human Rights",                 "#mech_l_as_007"),
+    ("TLHR",                                          "#mech_l_as_007"),
+    ("Pro Bono Network of the Americas",              "#mech_l_la_001"),
+    ("Red Pro Bono",                                  "#mech_l_la_001"),
+    ("ICNL Latin America & Caribbean Program",        "#mech_l_la_002"),
+    ("CEJIL",                                         "#mech_l_la_003"),
+    ("Fundacion Pro Bono Chile",                      "#mech_l_la_004"),
+    ("Fundacion ProBono Colombia",                    "#mech_l_la_005"),
+    ("Centro Mexicano Pro Bono",                      "#mech_l_la_006"),
+    ("Instituto Pro Bono",                            "#mech_l_la_007"),
+    ("Fundacion Pro Bono Uruguay",                    "#mech_l_la_008"),
+    # Annex B: Emergency grants mechanisms
+    ("Lifeline Embattled CSO Assistance Fund",        "#mech_e_g_001"),
+    ("Lifeline Fund",                                 "#mech_e_g_001"),
+    ("Lifeline",                                      "#mech_e_g_001"),
+    ("Front Line Defenders Protection Grants",        "#mech_e_g_002"),
+    ("CIVICUS Crisis Response Fund",                  "#mech_e_g_003"),
+    ("CIVICUS Solidarity Fund",                       "#mech_e_g_004"),
+    ("Digital Defenders Partnership - Incident Emergency Fund", "#mech_e_g_005"),
+    ("DDP Incident Emergency Fund",                   "#mech_e_g_005"),
+    ("Digital Defenders Partnership - Community/Network Fund", "#mech_e_g_006"),
+    ("DDP Community/Network Fund",                    "#mech_e_g_006"),
+    ("Digital Defenders Partnership",                 "#mech_d_g_004"),
+    ("Agir ensemble pour les droits de l'homme",      "#mech_e_g_007"),
+    ("Agir ensemble pour les droits humains",         "#mech_e_g_007"),
+    ("AEDH",                                          "#mech_e_g_007"),
+    ("ProtectDefenders.eu",                           "#mech_e_g_008"),
+    ("Environmental Funders Network Rapid Response Fund", "#mech_e_g_009"),
+    ("CIVICUS Rapid Response Donor Finder",           "#mech_e_g_010"),
+    ("APAC Cybersecurity Fund",                       "#mech_e_as_001"),
+    # Annex C: Physical & digital security support
+    ("Access Now - Digital Security Helpline",        "#mech_d_g_001"),
+    ("Access Now Digital Security Helpline",          "#mech_d_g_001"),
+    ("Access Now - #KeepItOn Coalition",              "#mech_d_g_002"),
+    ("#KeepItOn",                                     "#mech_d_g_002"),
+    ("Access Now",                                    "#mech_d_g_001"),
+    ("CiviCERT",                                      "#mech_d_g_003"),
+    ("DDP",                                           "#mech_d_g_004"),
+    ("Front Line Defenders - Digital Protection Programme", "#mech_d_g_005"),
+    ("Front Line Defenders",                          "#mech_d_g_005"),
+    ("Amnesty International - Security Lab",          "#mech_d_g_006"),
+    ("Security Lab",                                  "#mech_d_g_006"),
+    ("Tactical Tech",                                 "#mech_d_g_007"),
+    ("Security in a Box",                             "#mech_d_g_007"),
+    ("Internews - Digital Security Training",         "#mech_d_g_008"),
+    ("DefendDefenders",                               "#mech_d_af_001"),
+    ("Tatua Centre",                                  "#mech_d_af_002"),
+    ("Asia Centre - Digital Security Training Programme", "#mech_d_as_001"),
+    ("Digital Rights Foundation",                     "#mech_d_as_003"),
+    ("EngageMedia",                                   "#mech_d_as_004"),
+    ("Derechos Digitales",                            "#mech_d_am_001"),
+    ("Freedom of the Press Foundation",               "#mech_d_am_002"),
+]
 
 
 class SectionAnchor(Flowable):
