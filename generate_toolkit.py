@@ -540,21 +540,220 @@ def render_checklist(text, part):
     ]))
     return [t]
 
+def _parse_template_rows(text):
+    """Walk template content_text line by line and yield typed rows for the
+    structured table renderer. Row types: title, intro, section_header,
+    numbered_item, numbered_body, checklist_item, paragraph."""
+    import re as _re
+    _HDR = _re.compile(r'^<b>(\d{1,2}[\.\)])\s*(.*?)</b>(.*)$', _re.DOTALL)
+    _SECT = _re.compile(r'^<b>(.*?)</b>\s*$', _re.DOTALL)
+    _BULL = _re.compile(r'^[\u25A0\u25AA\u2B1B]\s*(.*)$')
+
+    raw = str(text or "").strip()
+    if not raw:
+        return
+    lines = raw.split("\n")
+    title_emitted = False
+    i = 0
+    while i < len(lines):
+        line = lines[i].rstrip()
+        i += 1
+        if not line:
+            continue
+
+        # First non-empty line is the title; look ahead for an intro paragraph.
+        if not title_emitted:
+            yield ("title", line)
+            title_emitted = True
+            intro_lines = []
+            while i < len(lines):
+                nl = lines[i].rstrip()
+                if not nl:
+                    if intro_lines:
+                        break
+                    i += 1
+                    continue
+                if nl.startswith("<b>") or _BULL.match(nl):
+                    break
+                intro_lines.append(nl)
+                i += 1
+            if intro_lines:
+                yield ("intro", " ".join(intro_lines))
+            continue
+
+        # Numbered item: <b>1. ... </b> with optional inline body
+        m = _HDR.match(line)
+        if m:
+            label = (m.group(1) + " " + m.group(2)).strip()
+            inline_body = m.group(3).strip() if m.group(3) else ""
+            yield ("numbered_item", label)
+            if inline_body:
+                yield ("numbered_body", inline_body)
+            while i < len(lines):
+                nl = lines[i].rstrip()
+                if not nl or nl.startswith("<b>"):
+                    break
+                bm = _BULL.match(nl)
+                if bm:
+                    yield ("checklist_item", bm.group(1))
+                else:
+                    yield ("numbered_body", nl)
+                i += 1
+            continue
+
+        # Section header: entire line wrapped in <b>...</b>
+        m = _SECT.match(line)
+        if m:
+            yield ("section_header", m.group(1))
+            continue
+
+        # Bullet line
+        bm = _BULL.match(line)
+        if bm:
+            yield ("checklist_item", bm.group(1))
+            continue
+
+        # Fallback: plain paragraph
+        yield ("paragraph", line)
+
+
 def render_template(text):
-    data = [[Paragraph(
-        '<b>TEMPLATE</b><br/><br/>' + _format_template_text(text),
-        S["tmpl"]
-    )]]
-    t = Table(data, colWidths=[FRAME_W])
-    t.splitByRow = False
-    t.keepWithNext = True
-    t.setStyle(TableStyle([
-        ("BACKGROUND",(0,0),(-1,-1), C["light_purple"]),
-        ("LEFTPADDING",(0,0),(-1,-1),8),("RIGHTPADDING",(0,0),(-1,-1),8),
-        ("TOPPADDING",(0,0),(-1,-1),7),("BOTTOMPADDING",(0,0),(-1,-1),7),
-        ("BOX",(0,0),(-1,-1),0.75,C["purple"]),
-    ]))
-    return [t, Spacer(1,2*mm)]
+    """Render a template block as a structured multi-row table.
+
+    Visual hierarchy:
+      - TEMPLATE tag: purple (Forus Dark) header strip with white label
+      - title:        purple bg, white bold 12pt
+      - intro:        light_purple bg, italic 9pt grey
+      - section_header (ROLE A, etc.): teal bg, white bold 10pt
+      - numbered_item label: white bg, bold 10pt with thin teal bottom border
+      - numbered_body:       white bg, 9pt indented
+      - checklist_item: zebra (white / light_grey), purple-coloured glyph
+      - paragraph: white bg, 9pt grey indented
+    Falls back to plain paragraph rows for any content not matching the v2.5
+    markup conventions, so legacy templates without <b>...</b> stems still render.
+    """
+    rows = list(_parse_template_rows(text))
+    if not rows:
+        return []
+
+    table_rows = []
+    row_styles = []
+
+    PURPLE = C["purple"]
+    PURPLE_LT = C["light_purple"]
+    TEAL = C["teal"]
+    WHITE = C["white"]
+    GREY = C["grey"]
+    LIGHT_GREY = C["light_grey"]
+
+    sty_title    = ps("_tmpl_title",   size=12,  leading=15, color=WHITE, bold=True)
+    sty_intro    = ps("_tmpl_intro",   size=9,   leading=12, color=GREY, italic=True)
+    sty_secthdr  = ps("_tmpl_sect",    size=10,  leading=13, color=WHITE, bold=True)
+    sty_numlabel = ps("_tmpl_numlbl",  size=10,  leading=13, color=PURPLE, bold=True)
+    sty_numbody  = ps("_tmpl_numbody", size=9,   leading=12, color=GREY)
+    sty_check    = ps("_tmpl_check",   size=9,   leading=12, color=GREY)
+    sty_para     = ps("_tmpl_para",    size=9,   leading=12, color=GREY)
+    sty_tag      = ps("_tmpl_tag",     size=7.5, leading=9,  color=WHITE, bold=True)
+
+    # Top tag row
+    table_rows.append([Paragraph("<b>TEMPLATE</b>", sty_tag)])
+    row_styles += [
+        ("BACKGROUND",    (0, 0), (-1, 0), PURPLE),
+        ("TOPPADDING",    (0, 0), (-1, 0), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 3),
+        ("LEFTPADDING",   (0, 0), (-1, 0), 8),
+        ("RIGHTPADDING",  (0, 0), (-1, 0), 8),
+    ]
+
+    last_kind = None
+    zebra = 0
+    for kind, content in rows:
+        r = len(table_rows)
+
+        if kind == "title":
+            table_rows.append([Paragraph(content, sty_title)])
+            row_styles += [
+                ("BACKGROUND",    (0, r), (-1, r), PURPLE),
+                ("TOPPADDING",    (0, r), (-1, r), 8),
+                ("BOTTOMPADDING", (0, r), (-1, r), 8),
+                ("LEFTPADDING",   (0, r), (-1, r), 10),
+                ("RIGHTPADDING",  (0, r), (-1, r), 10),
+            ]
+        elif kind == "intro":
+            table_rows.append([Paragraph(_linkify_refs(content), sty_intro)])
+            row_styles += [
+                ("BACKGROUND",    (0, r), (-1, r), PURPLE_LT),
+                ("TOPPADDING",    (0, r), (-1, r), 6),
+                ("BOTTOMPADDING", (0, r), (-1, r), 6),
+                ("LEFTPADDING",   (0, r), (-1, r), 10),
+                ("RIGHTPADDING",  (0, r), (-1, r), 10),
+            ]
+        elif kind == "section_header":
+            table_rows.append([Paragraph(content, sty_secthdr)])
+            row_styles += [
+                ("BACKGROUND",    (0, r), (-1, r), TEAL),
+                ("TOPPADDING",    (0, r), (-1, r), 5),
+                ("BOTTOMPADDING", (0, r), (-1, r), 5),
+                ("LEFTPADDING",   (0, r), (-1, r), 10),
+                ("RIGHTPADDING",  (0, r), (-1, r), 10),
+            ]
+        elif kind == "numbered_item":
+            table_rows.append([Paragraph(content, sty_numlabel)])
+            row_styles += [
+                ("BACKGROUND",    (0, r), (-1, r), WHITE),
+                ("TOPPADDING",    (0, r), (-1, r), 6),
+                ("BOTTOMPADDING", (0, r), (-1, r), 2),
+                ("LEFTPADDING",   (0, r), (-1, r), 10),
+                ("RIGHTPADDING",  (0, r), (-1, r), 10),
+                ("LINEBELOW",     (0, r), (-1, r), 0.3, TEAL),
+            ]
+        elif kind == "numbered_body":
+            table_rows.append([Paragraph(_linkify_refs(content), sty_numbody)])
+            row_styles += [
+                ("BACKGROUND",    (0, r), (-1, r), WHITE),
+                ("TOPPADDING",    (0, r), (-1, r), 2),
+                ("BOTTOMPADDING", (0, r), (-1, r), 5),
+                ("LEFTPADDING",   (0, r), (-1, r), 18),
+                ("RIGHTPADDING",  (0, r), (-1, r), 10),
+            ]
+        elif kind == "checklist_item":
+            if last_kind != "checklist_item":
+                zebra = 0
+            bg = WHITE if zebra % 2 == 0 else LIGHT_GREY
+            zebra += 1
+            glyph_color = "#00424D"
+            table_rows.append([Paragraph(
+                '<font color="' + glyph_color + '">' + chr(0x25A0) + '</font>&nbsp;&nbsp;' + _linkify_refs(content),
+                sty_check
+            )])
+            row_styles += [
+                ("BACKGROUND",    (0, r), (-1, r), bg),
+                ("TOPPADDING",    (0, r), (-1, r), 3),
+                ("BOTTOMPADDING", (0, r), (-1, r), 3),
+                ("LEFTPADDING",   (0, r), (-1, r), 14),
+                ("RIGHTPADDING",  (0, r), (-1, r), 10),
+            ]
+        else:  # paragraph
+            table_rows.append([Paragraph(_linkify_refs(content), sty_para)])
+            row_styles += [
+                ("BACKGROUND",    (0, r), (-1, r), WHITE),
+                ("TOPPADDING",    (0, r), (-1, r), 4),
+                ("BOTTOMPADDING", (0, r), (-1, r), 4),
+                ("LEFTPADDING",   (0, r), (-1, r), 10),
+                ("RIGHTPADDING",  (0, r), (-1, r), 10),
+            ]
+        last_kind = kind
+
+    t = Table(table_rows, colWidths=[FRAME_W])
+    t.splitByRow = True
+    t.keepWithNext = False
+    style = TableStyle(row_styles + [
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("BOX",    (0, 0), (-1, -1), 0.75, PURPLE),
+    ])
+    t.setStyle(style)
+    return [t, Spacer(1, 2*mm)]
+
 
 def render_case(text, _s=None):
     """Case study block - supports both plain and structured CONTEXT/ACTION/WHAT CHANGED/LESSON format."""
