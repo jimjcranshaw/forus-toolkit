@@ -18,7 +18,7 @@ from reportlab.platypus import (
 from reportlab.platypus.flowables import Flowable
 
 # ── Version - increment this each build ──────────────────────────────────────
-VERSION     = "2.1"
+VERSION     = "2.6"
 DATE_STAMP  = datetime.date.today().strftime("%Y-%m-%d")
 SPREADSHEET = "Forus_Toolkit_Content_DB_v2-4.xlsx"
 OUT_PUBLIC  = f"/sessions/pensive-nice-cerf/Forus_Toolkit_v{VERSION}_Public.pdf"
