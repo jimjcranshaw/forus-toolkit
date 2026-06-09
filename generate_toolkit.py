@@ -894,6 +894,7 @@ def _linkify_refs(text):
     """Convert cross-references to internal Annex/Part/Template destinations into
     clickable PDF links.  Must be applied AFTER XML-escaping (the function
     applies _xesc internally, then adds <link> markup on top)."""
+    text = _md_links_to_html(text)
     t = _escape_preserving_external_links(text)
     # Ordered so longer matches win (Annex A before bare 'A', etc.)
     _LINK = [
@@ -1012,6 +1013,18 @@ def _linkify_refs(text):
         t = re.sub(
             pat,
             f'<link href="{anchor}" color="#00424D"><u>{label}</u></link>',
+            t,
+            count=1,
+        )
+
+    # == New (v2.3): direct org/process URLs (Forus members, UN processes etc.) ==
+    for name, target in _ORG_LINKS:
+        if re.search(r"<link[^>]*>[^<]*" + re.escape(name), t):
+            continue
+        pat = r"(?<!\w)" + re.escape(name) + r"(?!\w)"
+        t = re.sub(
+            pat,
+            f'<link href="{target}" color="#00424D"><u>{name}</u></link>',
             t,
             count=1,
         )
@@ -1475,6 +1488,71 @@ _ANNEX_ENTRY_LINKS = [
     ("Derechos Digitales",                            "#mech_d_am_001"),
     ("Freedom of the Press Foundation",               "#mech_d_am_002"),
 ]
+
+# Direct org/process URLs - first-occurrence linkification with the same UX as
+# _ANNEX_ENTRY_LINKS but pointing at external websites or self-hosted anchors
+# rather than annex cards. Used for Forus member platforms, UN processes, and
+# external resources that don't live in the annex directory.
+_ORG_LINKS = [
+    # Forus member platforms - full names first, then acronyms
+    ("Pacific Islands Association of Non-Governmental Organisations", "https://piango.org"),
+    ("Nigeria Network of NGOs",                                       "https://nnngo.org"),
+    ("Asociacion Nacional de Centros",                                "https://www.encuentros.lat/portal/index.php/anc"),
+    ("International NGO Forum on Indonesian Development",             "https://infid.org"),
+    ("Conseil National des Organisations Non Gouvernementales de Developpement", "https://www.cnongdrdc.org"),
+    ("Latvijas Platforma attistibas sadarbibai",                      "https://lapas.lv"),
+    ("Pakistan Development Alliance",                                 "https://www.devalliance.pk"),
+    ("European NGO Confederation for Relief and Development",         "https://concordeurope.org"),
+    ("Uganda NGO Forum",                                              "https://ngoforum.or.ug"),
+    ("Cooperation Canada",                                            "https://cooperationcanada.ca"),
+    ("Red Encuentro Argentina",                                       "https://www.encuentro.org.ar"),
+    ("Red Encuentro",                                                 "https://www.encuentro.org.ar"),
+    ("PIANGO",                                                        "https://piango.org"),
+    ("NNNGO",                                                         "https://nnngo.org"),
+    ("UNNGOF",                                                        "https://ngoforum.or.ug"),
+    ("ANC Peru",                                                      "https://www.encuentros.lat/portal/index.php/anc"),
+    ("INFID",                                                         "https://infid.org"),
+    ("CNONGD",                                                        "https://www.cnongdrdc.org"),
+    ("LAPAS",                                                         "https://lapas.lv"),
+    ("PDA",                                                           "https://www.devalliance.pk"),
+    ("CONCORD",                                                       "https://concordeurope.org"),
+    # UN / regulatory processes
+    ("Universal Periodic Review",                                     "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
+    ("UPR",                                                           "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
+    ("Financial Action Task Force",                                   "https://www.fatf-gafi.org"),
+    ("FATF",                                                          "https://www.fatf-gafi.org"),
+    ("EU System for an Enabling Environment",                         "https://eusee.hivos.org"),
+    ("EU SEE",                                                        "https://eusee.hivos.org"),
+    ("CIVICUS Monitor",                                               "https://monitor.civicus.org"),
+    ("World Alliance for Citizen Participation",                      "https://www.civicus.org"),
+    # External programmes / resources / publications
+    ("Facility Aiding Locally Led Engagement",                        "https://piango.org"),
+    ("FALE",                                                          "https://piango.org"),
+    ("Tactical Tech Holistic Security",                               "https://holistic-security.tacticaltech.org/"),
+    ("Holistic Security manual",                                      "https://holistic-security.tacticaltech.org/"),
+    ("EFF Surveillance Self-Defense",                                 "https://ssd.eff.org/"),
+    ("Access Now Digital Security Helpline",                          "https://www.accessnow.org/help/"),
+    ("Front Line Defenders Digital Protection Resources",             "https://www.frontlinedefenders.org/en/digital-protection-resources"),
+    ("Amnesty Security Lab",                                          "https://securitylab.amnesty.org/digital-resources/"),
+    ("Accountability Lab",                                            "https://accountabilitylab.org"),
+    ("Building Responses Together",                                   "https://globaltfokus.dk/en/what-we-do/communities-of-practice"),
+    ("BRT",                                                           "https://globaltfokus.dk/en/what-we-do/communities-of-practice"),
+    ("Developing a Financing Strategy",                               "https://www.civicus.org/view/media/Developing%20a%20Financing%20Strategy.pdf"),
+    ("CiviCERT",                                                      "https://www.civicert.org/report-incident/"),
+]
+
+
+def _md_links_to_html(text):
+    """Convert markdown-style [display text](https://url) links into the
+    HTML <a href=...> form that the existing _linkify_refs + reportlab
+    expect. Runs before the named-org passes so editors can write either
+    plain text (auto-linked from the registries) or one-off markdown."""
+    return re.sub(
+        r'\[([^\]]+)\]\((https?://[^\)]+)\)',
+        r'<a href="\2" color="#00424D"><u>\1</u></a>',
+        text or "",
+    )
+
 
 
 class SectionAnchor(Flowable):
