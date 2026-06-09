@@ -18,6 +18,15 @@ OFFWHITE = HexColor('#F4F8F8'); MIDGREY = HexColor('#6B7C80')
 LTGREY   = HexColor('#E0EAEA'); DKGREY  = HexColor('#2E4A50')
 W, H = A4; M = 20*mm; CW = W - 2*M; CX = W / 2
 
+# -- External hyperlink targets for T2 branch-box organisation names ---
+T2_LINKS = {
+    "ICNL": "https://www.icnl.org",
+    "Front Line Defenders": "https://www.frontlinedefenders.org",
+    "Frontline Defenders": "https://www.frontlinedefenders.org",
+    "PILnet": "https://www.pilnet.org",
+    "TrustLaw": "https://www.trust.org/trustlaw",
+}
+
 
 # -- Default text (sourced from TOOLS sheet at runtime) ---
 
@@ -114,9 +123,7 @@ T4_DEFAULTS = {
     "T4_TIMING_NOTE_2": "Framing matters as much as the facts themselves.",
     "T4_TIMING_ITEM_3": "Has the statement been reviewed by at least one person outside your immediate team?",
     "T4_TIMING_NOTE_3": "A second pair of eyes catches risks that are invisible from inside the situation.",
-    "T4_IF_ANY_NO": (
-        "Pause publication. Address the specific risk identified before proceeding. "
-        "If unsure, consult your Forus focal point or regional coalition communications lead."),
+    "T4_IF_ANY_NO": "pause publication and address the specific risk identified before proceeding.",
 }
 
 
@@ -322,6 +329,34 @@ def _tb(c, txt, x, y, mw, fn, fs, col=DKGREY, ld=None):
     return y
 
 
+def _tb_linked(c, txt, x, y, mw, fn, fs, col=DKGREY, ld=None, links=None):
+    """Like _tb, but turns occurrences of link phrases into clickable external
+    hyperlinks (and a subtle underline). Phrases split across wrapped lines are
+    skipped; whole-phrase substrings within a single line are linked."""
+    if ld is None: ld = fs * 1.3
+    if links is None: links = {}
+    c.setFillColor(col); c.setFont(fn, fs)
+    for ln in _wl(c, txt, fn, fs, mw):
+        c.drawString(x, y, ln)
+        for phrase, url in links.items():
+            start = 0
+            while True:
+                i = ln.find(phrase, start)
+                if i < 0:
+                    break
+                x0 = x + c.stringWidth(ln[:i], fn, fs)
+                x1 = x0 + c.stringWidth(phrase, fn, fs)
+                c.linkURL(url, (x0, y - 1, x1, y + fs), relative=0)
+                c.saveState()
+                c.setStrokeColor(col); c.setLineWidth(0.4)
+                c.line(x0, y - 1, x1, y - 1)
+                c.restoreState()
+                c.setFillColor(col); c.setFont(fn, fs)
+                start = i + len(phrase)
+        y -= ld
+    return y
+
+
 def _lbl(c, x, y, txt, col=MIDGREY, fs=7, align='l'):
     c.setFillColor(col); c.setFont('Helvetica-BoldOblique', fs)
     {'l': c.drawString, 'r': c.drawRightString, 'c': c.drawCentredString}[align](x, y, txt)
@@ -499,7 +534,7 @@ def draw_t2(c, data=None, language="EN"):
         c.setFillColor(bcol); c.roundRect(bxl, box_top-bh, bw, bh, 2*mm, fill=1, stroke=0)
         c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8)
         c.drawCentredString(bxl+bw/2, box_top-bh+bh-6*mm, bhead)
-        _tb(c, btext, bxl+3*mm, box_top-bh+bh-14*mm, bw-6*mm, 'Helvetica', 7.5, col=WHITE, ld=10)
+        _tb_linked(c, btext, bxl+3*mm, box_top-bh+bh-14*mm, bw-6*mm, 'Helvetica', 7.5, col=WHITE, ld=10, links=T2_LINKS)
 
     outcome_bottom = box_top - bh; bth = 16*mm; by = outcome_bottom - 12*mm - bth
     c.setFillColor(OFFWHITE); c.roundRect(M, by, CW, bth, 2*mm, fill=1, stroke=0)

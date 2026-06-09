@@ -115,8 +115,6 @@ A3_DEFAULTS = {
     "A3_BOX3_POINT_1_DESC":  "See Legal Support Decision Tree (Tool 2) - legal crisis precedes funding crisis",
     "A3_BOX3_POINT_2_KEY":   "Lighthouse Global Protection Fund",
     "A3_BOX3_POINT_2_DESC":  "Covers legal defence costs if under-threat criteria are met",
-    "A3_BOX3_POINT_3_KEY":   "Escalate to Forus immediately",
-    "A3_BOX3_POINT_3_DESC":  "Regulatory crises have hard legal deadlines. Network solidarity advocacy can unlock informal bridge support.",
     # Box 4 - Sector-wide contraction
     "A3_BOX4_TITLE":         "SECTOR-WIDE FUNDING CONTRACTION",
     "A3_BOX4_SUB":           "Broad funding cuts affecting multiple organisations simultaneously.",
@@ -125,6 +123,18 @@ A3_DEFAULTS = {
     "A3_BOX4_POINT_2_KEY":   "Diversification pathway",
     "A3_BOX4_POINT_2_DESC":  "See Diversification Readiness Gate (Appendix A2) before committing to new income models",
     "A3_BOX4_NOTE":          "This is a structural challenge. Emergency mechanisms are not designed for sector-wide contraction - strategy is the right response, not emergency applications.",
+}
+
+
+# -- External hyperlinks for A3 funding-organisation keys ---------------------
+A3_LINKS = {
+    "Frontline Defenders":          "https://www.frontlinedefenders.org",
+    "Front Line Defenders":         "https://www.frontlinedefenders.org",
+    "CIVICUS Response Fund":        "https://www.civicus.org/index.php/crisis-response-fund",
+    "CIVICUS Crisis Response Fund": "https://www.civicus.org/index.php/crisis-response-fund",
+    "Digital Defenders Partnership":"https://www.digitaldefenders.org",
+    "OMCT Emergency Fund":          "https://www.omct.org",
+    "OMCT":                         "https://www.omct.org",
 }
 
 
@@ -276,7 +286,7 @@ def draw_a1(c, data=None, language="EN"):
     _u = _UI.get(language.upper(), _UI["EN"])
 
     _hdr(c, 'A1 of 3', 'B2 . SOLIDARITY MECHANISMS',
-         "What is your platform's solidarity role?",
+         "What is your platform's solidarity role towards its own members?",
          'Complete with your leadership team before a crisis - not during one', _u=_u)
     ty = H - 48*mm - 6*mm
 
@@ -454,7 +464,14 @@ def draw_a3(c, data=None, language="EN"):
             if not bkey:  # skip empty slots
                 continue
             c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 7.5)
-            c.drawString(bx+3*mm, y, '.  ' + bkey); y -= 10
+            _fn = 'Helvetica-Bold'; _fs = 7.5
+            _prefix = '.  '
+            c.drawString(bx+3*mm, y, _prefix + bkey)
+            if bkey in A3_LINKS:
+                _x0 = bx+3*mm + c.stringWidth(_prefix, _fn, _fs)
+                _x1 = _x0 + c.stringWidth(bkey, _fn, _fs)
+                c.linkURL(A3_LINKS[bkey], (_x0, y-1, _x1, y+_fs), relative=0)
+            y -= 10
             y = _tb(c, bval, bx+5*mm, y, bw-8*mm, 'Helvetica', 7, col=WHITE, ld=9); y -= 3*mm
 
         if note_key in d and d[note_key]:
