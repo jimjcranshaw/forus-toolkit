@@ -1539,6 +1539,25 @@ _ORG_LINKS = [
     ("BRT",                                                           "https://globaltfokus.dk/en/what-we-do/communities-of-practice"),
     ("Developing a Financing Strategy",                               "https://www.civicus.org/view/media/Developing%20a%20Financing%20Strategy.pdf"),
     ("CiviCERT",                                                      "https://www.civicert.org/report-incident/"),
+    # FR translations
+    ("Examen periodique universel",                                   "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
+    ("Examen Periodique Universel",                                   "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
+    ("Groupe d'action financiere",                                    "https://www.fatf-gafi.org"),
+    ("Groupe d\'action financiere",                                  "https://www.fatf-gafi.org"),
+    ("GAFI",                                                          "https://www.fatf-gafi.org"),
+    ("Systeme de l\'UE pour un environnement favorable",             "https://eusee.hivos.org"),
+    ("Confederation europeenne des ONG d\'urgence et de developpement", "https://concordeurope.org"),
+    ("Alliance mondiale pour la participation citoyenne",             "https://www.civicus.org"),
+    # ES translations
+    ("Examen Periodico Universal",                                    "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
+    ("Grupo de Accion Financiera Internacional",                      "https://www.fatf-gafi.org"),
+    ("Sistema de la UE para un Entorno Propicio",                     "https://eusee.hivos.org"),
+    ("Confederacion Europea de ONG de Emergencia y Desarrollo",       "https://concordeurope.org"),
+    ("Alianza Mundial para la Participacion Ciudadana",               "https://www.civicus.org"),
+    ("Asociacion Nacional de Centros de Investigacion, Promocion Social y Desarrollo", "https://www.encuentros.lat/portal/index.php/anc"),
+    # Common publications / external resources not yet covered
+    ("Public Interest Law Network",                                   "https://www.pilnet.org"),
+    ("Digital Defenders Partnership",                                 "https://www.digitaldefenders.org/funds"),
 ]
 
 
