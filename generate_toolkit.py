@@ -894,7 +894,6 @@ def _linkify_refs(text):
     """Convert cross-references to internal Annex/Part/Template destinations into
     clickable PDF links.  Must be applied AFTER XML-escaping (the function
     applies _xesc internally, then adds <link> markup on top)."""
-    text = _md_links_to_html(text)
     t = _escape_preserving_external_links(text)
     # Ordered so longer matches win (Annex A before bare 'A', etc.)
     _LINK = [
@@ -1013,18 +1012,6 @@ def _linkify_refs(text):
         t = re.sub(
             pat,
             f'<link href="{anchor}" color="#00424D"><u>{label}</u></link>',
-            t,
-            count=1,
-        )
-
-    # == New (v2.3): direct org/process URLs (Forus members, UN processes etc.) ==
-    for name, target in _ORG_LINKS:
-        if re.search(r"<link[^>]*>[^<]*" + re.escape(name), t):
-            continue
-        pat = r"(?<!\w)" + re.escape(name) + r"(?!\w)"
-        t = re.sub(
-            pat,
-            f'<link href="{target}" color="#00424D"><u>{name}</u></link>',
             t,
             count=1,
         )
@@ -1488,90 +1475,6 @@ _ANNEX_ENTRY_LINKS = [
     ("Derechos Digitales",                            "#mech_d_am_001"),
     ("Freedom of the Press Foundation",               "#mech_d_am_002"),
 ]
-
-# Direct org/process URLs - first-occurrence linkification with the same UX as
-# _ANNEX_ENTRY_LINKS but pointing at external websites or self-hosted anchors
-# rather than annex cards. Used for Forus member platforms, UN processes, and
-# external resources that don't live in the annex directory.
-_ORG_LINKS = [
-    # Forus member platforms - full names first, then acronyms
-    ("Pacific Islands Association of Non-Governmental Organisations", "https://piango.org"),
-    ("Nigeria Network of NGOs",                                       "https://nnngo.org"),
-    ("Asociacion Nacional de Centros",                                "https://www.encuentros.lat/portal/index.php/anc"),
-    ("International NGO Forum on Indonesian Development",             "https://infid.org"),
-    ("Conseil National des Organisations Non Gouvernementales de Developpement", "https://www.cnongdrdc.org"),
-    ("Latvijas Platforma attistibas sadarbibai",                      "https://lapas.lv"),
-    ("Pakistan Development Alliance",                                 "https://www.devalliance.pk"),
-    ("European NGO Confederation for Relief and Development",         "https://concordeurope.org"),
-    ("Uganda NGO Forum",                                              "https://ngoforum.or.ug"),
-    ("Cooperation Canada",                                            "https://cooperationcanada.ca"),
-    ("Red Encuentro Argentina",                                       "https://www.encuentro.org.ar"),
-    ("Red Encuentro",                                                 "https://www.encuentro.org.ar"),
-    ("PIANGO",                                                        "https://piango.org"),
-    ("NNNGO",                                                         "https://nnngo.org"),
-    ("UNNGOF",                                                        "https://ngoforum.or.ug"),
-    ("ANC Peru",                                                      "https://www.encuentros.lat/portal/index.php/anc"),
-    ("INFID",                                                         "https://infid.org"),
-    ("CNONGD",                                                        "https://www.cnongdrdc.org"),
-    ("LAPAS",                                                         "https://lapas.lv"),
-    ("PDA",                                                           "https://www.devalliance.pk"),
-    ("CONCORD",                                                       "https://concordeurope.org"),
-    # UN / regulatory processes
-    ("Universal Periodic Review",                                     "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
-    ("UPR",                                                           "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
-    ("Financial Action Task Force",                                   "https://www.fatf-gafi.org"),
-    ("FATF",                                                          "https://www.fatf-gafi.org"),
-    ("EU System for an Enabling Environment",                         "https://eusee.hivos.org"),
-    ("EU SEE",                                                        "https://eusee.hivos.org"),
-    ("CIVICUS Monitor",                                               "https://monitor.civicus.org"),
-    ("World Alliance for Citizen Participation",                      "https://www.civicus.org"),
-    # External programmes / resources / publications
-    ("Facility Aiding Locally Led Engagement",                        "https://piango.org"),
-    ("FALE",                                                          "https://piango.org"),
-    ("Tactical Tech Holistic Security",                               "https://holistic-security.tacticaltech.org/"),
-    ("Holistic Security manual",                                      "https://holistic-security.tacticaltech.org/"),
-    ("EFF Surveillance Self-Defense",                                 "https://ssd.eff.org/"),
-    ("Access Now Digital Security Helpline",                          "https://www.accessnow.org/help/"),
-    ("Front Line Defenders Digital Protection Resources",             "https://www.frontlinedefenders.org/en/digital-protection-resources"),
-    ("Amnesty Security Lab",                                          "https://securitylab.amnesty.org/digital-resources/"),
-    ("Accountability Lab",                                            "https://accountabilitylab.org"),
-    ("Building Responses Together",                                   "https://globaltfokus.dk/en/what-we-do/communities-of-practice"),
-    ("BRT",                                                           "https://globaltfokus.dk/en/what-we-do/communities-of-practice"),
-    ("Developing a Financing Strategy",                               "https://www.civicus.org/view/media/Developing%20a%20Financing%20Strategy.pdf"),
-    ("CiviCERT",                                                      "https://www.civicert.org/report-incident/"),
-    # FR translations
-    ("Examen periodique universel",                                   "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
-    ("Examen Periodique Universel",                                   "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
-    ("Groupe d'action financiere",                                    "https://www.fatf-gafi.org"),
-    ("Groupe d\'action financiere",                                  "https://www.fatf-gafi.org"),
-    ("GAFI",                                                          "https://www.fatf-gafi.org"),
-    ("Systeme de l\'UE pour un environnement favorable",             "https://eusee.hivos.org"),
-    ("Confederation europeenne des ONG d\'urgence et de developpement", "https://concordeurope.org"),
-    ("Alliance mondiale pour la participation citoyenne",             "https://www.civicus.org"),
-    # ES translations
-    ("Examen Periodico Universal",                                    "https://www.ohchr.org/en/hr-bodies/upr/upr-home"),
-    ("Grupo de Accion Financiera Internacional",                      "https://www.fatf-gafi.org"),
-    ("Sistema de la UE para un Entorno Propicio",                     "https://eusee.hivos.org"),
-    ("Confederacion Europea de ONG de Emergencia y Desarrollo",       "https://concordeurope.org"),
-    ("Alianza Mundial para la Participacion Ciudadana",               "https://www.civicus.org"),
-    ("Asociacion Nacional de Centros de Investigacion, Promocion Social y Desarrollo", "https://www.encuentros.lat/portal/index.php/anc"),
-    # Common publications / external resources not yet covered
-    ("Public Interest Law Network",                                   "https://www.pilnet.org"),
-    ("Digital Defenders Partnership",                                 "https://www.digitaldefenders.org/funds"),
-]
-
-
-def _md_links_to_html(text):
-    """Convert markdown-style [display text](https://url) links into the
-    HTML <a href=...> form that the existing _linkify_refs + reportlab
-    expect. Runs before the named-org passes so editors can write either
-    plain text (auto-linked from the registries) or one-off markdown."""
-    return re.sub(
-        r'\[([^\]]+)\]\((https?://[^\)]+)\)',
-        r'<a href="\2" color="#00424D"><u>\1</u></a>',
-        text or "",
-    )
-
 
 
 class SectionAnchor(Flowable):
@@ -3880,7 +3783,14 @@ If you cannot verify, return status UNABLE_TO_VERIFY with a note.""",
 # ── Auto-update: helper functions ────────────────────────────────────────────
 
 def _rq_append(ws_rq, item_dict, next_id_holder):
-    """Append one row to the REVIEW_QUEUE sheet and return its new review_id."""
+    """Append one row to the REVIEW_QUEUE sheet and return its new review_id.
+
+    Safety net: silently drops any row whose field is a French or Spanish
+    translation variant. Those are handled by auto-translate in
+    apply_approved() and should never reach the queue."""
+    _fld = str(item_dict.get("field", ""))
+    if _fld.endswith("_fr") or _fld.endswith("_es"):
+        return None
     next_id_holder[0] += 1
     rid = f"RQ-{next_id_holder[0]:04d}"
     ws_rq.append([
@@ -3918,15 +3828,28 @@ def _agent_error(mech_id, msg):
 
 def call_ai_agent(mech_dict, api_key):
     """Call the Anthropic API to research one mechanism row.
-    Returns a parsed dict matching the PRD JSON output schema."""
+    Returns a parsed dict matching the PRD JSON output schema.
+
+    Only proposes changes on canonical English fields. French (_fr) and
+    Spanish (_es) variants are auto-translated at apply time, so the agent
+    is told to ignore them entirely. This keeps the Review Queue clean
+    (one entry per real change, not three)."""
     import json, urllib.request, urllib.error
 
     mech_id  = str(mech_dict.get("mech_id", ""))
     category = str(mech_dict.get("category", "legal")).strip()
     prompt   = _RESEARCH_PROMPTS.get(category, _RESEARCH_PROMPTS["legal"])
 
+    # Strip _fr / _es variants from the row context so the agent doesn't see
+    # (and propose changes to) translated copies. Translations are regenerated
+    # automatically from the approved EN value in apply_approved().
+    mech_dict_en = {
+        k: v for k, v in mech_dict.items()
+        if not (k.endswith("_fr") or k.endswith("_es"))
+    }
+
     # Serialise the row for the prompt, skipping empty values
-    row_lines = [f"  {k}: {v}" for k, v in mech_dict.items()
+    row_lines = [f"  {k}: {v}" for k, v in mech_dict_en.items()
                  if v is not None and str(v).strip()]
     mech_context = "\n".join(row_lines)
 
@@ -3938,6 +3861,11 @@ def call_ai_agent(mech_dict, api_key):
         "only information a national civil society platform needs to decide whether to apply and how. "
         "Omit organisational history, statistics, and any background that does not affect access or eligibility. "
         "Update facts in place; do not expand or enrich the text.\n"
+        "IMPORTANT - language scope: only propose changes on the canonical English fields "
+        "(eligibility_note, how_to_access, timeframe, constraints, notes, mechanism_name, organisation, "
+        "db_url, db_name, contact, geographic_coverage, status). Never propose changes on fields ending in "
+        "_fr or _es - those are translated copies and are regenerated automatically when the English change "
+        "is approved.\n"
         "{\n"
         f"  \"mech_id\": \"{mech_id}\",\n"
         "  \"status\": \"CHANGE_DETECTED\" | \"NO_CHANGE\" | \"UNABLE_TO_VERIFY\",\n"
