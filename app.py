@@ -2055,22 +2055,56 @@ elif page == "manage_tools":
         except Exception as e:
             st.error(f"Could not create TOOLS sheet: {e}"); st.stop()
 
-    ws_t   = wb["TOOLS"]
-    t_hdrs = [c.value for c in ws_t[2]]
-    try:
-        ki = t_hdrs.index("field_key");  ti = t_hdrs.index("tool_id")
-        ni = t_hdrs.index("tool_name");  li = t_hdrs.index("field_label")
-        vi = t_hdrs.index("content_text"); fi = t_hdrs.index("change_flag")
-    except ValueError as e:
-        st.error(f"TOOLS sheet is missing expected columns: {e}"); st.stop()
+    ws_t = wb["TOOLS"]
+
+    # Schema-tolerant header detection. The TOOLS sheet has been through two
+    # schemas: (a) early - headers in row 1, columns named field_id / field_type;
+    # (b) later - headers in row 2, columns named field_key / field_label, plus
+    # a change_flag column. Detect whichever is in use and map to one canonical
+    # set of indices. No data migration needed.
+    def _resolve_tools_schema(ws):
+        for header_row in (1, 2):
+            hdrs = [c.value for c in ws[header_row]]
+            if not hdrs or all(h is None for h in hdrs):
+                continue
+            def _idx(*candidates):
+                for c in candidates:
+                    if c in hdrs:
+                        return hdrs.index(c)
+                return None
+            ki = _idx("field_key", "field_id")
+            ti = _idx("tool_id")
+            ni = _idx("tool_name")
+            li = _idx("field_label", "field_type")
+            vi = _idx("content_text")
+            fi = _idx("change_flag")
+            ui = _idx("last_updated")
+            if ki is not None and ti is not None and vi is not None:
+                return header_row, ki, ti, ni, li, vi, fi, ui, hdrs
+        return None
+
+    resolved = _resolve_tools_schema(ws_t)
+    if resolved is None:
+        st.error("TOOLS sheet is missing expected columns (need at least tool_id, field_key/field_id, content_text)."); st.stop()
+    header_row, ki, ti, ni, li, vi, fi, ui, t_hdrs = resolved
+    data_start = header_row + 1
 
     tools_rows = []; tools_row_idx = []
-    for r_idx, row in enumerate(ws_t.iter_rows(min_row=3, values_only=False), start=3):
+    for r_idx, row in enumerate(ws_t.iter_rows(min_row=data_start, values_only=False), start=data_start):
         fkey = row[ki].value
         if not fkey: continue
-        tools_rows.append({"tool_id": str(row[ti].value or ""), "tool_name": str(row[ni].value or ""),
-                            "field_key": str(fkey), "field_label": str(row[li].value or ""),
-                            "content_text": str(row[vi].value or ""), "change_flag": str(row[fi].value or "OK")})
+        # Derive a human-readable label if field_label/type is empty
+        raw_label = str(row[li].value or "") if li is not None else ""
+        if not raw_label.strip():
+            tid_val = str(row[ti].value or "")
+            raw_label = str(fkey).replace(f"{tid_val}_", "").replace("_", " ").title()
+        change_flag_val = str(row[fi].value or "OK") if fi is not None else "OK"
+        tools_rows.append({"tool_id": str(row[ti].value or ""),
+                           "tool_name": str(row[ni].value or "") if ni is not None else "",
+                           "field_key": str(fkey),
+                           "field_label": raw_label,
+                           "content_text": str(row[vi].value or ""),
+                           "change_flag": change_flag_val})
         tools_row_idx.append(r_idx)
 
     if not tools_rows:
@@ -2099,8 +2133,10 @@ elif page == "manage_tools":
             with cf2:
                 if st.button(t("tools_save_btn"), key=f"tools_save_{r_idx}"):
                     ws_t.cell(r_idx, vi+1).value = new_text
-                    ws_t.cell(r_idx, fi+1).value = new_flag
-                    ws_t.cell(r_idx, t_hdrs.index("last_updated")+1).value = str(datetime.date.today())
+                    if fi is not None:
+                        ws_t.cell(r_idx, fi+1).value = new_flag
+                    if ui is not None:
+                        ws_t.cell(r_idx, ui+1).value = str(datetime.date.today())
                     wb.save(sp())
                     st.success(f"✓ Saved {row_data['field_key']}")
                     st.rerun()
