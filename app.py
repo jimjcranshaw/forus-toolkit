@@ -775,7 +775,7 @@ ROLE_MEMBER = "member"
 # Nav keys visible to each role
 _ADMIN_NAV_KEYS  = [
     "dashboard", "check_mechanisms", "review_queue",
-    "apply_approved", "generate_pdf", "get_support", "give_feedback", "manage_tools",
+    "apply_approved", "generate_pdf", "manage_tools",
 ]
 _MEMBER_NAV_KEYS = ["generate_pdf", "get_support", "give_feedback"]
 
