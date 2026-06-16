@@ -1670,13 +1670,14 @@ elif page == "generate_pdf":
             "Annex B: Emergency Grants Mechanisms":         t("pdf_annex_b"),
             "Annex C: Physical & Digital Security Support": t("pdf_annex_c"),
         }
+        # "Global" region tickbox removed: globally-tagged mechanisms are always
+        # included by _mech_matches_regions(), so the user does not need to opt in.
         _REGION_LABELS = [
             (t("pdf_region_africa"),  "africa"),
             (t("pdf_region_asia"),    "asia"),
             (t("pdf_region_europe"),  "europe"),
             (t("pdf_region_latam"),   "latam"),
             (t("pdf_region_pacific"), "pacific"),
-            (t("pdf_region_global"),  "global"),
         ]
         _TOOL_LABELS = [
             ("T1", t("pdf_tool_t1")), ("T2", t("pdf_tool_t2")),
@@ -1717,7 +1718,7 @@ elif page == "generate_pdf":
             sel_regions = {}
             for i, (rlabel, rkey) in enumerate(_REGION_LABELS):
                 with rcols[i]:
-                    sel_regions[rkey] = st.checkbox(rlabel, value=(rkey == "global"), disabled=all_regions)
+                    sel_regions[rkey] = st.checkbox(rlabel, value=True, disabled=all_regions)
 
             st.markdown(t("pdf_tools"))
             tcols = st.columns(2)
