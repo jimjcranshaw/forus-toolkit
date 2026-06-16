@@ -2720,11 +2720,17 @@ def render_block(item, mechs, story, warnings, _s=None):
         story.append(Spacer(1,2*mm))
 
 def _mech_matches_regions(mech, selected_regions):
-    """Return True if this mechanism's geographic_coverage includes any selected region."""
+    """Return True if this mechanism's geographic_coverage includes any selected region,
+    or if the mechanism is tagged "Global" (which we now always include - the "Global"
+    tickbox was removed from the Custom PDF UI because users found it confusing)."""
     geo = str(mech.get("geographic_coverage", "") or "").lower()
     # Always include mechanisms that cover all regions
     if any(k.lower() in geo for k in _GEO_ALL_REGIONS):
         return True
+    # Always include globally-tagged mechanisms (was a separate tickbox; now implicit)
+    for kw in _REGION_GEO_KEYWORDS.get("global", []):
+        if kw.lower() in geo:
+            return True
     # Check each selected region's keywords
     for rkey, v in selected_regions.items():
         if not v:
