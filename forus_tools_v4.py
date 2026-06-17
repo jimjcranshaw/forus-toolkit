@@ -34,7 +34,7 @@ T1_DEFAULTS = {
     "T1_WHY_THIS_MATTERS": (
         "Regulatory compliance is your legal armour. Authorities attacking platforms rarely do so on the real "
         "grounds - they look for technical violations. Completing this check annually means your seat belt is "
-        "on before you need it. - Moses Isooba, UNNGOF (Uganda)"),
+        "on before you need it. - UNNGOF (Uganda)"),
     "T1_CHECKLIST_LEGAL_STATUS_1": "Registration is current and not due for renewal within 3 months",
     "T1_CHECKLIST_LEGAL_STATUS_2": "All required annual filings (financial, narrative) submitted on time",
     "T1_CHECKLIST_LEGAL_STATUS_3": "Bank account(s) linked to current registered name and address",
