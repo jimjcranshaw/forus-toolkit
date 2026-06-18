@@ -16,6 +16,79 @@ from reportlab.platypus import (
     Spacer, Table, TableStyle, KeepTogether, HRFlowable, PageBreak
 )
 from reportlab.platypus.flowables import Flowable
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# ── Unicode font ──────────────────────────────────────────────────────────────
+# The Helvetica base-14 font cannot show glyphs outside Windows-1252, so Latvian
+# diacritics (ī ā ē ū š ž ņ ļ ķ ģ) render as broken boxes. Register a bundled
+# DejaVu Sans family and switch to it only where those characters appear (see
+# _uni()), keeping the Helvetica look everywhere else. The fonts are found in the
+# bundled fonts/ dir or the system DejaVu path (installed on deploy via
+# packages.txt: fonts-dejavu-core).
+_UNICODE_FONT = None
+_FONT_FAMILY  = "FUni"
+_FONT_FILES   = {
+    _FONT_FAMILY:                  "DejaVuSans.ttf",
+    _FONT_FAMILY + "-Bold":        "DejaVuSans-Bold.ttf",
+    _FONT_FAMILY + "-Oblique":     "DejaVuSans-Oblique.ttf",
+    _FONT_FAMILY + "-BoldOblique": "DejaVuSans-BoldOblique.ttf",
+}
+
+def _register_unicode_font():
+    global _UNICODE_FONT
+    here = os.path.dirname(os.path.abspath(__file__))
+    search_dirs = [os.path.join(here, "fonts"),
+                   "/usr/share/fonts/truetype/dejavu",
+                   "/usr/share/fonts/dejavu", "/usr/share/fonts/TTF"]
+    def _find(fn):
+        for d in search_dirs:
+            p = os.path.join(d, fn)
+            if os.path.exists(p):
+                return p
+        return None
+    try:
+        paths = {n: _find(fn) for n, fn in _FONT_FILES.items()}
+        if not all(paths.values()):
+            raise FileNotFoundError(f"DejaVu fonts not found in {search_dirs}")
+        for n, p in paths.items():
+            pdfmetrics.registerFont(TTFont(n, p))
+        pdfmetrics.registerFontFamily(
+            _FONT_FAMILY, normal=_FONT_FAMILY, bold=_FONT_FAMILY + "-Bold",
+            italic=_FONT_FAMILY + "-Oblique", boldItalic=_FONT_FAMILY + "-BoldOblique")
+        _UNICODE_FONT = _FONT_FAMILY
+    except Exception as _e:   # noqa: BLE001 - degrade gracefully
+        _UNICODE_FONT = None
+        print(f"  warn: Unicode font not registered ({_e}); "
+              "non-Latin-1 glyphs may not render.")
+
+_register_unicode_font()
+
+def _needs_unicode(ch):
+    """True if ch cannot be shown by the Helvetica (Windows-1252) base font."""
+    try:
+        ch.encode("cp1252")
+        return False
+    except (UnicodeEncodeError, LookupError):
+        return True
+
+def _uni(text):
+    """Wrap each whitespace-separated token containing a non-Windows-1252
+    character in the bundled Unicode font, so Latvian (e.g. 'attīstības
+    sadarbībai') renders correctly while surrounding text keeps the Helvetica
+    look. Safe on strings that already contain markup (only display tokens are
+    affected; URLs/attributes are ASCII). No-op when the font is unavailable or
+    the text has no special characters."""
+    s = str(text or "")
+    if not _UNICODE_FONT or not s or not any(_needs_unicode(c) for c in s):
+        return s
+    out = []
+    for tok in re.split(r"(\s+)", s):
+        if tok and not tok.isspace() and any(_needs_unicode(c) for c in tok):
+            out.append(f'<font name="{_UNICODE_FONT}">{tok}</font>')
+        else:
+            out.append(tok)
+    return "".join(out)
 
 # ── Version - increment this each build ──────────────────────────────────────
 VERSION     = "2.6"
@@ -1084,8 +1157,9 @@ def render_db_ref(text, last_verified):
     return [t, Spacer(1,2*mm)]
 
 def _xesc(text):
-    """Escape XML/HTML special characters so ReportLab Paragraph doesn't crash."""
-    return (str(text or "")
+    """Escape XML/HTML special characters so ReportLab Paragraph doesn't crash,
+    then route any non-Latin-1 glyphs through the Unicode font."""
+    return _uni(str(text or "")
             .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;"))
@@ -2617,9 +2691,9 @@ def render_acronyms_page(language="EN"):
     rows = []
     for abbr, definition in ACRONYMS:
         rows.append([
-            Paragraph(f"<b>{abbr}</b>",
+            Paragraph(f"<b>{_xesc(abbr)}</b>",
                       ps("_acr_a", size=8.5, leading=12, color=C["dark_green"])),
-            Paragraph(definition,
+            Paragraph(_xesc(definition),
                       ps("_acr_d", size=8.5, leading=12, color=C["grey"])),
         ])
 
