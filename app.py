@@ -1166,6 +1166,30 @@ with st.sidebar:
 
     # Spreadsheet controls — admin only
     if is_admin():
+        def _load_uploaded_spreadsheet(uploaded):
+            # Process an uploaded .xlsx exactly once. Without this guard the
+            # file_uploader keeps returning the same file on every rerun, so the
+            # st.rerun() below fired in a loop and crashed the app.
+            if uploaded is None:
+                return
+            up_id = getattr(uploaded, "file_id", None) or f"{uploaded.name}:{getattr(uploaded, 'size', '')}"
+            if up_id == st.session_state.get("_last_upload_id"):
+                return
+            try:
+                data = uploaded.read()
+            except Exception as e:
+                st.error(f"Could not read that file: {e}")
+                return
+            tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+            tmp.write(data)
+            tmp.close()
+            st.session_state["_last_upload_id"] = up_id
+            st.session_state["sp_path"] = tmp.name
+            st.session_state["sp_name"] = uploaded.name
+            st.session_state.setdefault("action_log", []).append(
+                "Spreadsheet loaded; click Save to Google Drive to publish it.")
+            st.rerun()
+
         if sp():
             st.success(f"📊 {st.session_state['sp_name']}")
             with open(sp(), "rb") as f:
@@ -1177,27 +1201,19 @@ with st.sidebar:
                 )
             if st.secrets.get("GDRIVE_CREDENTIALS"):
                 if st.button(t("sidebar_save_gdrive"), use_container_width=True):
-                    ok, msg = save_to_gdrive()
-                    (st.success if ok else st.error)(msg)
-            uploaded = st.file_uploader(t("sidebar_upload_sp"), type=["xlsx"], key="replace_spreadsheet")
-            if uploaded:
-                tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
-                tmp.write(uploaded.read())
-                tmp.close()
-                st.session_state["sp_path"] = tmp.name
-                st.session_state["sp_name"] = uploaded.name
-                st.session_state["action_log"].append("Spreadsheet loaded locally; click Save to Google Drive to publish it.")
-                st.rerun()
+                    with st.spinner("Saving to Google Drive…"):
+                        ok, msg = save_to_gdrive()
+                    if ok:
+                        st.success(msg)
+                        st.session_state.setdefault("action_log", []).append(f"☁ {msg}")
+                    else:
+                        st.error(f"Save failed: {msg}")
+            _load_uploaded_spreadsheet(
+                st.file_uploader(t("sidebar_upload_sp"), type=["xlsx"], key="replace_spreadsheet"))
         else:
             st.warning(t("sidebar_no_sp"))
-            uploaded = st.file_uploader(t("sidebar_upload_sp"), type=["xlsx"])
-            if uploaded:
-                tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
-                tmp.write(uploaded.read())
-                tmp.close()
-                st.session_state["sp_path"] = tmp.name
-                st.session_state["sp_name"] = uploaded.name
-                st.rerun()
+            _load_uploaded_spreadsheet(
+                st.file_uploader(t("sidebar_upload_sp"), type=["xlsx"]))
         st.markdown("---")
 
     # Navigation — filtered by role
