@@ -2855,6 +2855,7 @@ def render_resources_page(language="EN", access_level=1):
         ("forus",   "Forus",                                            "https://www.forus-international.org"),
         ("forus",   "Forus Safeguarding Toolkit",                       "https://www.forus-international.org/en/pdf/keeping-people-safe"),
         ("forus",   "Forus Communications Clinic",                      "https://www.forus-international.org/en/news/communications-clinic"),
+        ("forus",   "Forus Member Resource Library (external partner tools, incl. Cooperation Canada's Public Positions tool)", "https://drive.google.com/drive/folders/1QfVltU86rTpPb3A1MoJK6H8Ql3faJZyC"),
         ("legal",   "IFRC Legal Database",                              "https://www.ifrc.org/legal-resources"),
         ("legal",   "ICNL – Civic Freedom Monitor",                     "https://www.icnl.org/programs/civic-freedom-monitor"),
         ("legal",   "Front Line Defenders – Emergency Grants",          "https://www.frontlinedefenders.org/en/programme/emergency-grants"),
